@@ -3,7 +3,7 @@ import { CreatePartyRequest } from "../Interfaces/request";
 import { CreatePartyResponse } from "../Interfaces/response";
 
 const api = axios.create({
-  baseURL: "http://172.30.1.87:8080"
+  baseURL: process.env.REACT_APP_BASEURL
 })
 
 export const partyApi = {
