@@ -6,7 +6,9 @@ export const AppProdiver = ({ children }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   return (
-    <AppContext.Provider value={{ loading }}>{children}</AppContext.Provider>
+    <AppContext.Provider value={{ loading }}>
+      {children}
+    </AppContext.Provider>
   );
 };
 

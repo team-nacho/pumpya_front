@@ -1,7 +1,7 @@
-import { Member, Party, Reciept } from "./interfaces";
+import { Member, Reciept } from "./interfaces";
 
 export interface CreatePartyRequest {
-  party: Party
+  userName: string;
 }
 export interface CreateRecieptRequest {
   reciept: Reciept
