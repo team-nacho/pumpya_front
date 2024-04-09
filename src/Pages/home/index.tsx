@@ -41,7 +41,7 @@ const HomePage: React.FC = () => {
       onClose();
       navigate(`/party/${response.data.id}`);
     }
-    
+
    
   }
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {

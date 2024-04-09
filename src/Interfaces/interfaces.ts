@@ -11,12 +11,14 @@ export interface Party {
 }
 export interface Reciept {
   name: string,
-  author: Member,
+  author: Member | undefined,
   join: Member[],
   cost: number,
   currency: string,
-  createDate: Date,
+  createDate: Date | undefined,
 }
 export interface Tag {
   name: string,
 }
+
+

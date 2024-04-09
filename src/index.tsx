@@ -10,15 +10,15 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
+  // <React.StrictMode>
+    <AppProdiver>
       <ChakraProvider>
+      <BrowserRouter>
         <MainLayout>
-          <AppProdiver>
             <App />
-          </AppProdiver>
         </MainLayout>
+        </BrowserRouter>
       </ChakraProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+      </AppProdiver>
+  // </React.StrictMode>
 );

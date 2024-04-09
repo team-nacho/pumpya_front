@@ -4,6 +4,7 @@ export interface CreatePartyRequest {
   userName: string;
 }
 export interface CreateRecieptRequest {
+  sender: String,
   reciept: Reciept
 }
 export interface CreateMemberReqeust {
