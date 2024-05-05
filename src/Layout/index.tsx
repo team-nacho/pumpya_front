@@ -3,7 +3,7 @@ import { Flex } from "@chakra-ui/react";
 interface MainLayoutProps {
   children: React.ReactNode;
 }
-const MainLayout: React.FC<MainLayoutProps> = ({children}) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <Flex
       justify="center" // 가운데 정렬
@@ -12,7 +12,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({children}) => {
     >
       {children}
     </Flex>
-  )
-}
+  );
+};
 
-export default MainLayout
+export default MainLayout;

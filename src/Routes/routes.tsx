@@ -1,28 +1,28 @@
 import { RouteObject } from "react-router-dom";
 import HomePage from "../Pages/home";
-import {PartyPageContainer} from "../Pages/party";
+import { PartyPageContainer } from "../Pages/party";
 import HistoryPage from "../Pages/history";
 
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: <HomePage/>
+    element: <HomePage />,
   },
   {
-    path:"party",
+    path: "party",
     children: [
       {
-        path:":partyId",
-        element: <PartyPageContainer/>
-      }
-    ]
+        path: ":partyId",
+        element: <PartyPageContainer />,
+      },
+    ],
   },
   {
-    path:"history",
-    element: <HistoryPage/>
+    path: "history",
+    element: <HistoryPage />,
   },
   {
-    path:"*",
-    element: <HomePage/>
+    path: "*",
+    element: <HomePage />,
   },
-]
+];
