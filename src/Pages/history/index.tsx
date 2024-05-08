@@ -1,3 +1,125 @@
-const HistoryPage = () => <div>history page</div>
+import {
+  Button,
+  Container,
+  Menu,
+  Select,
+  Heading,
+  MenuButton,
+  MenuList,
+  MenuItem,
+} from "@chakra-ui/react";
+import { useEffect, useState, ReactNode } from "react";
+import { CreatePartyRequest } from "../../Interfaces/request";
+import { CreatePartyResponse } from "../../Interfaces/response";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { partyApi } from "../../Apis/apis";
+import { AxiosResponse, HttpStatusCode } from "axios";
+import { dummyMembers, dummyParties, dummyReceipts, dummyTags } from "./dummy";
+import { Receipt } from "../../Interfaces/interfaces";
+
+const HistoryPage = () => {
+  const navigate = useNavigate();
+  const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string>("");
+  const hasSelectedTag = dummyReceipts.some(
+    (receipt) => receipt.tag?.name === selectedTag
+  );
+
+  const onBack = () => {
+    navigate("/");
+  };
+
+  console.log("Members:", dummyMembers);
+  console.log("Parties:", dummyParties);
+  console.log("Reciepts:", dummyReceipts);
+  console.log("Tags:", dummyTags);
+
+  const memberNames = dummyMembers.map((member) => member.name);
+
+  const partyName = dummyParties.map((party) => party.name);
+
+  console.log(partyName);
+
+  const handleTagClick = (tag: string) => {
+    const filteredReciepts = dummyReceipts.filter(
+      (receipt) => receipt.tag?.name === tag
+    );
+    setFilteredReceipts(filteredReciepts);
+    setSelectedTag(tag); // 선택된 태그 업데이트
+  };
+
+  const handleShowAll = () => {
+    setFilteredReceipts(dummyReceipts); // 모든 Receipt 표시
+    setSelectedTag(""); // 선택된 태그 초기화
+  };
+
+  return (
+    <div>
+      <div>
+        <Button onClick={onBack}>뒤로가기</Button>
+      </div>
+      <div>
+        <Heading fontSize="xl">{partyName}🎉</Heading>
+      </div>
+      <div>
+        {memberNames.map((name, index) => (
+          <Container key={index} style={{ margin: "10px 0" }}>
+            <Button size="lg">{name}님의 뿜빠이 결과</Button>
+          </Container>
+        ))}
+      </div>
+      <div>
+        <Select
+          placeholder="전체"
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "") {
+              handleShowAll();
+            } else {
+              handleTagClick(value);
+            }
+          }}
+        >
+          <option value="음식">음식</option>
+          <option value="보관">보관</option>
+          <option value="교통">교통</option>
+          <option value="입장료">입장료</option>
+          <option value="숙박">숙박</option>
+          <option value="엔터">엔터</option>
+        </Select>
+      </div>
+      <div>
+        <div>
+          <ul>
+            {selectedTag
+              ? filteredReceipts.map((receipt, index) => (
+                  <Container key={index}>
+                    <div>{receipt.tag?.name}</div>
+                    <div>
+                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
+                    </div>
+                  </Container>
+                ))
+              : dummyReceipts.map((receipt, index) => (
+                  <Container key={index}>
+                    <div>{receipt.name}</div>
+                    <div>
+                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
+                    </div>
+                  </Container>
+                ))}
+
+            {!selectedTag && dummyReceipts.length === 0 && (
+              <div>
+                <p>{selectedTag}.</p>
+                <b>추가해보세요</b>
+              </div>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default HistoryPage;

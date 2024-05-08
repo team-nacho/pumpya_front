@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import Stomp, { Client } from "@stomp/stompjs";
 import { Button, Input } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { Member, Reciept } from "../../Interfaces/interfaces";
+import { Member, Receipt } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
 
 const PartyPageContainer = () => {
@@ -10,15 +10,16 @@ const PartyPageContainer = () => {
   const [cost, setCost] = useState<number>(0);
   const currentUser = useAppContext();
   const [name, setName] = useState<string>('');
-  const [receipt, setReceipt] = useState<Reciept>({
+  const [receipt, setReceipt] = useState<Receipt>({
     name: "",
     author: undefined,
     join: [],
     cost: 0,
-    currency: '',
-    createDate: undefined
+    useCurrency: undefined,
+    createDate: undefined,
+    tag: undefined,
   });
-  const [list, setList] = useState<Reciept[]>([]);
+  const [list, setList] = useState<Receipt[]>([]);
   const [stompClient, setStompClient] = useState<Stomp.Client | null>(null)
 
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
