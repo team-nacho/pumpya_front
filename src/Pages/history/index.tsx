@@ -4,6 +4,11 @@ import {
   Menu,
   Select,
   Heading,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
   MenuButton,
   MenuList,
   MenuItem,
@@ -63,6 +68,11 @@ const HistoryPage = () => {
       </div>
       <div>
         {memberNames.map((name, index) => (
+
+
+
+
+
           <Container key={index} style={{ margin: "10px 0" }}>
             <Button size="lg">{name}님의 뿜빠이 결과</Button>
           </Container>
@@ -94,7 +104,7 @@ const HistoryPage = () => {
             {selectedTag
               ? filteredReceipts.map((receipt, index) => (
                   <Container key={index}>
-                    <div>{receipt.tag?.name}</div>
+                    <div>{receipt.name}</div>
                     <div>
                       {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
                     </div>
