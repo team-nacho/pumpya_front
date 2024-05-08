@@ -14,21 +14,16 @@ import {
 import { useParams } from "react-router-dom";
 import { Member, Receipt } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
-import Status from "./Status";
 import { dummyReceipts, dummyMembers } from "./dummy";
 
 const PartyPageContainer = () => {
-  const currencyList: { currency: string }[] = [
-    { currency: "베트남" },
-    { currency: "유럽" },
-  ];
   const { partyId } = useParams();
   const [cost, setCost] = useState<number>(0);
   const currentUser = useAppContext();
   const [name, setName] = useState<string>("");
   const [currency, setCurrency] = useState<string>("대한민국");
   const [join, setJoin] = useState<string[]>([]);
-  
+
   const [receipt, setReceipt] = useState<Receipt>({
     name: "",
     author: undefined,
@@ -39,7 +34,7 @@ const PartyPageContainer = () => {
     tag: undefined,
   });
   const [list, setList] = useState<Receipt[]>([]);
-  const [stompClient, setStompClient] = useState<Stomp.Client | null>(null)
+  const [stompClient, setStompClient] = useState<Stomp.Client | null>(null);
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceipt({ ...receipt, cost: Number(e.target.value) });
@@ -70,7 +65,8 @@ const PartyPageContainer = () => {
     });
   };
   const ContainerReceipt: React.FC<Receipt> = (receipt) => {
-    if (receipt.author == undefined) receipt.author = { name: "", usedCost: 0 };
+    if (receipt.author === undefined)
+      receipt.author = { name: "", usedCost: 0 };
     return (
       <Container>
         <Text fontSize="xl">{receipt.name}</Text>
