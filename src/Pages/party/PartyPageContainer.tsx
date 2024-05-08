@@ -5,48 +5,54 @@ import {
   Text,
   Button,
   Input,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
+  Container,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { Member, Reciept } from "../../Interfaces/interfaces";
+import { Member, Receipt } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
+import Status from "./Status";
+import { dummyReceipts, dummyMembers } from "./dummy";
 
 const PartyPageContainer = () => {
+  const currencyList: { currency: string }[] = [
+    { currency: "베트남" },
+    { currency: "유럽" },
+  ];
   const { partyId } = useParams();
   const [cost, setCost] = useState<number>(0);
   const currentUser = useAppContext();
   const [name, setName] = useState<string>("");
   const [currency, setCurrency] = useState<string>("대한민국");
-  const [receipt, setReceipt] = useState<Reciept>({
+  const [join, setJoin] = useState<string[]>([]);
+  const [receipt, setReceipt] = useState<Receipt>({
     name: "",
     author: undefined,
     join: [],
     cost: 0,
-    currency: "",
+    useCurrency: undefined,
     createDate: undefined,
+    tag: undefined,
   });
-  const [list, setList] = useState<Reciept[]>([]);
+  const [list, setList] = useState<Receipt[]>([]);
   const [stompClient, setStompClient] = useState<Stomp.Client | null>(null);
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceipt({ ...receipt, cost: Number(e.target.value) });
   }; */
-  const onChangeCostInput = (valueAsString: string, valueAsNumber: number) => {
-    setCost(valueAsNumber);
+  const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value)) setCost(value);
   };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
+  const onClickChoiceUserButton = () => {};
   const onClickSendButton = () => {
-    setReceipt({ ...receipt, name: name, cost: cost, currency: currency });
+    setReceipt({ ...receipt, name: name, cost: cost });
     const destination = `/pub/receipt/${partyId}`;
     //이 부분은 예시임
     stompClient?.publish({
@@ -62,7 +68,17 @@ const PartyPageContainer = () => {
       }),
     });
   };
-
+  const ContainerReceipt: React.FC<Receipt> = (receipt) => {
+    if (receipt.author == undefined) receipt.author = { name: "", usedCost: 0 };
+    return (
+      <Container>
+        <Text fontSize="xl">{receipt.name}</Text>
+        <Text fontSize="xl">{receipt.author.name}</Text>
+        <Text fontSize="xl"></Text>
+        <Text fontSize="xl">{receipt.cost}</Text>
+      </Container>
+    );
+  };
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -105,52 +121,18 @@ const PartyPageContainer = () => {
   return (
     <div>
       <Heading as="h2" size="xl">
-        파티 이름
+        partyName
       </Heading>
-      <Text fontSize="2xl">n 명</Text>
+      <Text fontSize="2xl">memberNum명</Text>
       <Text fontSize="lg">이번 여행에서 소비했어요</Text>
       <Heading as="h2" size="2xl">
-        0000원
+        totalAmount원
       </Heading>
-      <NumberInput value={cost} onChange={onChangeCostInput} min={0}>
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
+      <Input value={cost} onChange={onChangeCostInput} placeholder={currency} />
 
       <Menu>
         <MenuButton as={Button}>{currency}</MenuButton>
         <MenuList>
-          <MenuItem
-            onClick={() => {
-              setCurrency("유럽");
-            }}
-          >
-            유럽
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setCurrency("베트남");
-            }}
-          >
-            베트남
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setCurrency("대한민국");
-            }}
-          >
-            대한민국
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setCurrency("미국");
-            }}
-          >
-            미국
-          </MenuItem>
           <MenuItem
             onClick={() => {
               setCurrency("일본");
@@ -166,6 +148,17 @@ const PartyPageContainer = () => {
         placeholder="소비를 입력해 주세요"
       />
       <Button onClick={onClickSendButton}>button</Button>
+
+      <Button
+        onClick={onClickChoiceUserButton}
+        colorScheme="teal"
+        variant="outline"
+      >
+        Button
+      </Button>
+      {dummyReceipts.map((receipt) => (
+        <ContainerReceipt {...receipt} />
+      ))}
     </div>
   );
 };
