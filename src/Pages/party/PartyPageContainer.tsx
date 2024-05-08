@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import Stomp, { Client } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
 import {
   Heading,
   Text,
@@ -34,7 +34,7 @@ const PartyPageContainer = () => {
     tag: undefined,
   });
   const [list, setList] = useState<Receipt[]>([]);
-  const [stompClient, setStompClient] = useState<Stomp.Client | null>(null);
+  const [stompClient, setStompClient] = useState<Client | null>(null);
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceipt({ ...receipt, cost: Number(e.target.value) });
