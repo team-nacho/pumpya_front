@@ -9,6 +9,7 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Box,
   MenuButton,
   MenuList,
   MenuItem,
@@ -68,14 +69,21 @@ const HistoryPage = () => {
       </div>
       <div>
         {memberNames.map((name, index) => (
-
-
-
-
-
-          <Container key={index} style={{ margin: "10px 0" }}>
-            <Button size="lg">{name}님의 뿜빠이 결과</Button>
-          </Container>
+          <Accordion allowMultiple>
+            <AccordionItem key={index} style={{ margin: "10px 0" }}>
+              <h2>
+                <AccordionButton>
+                  <Box as="span" flex="1" textAlign="left">
+                    {name}님의 뿜빠이 결과
+                  </Box>
+                  <AccordionIcon />
+                </AccordionButton>
+              </h2>
+              <AccordionPanel pb={4}>
+                누구에게 얼마를 주세요.
+              </AccordionPanel>
+            </AccordionItem>
+          </Accordion>
         ))}
       </div>
       <div>
@@ -106,7 +114,8 @@ const HistoryPage = () => {
                   <Container key={index}>
                     <div>{receipt.name}</div>
                     <div>
-                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
+                      {receipt.createDate?.toLocaleDateString()}{" "}
+                      {receipt.tag?.name}
                     </div>
                   </Container>
                 ))
@@ -114,7 +123,8 @@ const HistoryPage = () => {
                   <Container key={index}>
                     <div>{receipt.name}</div>
                     <div>
-                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
+                      {receipt.createDate?.toLocaleDateString()}{" "}
+                      {receipt.tag?.name}
                     </div>
                   </Container>
                 ))}
