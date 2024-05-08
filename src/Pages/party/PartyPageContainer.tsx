@@ -28,6 +28,7 @@ const PartyPageContainer = () => {
   const [name, setName] = useState<string>("");
   const [currency, setCurrency] = useState<string>("대한민국");
   const [join, setJoin] = useState<string[]>([]);
+  
   const [receipt, setReceipt] = useState<Receipt>({
     name: "",
     author: undefined,
@@ -38,7 +39,7 @@ const PartyPageContainer = () => {
     tag: undefined,
   });
   const [list, setList] = useState<Receipt[]>([]);
-  const [stompClient, setStompClient] = useState<Stomp.Client | null>(null);
+  const [stompClient, setStompClient] = useState<Stomp.Client | null>(null)
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceipt({ ...receipt, cost: Number(e.target.value) });

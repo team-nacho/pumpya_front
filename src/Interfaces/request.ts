@@ -6,7 +6,6 @@ export interface CreatePartyRequest {
 export interface CreateReceiptRequest {
   sender: String;
   receipt: Receipt;
-}
 export interface CreateMemberReqeust {
   member: Member;
 }

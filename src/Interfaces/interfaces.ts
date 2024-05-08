@@ -25,4 +25,3 @@ export interface Tag {
 export interface Currency {
   currencyId: string;
   country: string;
-}
