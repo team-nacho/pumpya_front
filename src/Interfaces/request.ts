@@ -7,7 +7,6 @@ export interface CreateReceiptRequest {
   sender: String;
   receipt: Receipt;
 }
-
 export interface CreateMemberReqeust {
   member: Member;
 }
