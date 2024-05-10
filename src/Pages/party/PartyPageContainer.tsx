@@ -10,18 +10,31 @@ import {
   MenuList,
   MenuItem,
   Container,
+  Drawer,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
+  Stack,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { Member, Receipt } from "../../Interfaces/interfaces";
+import { Member, Receipt, Currency, Tag } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
-import { dummyReceipts, dummyMembers } from "./dummy";
+import { dummyReceipts, dummyMembers, currencyList, dummyTags } from "./dummy";
 
 const PartyPageContainer = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+
   const { partyId } = useParams();
   const [cost, setCost] = useState<number>(0);
   const currentUser = useAppContext();
   const [name, setName] = useState<string>("");
   const [currency, setCurrency] = useState<string>("대한민국");
+  const [tag, setTag] = useState<Tag>();
   const [join, setJoin] = useState<string[]>([]);
 
   const [receipt, setReceipt] = useState<Receipt>({
@@ -64,6 +77,48 @@ const PartyPageContainer = () => {
       }),
     });
   };
+  const ButtonStackTag: React.FC<{ tagList: Tag[] }> = ({ tagList }) => {
+    return (
+      <Stack direction="row" spacing={4} align="center">
+        {tagList.map((choiceTag) => (
+          <Button
+            onClick={() =>
+              choiceTag === tag ? setTag(undefined) : setTag(choiceTag)
+            }
+            colorScheme="teal"
+            variant={choiceTag === tag ? "solid" : "outline"}
+          >
+            {choiceTag.name}
+          </Button>
+        ))}
+      </Stack>
+    );
+  };
+
+  const ButtonStackJoin: React.FC<{ memberList: Member[] }> = ({
+    memberList,
+  }) => {
+    return (
+      <Stack direction="row" spacing={4} align="center">
+        {memberList.map((member) => (
+          <Button colorScheme="teal" variant="outline">
+            {member.name}
+          </Button>
+        ))}
+      </Stack>
+    );
+  };
+  const MenuItemCurrency: React.FC<Currency> = (currency) => {
+    return (
+      <MenuItem
+        onClick={() => {
+          setCurrency(currency.country);
+        }}
+      >
+        {currency.country}
+      </MenuItem>
+    );
+  };
   const ContainerReceipt: React.FC<Receipt> = (receipt) => {
     if (receipt.author === undefined)
       receipt.author = { name: "", usedCost: 0 };
@@ -76,6 +131,7 @@ const PartyPageContainer = () => {
       </Container>
     );
   };
+
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -117,6 +173,28 @@ const PartyPageContainer = () => {
   }, []);
   return (
     <div>
+      <>
+        <Button ref={btnRef} colorScheme="teal" onClick={onOpen}>
+          Open
+        </Button>
+        <Drawer
+          isOpen={isOpen}
+          placement="right"
+          onClose={onClose}
+          finalFocusRef={btnRef}
+        >
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader>Create your account</DrawerHeader>
+
+            <DrawerBody>
+              <Input placeholder="Type here..." />
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      </>
+
       <Heading as="h2" size="xl">
         partyName
       </Heading>
@@ -130,13 +208,9 @@ const PartyPageContainer = () => {
       <Menu>
         <MenuButton as={Button}>{currency}</MenuButton>
         <MenuList>
-          <MenuItem
-            onClick={() => {
-              setCurrency("일본");
-            }}
-          >
-            일본
-          </MenuItem>
+          {currencyList.map((currency) => (
+            <MenuItemCurrency {...currency} />
+          ))}
         </MenuList>
       </Menu>
       <Input
@@ -144,15 +218,11 @@ const PartyPageContainer = () => {
         onChange={onChangeNameInput}
         placeholder="소비를 입력해 주세요"
       />
+      <ButtonStackTag tagList={dummyTags} />
+      <Text>{tag === undefined ? "언디파인" : tag.name}</Text>
+      <ButtonStackJoin memberList={dummyMembers} />
       <Button onClick={onClickSendButton}>button</Button>
 
-      <Button
-        onClick={onClickChoiceUserButton}
-        colorScheme="teal"
-        variant="outline"
-      >
-        Button
-      </Button>
       {dummyReceipts.map((receipt) => (
         <ContainerReceipt {...receipt} />
       ))}
