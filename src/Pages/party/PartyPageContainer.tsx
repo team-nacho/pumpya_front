@@ -1,6 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import {
+  Spacer,
+  Flex,
   Heading,
   Text,
   Button,
@@ -19,21 +21,34 @@ import {
   DrawerCloseButton,
   useDisclosure,
   Stack,
+  VStack,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { Member, Receipt, Currency, Tag } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
-import { dummyReceipts, dummyMembers, currencyList, dummyTags } from "./dummy";
+import {
+  dummyReceipts,
+  dummyMembers,
+  currencyList,
+  dummyTags,
+  dummyParties,
+} from "./dummy";
 
 const PartyPageContainer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const btnRef = useRef<HTMLButtonElement | null>(null);
+
+  const btnDrawer = useRef<HTMLButtonElement | null>(null);
+  const btnReceipt = useRef<HTMLButtonElement | null>(null);
 
   const { partyId } = useParams();
   const [cost, setCost] = useState<number>(0);
-  const currentUser = useAppContext();
+  //const currentUser = useAppContext();
+  const [currentUser, setCurrentUser] = useState<Member>(
+    dummyParties[0].member[0]
+  );
+  const [restMembers, setRestMembers] = useState<Member[]>();
   const [name, setName] = useState<string>("");
-  const [currency, setCurrency] = useState<string>("대한민국");
+  const [currency, setCurrency] = useState<Currency>(currencyList[0]);
   const [tag, setTag] = useState<Tag>();
   const [join, setJoin] = useState<string[]>([]);
 
@@ -48,6 +63,13 @@ const PartyPageContainer = () => {
   });
   const [list, setList] = useState<Receipt[]>([]);
   const [stompClient, setStompClient] = useState<Client | null>(null);
+
+  const deleteMemberWithFilter = (memberToDelete: Member) => {
+    const filteredMembers: Member[] = dummyParties[0].member.filter(
+      (members) => members !== memberToDelete
+    );
+    setRestMembers(filteredMembers);
+  };
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceipt({ ...receipt, cost: Number(e.target.value) });
@@ -77,10 +99,10 @@ const PartyPageContainer = () => {
       }),
     });
   };
-  const ButtonStackTag: React.FC<{ tagList: Tag[] }> = ({ tagList }) => {
+  const ButtonStackTag: React.FC<{ tags: Tag[] }> = ({ tags }) => {
     return (
       <Stack direction="row" spacing={4} align="center">
-        {tagList.map((choiceTag) => (
+        {tags.map((choiceTag) => (
           <Button
             onClick={() =>
               choiceTag === tag ? setTag(undefined) : setTag(choiceTag)
@@ -95,12 +117,12 @@ const PartyPageContainer = () => {
     );
   };
 
-  const ButtonStackJoin: React.FC<{ memberList: Member[] }> = ({
-    memberList,
+  const ButtonStackJoin: React.FC<{ members: Member[] | undefined }> = ({
+    members,
   }) => {
     return (
       <Stack direction="row" spacing={4} align="center">
-        {memberList.map((member) => (
+        {members?.map((member) => (
           <Button colorScheme="teal" variant="outline">
             {member.name}
           </Button>
@@ -108,11 +130,33 @@ const PartyPageContainer = () => {
       </Stack>
     );
   };
+
+  const ButtonStackMembers: React.FC<{ members: Member[] | undefined }> = ({
+    members,
+  }) => {
+    return (
+      <VStack direction="row" spacing={1} align="flex-start">
+        {members?.map((member) => (
+          <Button
+            onClick={() => setCurrentUser(member)}
+            colorScheme="gray"
+            variant="ghost"
+          >
+            {member.name}
+          </Button>
+        ))}
+        <Button colorScheme="gray" variant="ghost">
+          멤버 추가
+        </Button>
+      </VStack>
+    );
+  };
+
   const MenuItemCurrency: React.FC<Currency> = (currency) => {
     return (
       <MenuItem
         onClick={() => {
-          setCurrency(currency.country);
+          setCurrency(currency);
         }}
       >
         {currency.country}
@@ -171,42 +215,69 @@ const PartyPageContainer = () => {
       }
     };
   }, []);
+  useEffect(() => {
+    setRestMembers(dummyParties[0].member);
+    deleteMemberWithFilter(currentUser);
+  }, [currentUser]);
   return (
     <div>
-      <>
-        <Button ref={btnRef} colorScheme="teal" onClick={onOpen}>
+      <Flex verticalAlign="center">
+        <Heading as="h2" size="xl">
+          {dummyParties[0].name}
+          {"\u00B7"}
+        </Heading>
+        <Text fontSize="2xl">{dummyParties[0].member.length}명</Text>
+        <Spacer />
+
+        <Button ref={btnDrawer} colorScheme="teal" onClick={onOpen}>
           Open
         </Button>
         <Drawer
           isOpen={isOpen}
           placement="right"
           onClose={onClose}
-          finalFocusRef={btnRef}
+          finalFocusRef={btnDrawer}
         >
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
-            <DrawerHeader>Create your account</DrawerHeader>
+            <DrawerHeader>
+              {currentUser.name}님의
+              <Heading as="h2" size="xl">
+                {dummyParties[0].name}
+              </Heading>
+              <ButtonStackMembers members={restMembers} />
+            </DrawerHeader>
 
             <DrawerBody>
-              <Input placeholder="Type here..." />
+              <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
+                Open
+              </Button>
+              <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
+                Open
+              </Button>
             </DrawerBody>
+            <DrawerFooter>
+              <Button colorScheme="red" variant="solid" w="100%" h="48px">
+                여행 끝내기
+              </Button>
+            </DrawerFooter>
           </DrawerContent>
         </Drawer>
-      </>
+      </Flex>
 
-      <Heading as="h2" size="xl">
-        partyName
-      </Heading>
-      <Text fontSize="2xl">memberNum명</Text>
       <Text fontSize="lg">이번 여행에서 소비했어요</Text>
       <Heading as="h2" size="2xl">
         totalAmount원
       </Heading>
-      <Input value={cost} onChange={onChangeCostInput} placeholder={currency} />
+      <Input
+        value={cost}
+        onChange={onChangeCostInput}
+        placeholder={currency.country}
+      />
 
       <Menu>
-        <MenuButton as={Button}>{currency}</MenuButton>
+        <MenuButton as={Button}>{currency.country}</MenuButton>
         <MenuList>
           {currencyList.map((currency) => (
             <MenuItemCurrency {...currency} />
@@ -218,9 +289,9 @@ const PartyPageContainer = () => {
         onChange={onChangeNameInput}
         placeholder="소비를 입력해 주세요"
       />
-      <ButtonStackTag tagList={dummyTags} />
+      <ButtonStackTag tags={dummyTags} />
       <Text>{tag === undefined ? "언디파인" : tag.name}</Text>
-      <ButtonStackJoin memberList={dummyMembers} />
+      <ButtonStackJoin members={restMembers} />
       <Button onClick={onClickSendButton}>button</Button>
 
       {dummyReceipts.map((receipt) => (
