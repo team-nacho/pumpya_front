@@ -81,10 +81,9 @@ const HistoryPage = () => {
             <AccordionItem key={index} style={{ margin: "10px 0" }}>
               <h2>
                 <AccordionButton>
-                  <Box as="span" flex="1" textAlign="left">
+                  <Button as="span" flex="1" textAlign="left">
                     {name}님의 뿜빠이 결과
-                  </Box>
-                  <AccordionIcon />
+                  </Button>
                 </AccordionButton>
               </h2>
               <AccordionPanel pb={4}>누구에게 얼마를 주세요.</AccordionPanel>
