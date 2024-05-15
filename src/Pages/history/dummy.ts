@@ -35,6 +35,7 @@ export const dummyParties: Party[] = [
 
 export const dummyReceipts: Receipt[] = [
   {
+    id: "0001",
     name: "생일파티",
     author: dummyMembers[0],
     join: [dummyMembers[0], dummyMembers[1]],
@@ -44,6 +45,7 @@ export const dummyReceipts: Receipt[] = [
     tag: dummyTags[1],
   },
   {
+    id: "0002",
     name: "롯데월드",
     author: dummyMembers[2],
     join: [dummyMembers[1], dummyMembers[2]],
