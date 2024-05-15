@@ -1,26 +1,26 @@
 import {
   Button,
-  Container,
   Menu,
-  Select,
   Heading,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Box,
   MenuButton,
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
-import { useEffect, useState, ReactNode } from "react";
-import { CreatePartyRequest } from "../../Interfaces/request";
-import { CreatePartyResponse } from "../../Interfaces/response";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
-import { partyApi } from "../../Apis/apis";
-import { AxiosResponse, HttpStatusCode } from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { dummyMembers, dummyParties, dummyReceipts, dummyTags } from "./dummy";
 import { Receipt } from "../../Interfaces/interfaces";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("전체");
   const hasSelectedTag = dummyReceipts.some(
     (receipt) => receipt.tag?.name === selectedTag
   );
@@ -29,28 +29,39 @@ const HistoryPage = () => {
     navigate("/");
   };
 
-  console.log("Members:", dummyMembers);
-  console.log("Parties:", dummyParties);
-  console.log("Reciepts:", dummyReceipts);
-  console.log("Tags:", dummyTags);
+  useEffect(() => {
+    // "전체" 태그가 선택되었을 때 모든 영수증을 표시
+    if (selectedTag === "전체") {
+      setFilteredReceipts(dummyReceipts);
+    } else {
+      // 선택된 태그에 맞는 영수증을 필터링하여 표시
+      const filteredReciepts = dummyReceipts.filter(
+        (receipt) => receipt.tag?.name === selectedTag
+      );
+      setFilteredReceipts(filteredReciepts);
+    }
+  }, [selectedTag]);
 
   const memberNames = dummyMembers.map((member) => member.name);
 
   const partyName = dummyParties.map((party) => party.name);
 
-  console.log(partyName);
+  const partyTotal = dummyParties.reduce(
+    (acc, party) => acc + party.totalCost,
+    0
+  );
+
 
   const handleTagClick = (tag: string) => {
     const filteredReciepts = dummyReceipts.filter(
       (receipt) => receipt.tag?.name === tag
     );
     setFilteredReceipts(filteredReciepts);
-    setSelectedTag(tag); // 선택된 태그 업데이트
-  };
-
-  const handleShowAll = () => {
-    setFilteredReceipts(dummyReceipts); // 모든 Receipt 표시
-    setSelectedTag(""); // 선택된 태그 초기화
+    if (selectedTag === tag) {
+      setSelectedTag("전체");
+    } else {
+      setSelectedTag(tag); // 선택된 태그 업데이트
+    }
   };
 
   return (
@@ -62,61 +73,85 @@ const HistoryPage = () => {
         <Heading fontSize="xl">{partyName}🎉</Heading>
       </div>
       <div>
+        <Heading fontSize="large">{partyTotal.toLocaleString()}원</Heading>
+      </div>
+      <div>
         {memberNames.map((name, index) => (
-          <Container key={index} style={{ margin: "10px 0" }}>
-            <Button size="lg">{name}님의 뿜빠이 결과</Button>
-          </Container>
+          <Accordion allowMultiple>
+            <AccordionItem key={index} style={{ margin: "10px 0" }}>
+              <h2>
+                <AccordionButton>
+                  <Button as="span" flex="1" textAlign="left">
+                    {name}님의 뿜빠이 결과
+                  </Button>
+                </AccordionButton>
+              </h2>
+              <AccordionPanel pb={4}>누구에게 얼마를 주세요.</AccordionPanel>
+            </AccordionItem>
+          </Accordion>
         ))}
       </div>
       <div>
-        <Select
-          placeholder="전체"
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "") {
-              handleShowAll();
-            } else {
-              handleTagClick(value);
-            }
-          }}
-        >
-          <option value="음식">음식</option>
-          <option value="보관">보관</option>
-          <option value="교통">교통</option>
-          <option value="입장료">입장료</option>
-          <option value="숙박">숙박</option>
-          <option value="엔터">엔터</option>
-        </Select>
+        <Menu>
+          <MenuButton as={Button}>{selectedTag || "전체"}</MenuButton>
+          <MenuList>
+            <MenuItem value="" onClick={() => handleTagClick("전체")}>
+              전체
+            </MenuItem>
+            <MenuItem value="음식" onClick={() => handleTagClick("음식")}>
+              음식
+            </MenuItem>
+            <MenuItem value="보관" onClick={() => handleTagClick("보관")}>
+              보관
+            </MenuItem>
+            <MenuItem value="교통" onClick={() => handleTagClick("교통")}>
+              교통
+            </MenuItem>
+            <MenuItem value="입장료" onClick={() => handleTagClick("입장료")}>
+              입장료
+            </MenuItem>
+            <MenuItem value="숙박" onClick={() => handleTagClick("숙박")}>
+              숙박
+            </MenuItem>
+            <MenuItem value="엔터" onClick={() => handleTagClick("엔터")}>
+              엔터
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </div>
       <div>
-        <div>
-          <ul>
-            {selectedTag
-              ? filteredReceipts.map((receipt, index) => (
-                  <Container key={index}>
-                    <div>{receipt.tag?.name}</div>
-                    <div>
-                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
-                    </div>
-                  </Container>
-                ))
-              : dummyReceipts.map((receipt, index) => (
-                  <Container key={index}>
-                    <div>{receipt.name}</div>
-                    <div>
-                      {receipt.createDate?.toLocaleDateString()} {receipt.tag?.name}
-                    </div>
-                  </Container>
-                ))}
-
-            {!selectedTag && dummyReceipts.length === 0 && (
-              <div>
-                <p>{selectedTag}.</p>
-                <b>추가해보세요</b>
-              </div>
-            )}
-          </ul>
-        </div>
+        {selectedTag === "전체" ? (
+          dummyReceipts.map((receipt, index) => (
+            <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
+              <p>
+                {receipt.createDate
+                  ? new Date(receipt.createDate).toLocaleDateString()
+                  : "N/A"}
+              </p>
+              <p>{receipt.cost}</p>
+              <p>{receipt.tag?.name}</p>
+            </Box>
+          ))
+        ) : hasSelectedTag ? (
+          filteredReceipts.map((receipt, index) => (
+            <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
+              <p>
+                {receipt.createDate
+                  ? new Date(receipt.createDate).toLocaleDateString()
+                  : "N/A"}
+              </p>
+              <p>{receipt.cost}</p>
+              <p>{receipt.tag?.name}</p>
+            </Box>
+          ))
+        ) : (
+          <div>
+            <Box textAlign="center" p={4} borderWidth={1} borderRadius="lg" mb={2}>
+              <p>{selectedTag}(으)로 등록된 소비가 없어요</p>
+              <b>소비를 등록해보세요</b>
+            </Box>
+          </div>
+        )}
       </div>
     </div>
   );
