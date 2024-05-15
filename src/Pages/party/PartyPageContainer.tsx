@@ -59,6 +59,7 @@ const PartyPageContainer = () => {
   const [join, setJoin] = useState<string[]>([]);
 
   const [receipt, setReceipt] = useState<Receipt>({
+    id: "",
     name: "",
     author: undefined,
     join: [],
@@ -87,7 +88,6 @@ const PartyPageContainer = () => {
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
-  const onClickChoiceUserButton = () => {};
   const onClickSendButton = () => {
     setReceipt({ ...receipt, name: name, cost: cost });
     const destination = `/pub/receipt/${partyId}`;
@@ -123,18 +123,31 @@ const PartyPageContainer = () => {
     );
   };
 
+  const onClickJoin = (index: number) => {
+    if (membersJoin !== undefined) {
+      const newArray: boolean[] = [...membersJoin];
+      newArray[index] = !newArray[index];
+      setMembersJoin(newArray);
+    }
+  };
   const ButtonStackJoin: React.FC<{ members: Member[] | undefined }> = ({
     members,
   }) => {
-    return (
-      <Stack direction="row" spacing={4} align="center">
-        {members?.map((member) => (
-          <Button colorScheme="teal" variant={false ? "solid" : "outline"}>
-            {member.name}
-          </Button>
-        ))}
-      </Stack>
-    );
+    if (members !== undefined && membersJoin !== undefined)
+      return (
+        <Stack direction="row" spacing={4} align="center">
+          {members?.map((member, index) => (
+            <Button
+              onClick={() => onClickJoin(index)}
+              colorScheme="teal"
+              variant={membersJoin[index] ? "solid" : "outline"}
+            >
+              {member.name}
+            </Button>
+          ))}
+        </Stack>
+      );
+    else return null;
   };
 
   const ButtonStackMembers: React.FC<{ members: Member[] | undefined }> = ({
@@ -244,11 +257,13 @@ const PartyPageContainer = () => {
       }
     };
   }, []);
+
   useEffect(() => {
     setRestMembers(dummyParties[0].member);
     deleteMemberWithFilter(currentUser);
     setMembersJoin(Array(restMembers?.length).fill(false));
   }, [currentUser]);
+
   return (
     <div>
       <Flex verticalAlign="center">
@@ -311,6 +326,7 @@ const PartyPageContainer = () => {
           value={cost}
           onChange={onChangeCostInput}
           placeholder={currency.country}
+          w="70%"
         />
 
         <Menu>
