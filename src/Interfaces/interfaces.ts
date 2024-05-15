@@ -10,6 +10,7 @@ export interface Party {
   totalCost: number;
 }
 export interface Receipt {
+  id: string;
   name: string;
   author: Member | undefined;
   join: Member[];
