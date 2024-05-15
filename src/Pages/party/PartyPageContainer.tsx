@@ -36,6 +36,11 @@ import {
 
 const PartyPageContainer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const disclosureReceipt = useDisclosure();
+  const isOpenReceipt = disclosureReceipt.isOpen;
+  const onOpenReceipt = disclosureReceipt.onOpen;
+  const onCloseReceipt = disclosureReceipt.onClose;
+  const [receiptDetail, setReceiptDetail] = useState<Receipt>();
 
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
   const btnReceipt = useRef<HTMLButtonElement | null>(null);
@@ -47,6 +52,7 @@ const PartyPageContainer = () => {
     dummyParties[0].member[0]
   );
   const [restMembers, setRestMembers] = useState<Member[]>();
+  const [membersJoin, setMembersJoin] = useState<boolean[]>();
   const [name, setName] = useState<string>("");
   const [currency, setCurrency] = useState<Currency>(currencyList[0]);
   const [tag, setTag] = useState<Tag>();
@@ -123,7 +129,7 @@ const PartyPageContainer = () => {
     return (
       <Stack direction="row" spacing={4} align="center">
         {members?.map((member) => (
-          <Button colorScheme="teal" variant="outline">
+          <Button colorScheme="teal" variant={false ? "solid" : "outline"}>
             {member.name}
           </Button>
         ))}
@@ -167,13 +173,36 @@ const PartyPageContainer = () => {
     if (receipt.author === undefined)
       receipt.author = { name: "", usedCost: 0 };
     return (
-      <Container>
+      <Container
+        onClick={() => {
+          setReceiptDetail(receipt);
+          onOpenReceipt();
+        }}
+      >
         <Text fontSize="xl">{receipt.name}</Text>
         <Text fontSize="xl">{receipt.author.name}</Text>
-        <Text fontSize="xl"></Text>
-        <Text fontSize="xl">{receipt.cost}</Text>
+        <Text fontSize="xl">
+          {receipt.createDate?.getHours()}:{receipt.createDate?.getMinutes()}
+          {receipt.tag?.name}
+        </Text>
+        <Text fontSize="xl">
+          {receipt.useCurrency?.currencyId}
+          {receipt.cost}
+        </Text>
       </Container>
     );
+  };
+
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        alert("URL이 복사되었습니다: " + url);
+      })
+      .catch((err) => {
+        console.error("복사 실패: ", err);
+      });
   };
 
   useEffect(() => {
@@ -218,6 +247,7 @@ const PartyPageContainer = () => {
   useEffect(() => {
     setRestMembers(dummyParties[0].member);
     deleteMemberWithFilter(currentUser);
+    setMembersJoin(Array(restMembers?.length).fill(false));
   }, [currentUser]);
   return (
     <div>
@@ -250,11 +280,17 @@ const PartyPageContainer = () => {
             </DrawerHeader>
 
             <DrawerBody>
-              <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
-                Open
+              <Button
+                colorScheme="gray"
+                variant="ghost"
+                w="100%"
+                h="48px"
+                onClick={copyToClipboard}
+              >
+                URL 복사하기
               </Button>
               <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
-                Open
+                현재까지 정산 기록보기
               </Button>
             </DrawerBody>
             <DrawerFooter>
@@ -270,20 +306,25 @@ const PartyPageContainer = () => {
       <Heading as="h2" size="2xl">
         totalAmount원
       </Heading>
-      <Input
-        value={cost}
-        onChange={onChangeCostInput}
-        placeholder={currency.country}
-      />
+      <Flex justifyContent="space-between">
+        <Input
+          value={cost}
+          onChange={onChangeCostInput}
+          placeholder={currency.country}
+        />
 
-      <Menu>
-        <MenuButton as={Button}>{currency.country}</MenuButton>
-        <MenuList>
-          {currencyList.map((currency) => (
-            <MenuItemCurrency {...currency} />
-          ))}
-        </MenuList>
-      </Menu>
+        <Menu>
+          <MenuButton textAlign="center" as={Button}>
+            {currency.country}
+          </MenuButton>
+          <MenuList>
+            {currencyList.map((currency) => (
+              <MenuItemCurrency {...currency} />
+            ))}
+          </MenuList>
+        </Menu>
+      </Flex>
+
       <Input
         value={name}
         onChange={onChangeNameInput}
@@ -297,6 +338,40 @@ const PartyPageContainer = () => {
       {dummyReceipts.map((receipt) => (
         <ContainerReceipt {...receipt} />
       ))}
+      <Drawer
+        isOpen={isOpenReceipt}
+        placement="bottom"
+        onClose={onCloseReceipt}
+        finalFocusRef={btnReceipt}
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader></DrawerHeader>
+
+          <DrawerBody>
+            <Text fontSize="2xl">
+              {receiptDetail?.createDate?.getFullYear()}년{" "}
+              {receiptDetail?.createDate?.getMonth()}월{" "}
+              {receiptDetail?.createDate?.getDate()}일
+            </Text>
+            <Text fontSize="2xl">{receiptDetail?.name}과 함께</Text>
+            <Text fontSize="2xl">
+              {receiptDetail?.tag?.name}에 {receiptDetail?.name}
+            </Text>
+            <Text fontSize="2xl">
+              {receiptDetail?.useCurrency?.currencyId} {receiptDetail?.cost}{" "}
+              지출
+            </Text>
+          </DrawerBody>
+
+          <DrawerFooter>
+            <Button colorScheme="orange" variant="solid" w="100%" h="48px">
+              영수증 삭제하기
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
