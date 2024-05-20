@@ -25,8 +25,10 @@ const HistoryPage = () => {
     (receipt) => receipt.tag?.name === selectedTag
   );
 
+  const partyID = dummyParties.map((party) => party.id);
+
   const onBack = () => {
-    navigate("/");
+    navigate(`/party/${partyID[0]}`);
   };
 
   useEffect(() => {
@@ -69,10 +71,10 @@ const HistoryPage = () => {
         <Button onClick={onBack}>뒤로가기</Button>
       </div>
       <div>
-        <Heading fontSize="xl">{partyName}🎉</Heading>
+        <Heading fontSize="30">{partyName}🎉</Heading>
       </div>
       <div>
-        <Heading fontSize="large">{partyTotal.toLocaleString()}원</Heading>
+        <Heading fontSize="50">{partyTotal.toLocaleString()}원</Heading>
       </div>
       <div>
         {memberNames.map((name, index) => (
@@ -81,7 +83,7 @@ const HistoryPage = () => {
               <h2>
                 <AccordionButton style={{ backgroundColor: "#EDF2F7" }}>
                   <Button as="span" flex="1" textAlign="left">
-                    {name}님의 뿜빠이 결과
+                    <p style={{fontSize:20}}>{name}님의 뿜빠이 결과</p>
                   </Button>
                 </AccordionButton>
               </h2>
@@ -132,7 +134,7 @@ const HistoryPage = () => {
               <p>
                 {receipt.useCurrency?.currencyId} {receipt.cost}
               </p>
-              <Heading>{receipt.name}</Heading>
+              <b style={{fontSize:25}}>{receipt.name}</b>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
@@ -147,7 +149,7 @@ const HistoryPage = () => {
               <p>
                 {receipt.useCurrency?.currencyId} {receipt.cost}
               </p>
-              <Heading>{receipt.name}</Heading>
+              <b style={{fontSize:25}}>{receipt.name}</b>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
