@@ -51,7 +51,6 @@ const HistoryPage = () => {
     0
   );
 
-
   const handleTagClick = (tag: string) => {
     const filteredReciepts = dummyReceipts.filter(
       (receipt) => receipt.tag?.name === tag
@@ -80,13 +79,15 @@ const HistoryPage = () => {
           <Accordion allowMultiple>
             <AccordionItem key={index} style={{ margin: "10px 0" }}>
               <h2>
-                <AccordionButton>
+                <AccordionButton style={{ backgroundColor: "#EDF2F7" }}>
                   <Button as="span" flex="1" textAlign="left">
                     {name}님의 뿜빠이 결과
                   </Button>
                 </AccordionButton>
               </h2>
-              <AccordionPanel pb={4}>누구에게 얼마를 주세요.</AccordionPanel>
+              <AccordionPanel bg="#EDF2F7">
+                <p>누구에게 얼마를 주세요.</p>
+              </AccordionPanel>
             </AccordionItem>
           </Accordion>
         ))}
@@ -128,7 +129,10 @@ const HistoryPage = () => {
                   ? new Date(receipt.createDate).toLocaleDateString()
                   : "N/A"}
               </p>
-              <p>{receipt.cost}</p>
+              <p>
+                {receipt.useCurrency?.currencyId} {receipt.cost}
+              </p>
+              <Heading>{receipt.name}</Heading>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
@@ -140,18 +144,33 @@ const HistoryPage = () => {
                   ? new Date(receipt.createDate).toLocaleDateString()
                   : "N/A"}
               </p>
-              <p>{receipt.cost}</p>
+              <p>
+                {receipt.useCurrency?.currencyId} {receipt.cost}
+              </p>
+              <Heading>{receipt.name}</Heading>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
         ) : (
           <div>
-            <Box textAlign="center" p={4} borderWidth={1} borderRadius="lg" mb={2}>
+            <Box
+              textAlign="center"
+              p={4}
+              borderWidth={1}
+              borderRadius="lg"
+              mb={2}
+            >
               <p>{selectedTag}(으)로 등록된 소비가 없어요</p>
               <b>소비를 등록해보세요</b>
             </Box>
           </div>
         )}
+        <div>
+          <img
+            src="https://cdn.news.cauon.net/news/photo/202203/36524_26498_1343.png"
+            alt="Jennie"
+          />
+        </div>
       </div>
     </div>
   );
