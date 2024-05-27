@@ -25,6 +25,10 @@ const PartyContainer = () => {
     currencyId: "KRW",
     country: "대한민국",
   });
+  const deleteReceipt = () => {
+    //파티 아이디와 영수증 아이디를 전달
+    const destination = `/pub/receipt/${partyId}/delete`;
+  }
   const saveReceipt = () => {
     const destination = `/pub/receipt/${partyId}`;
     //이 부분은 예시임
@@ -65,8 +69,11 @@ const PartyContainer = () => {
 
         stomp.onConnect = () => {
           console.log("WebSocket 연결이 열렸습니다.");
-
-          stomp.subscribe(`/sub/channels/${partyId}`, function (frame) {
+          contexts.setLoading(false);
+          //영수증 삭제
+          //멤버 추가
+          //
+          stomp.subscribe(`/sub/receipt/${partyId}`, function (frame) {
             try {
               const parsedMessage = JSON.parse(frame.body);
               //새로운 영수증이 들어오면 추가
@@ -104,6 +111,8 @@ const PartyContainer = () => {
     
       //useEffect 실행 순서 제어해야함. 로컬 유저 판단 -> 방 활성화 판단 -> 방 정보 할당 -> 소켓연결
       const localCurrentMember = localStorage.getItem("pumpya_user_name");
+
+      //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
       const testParty: Party = {
         partyId: partyId!!,
         partyName: "test",
@@ -117,7 +126,6 @@ const PartyContainer = () => {
       }
       contexts.setParty(testParty);
       contexts.setCurrentMember(localCurrentMember);
-      contexts.setLoading(false);
     }
   })
   return (

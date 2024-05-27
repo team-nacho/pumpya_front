@@ -14,6 +14,7 @@ const HomeContainer = () => {
   const [randomName, setRandomName] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
   const appContext = useAppContext();
+
   const onClickCreateParty = async () => {
     //첫 사용자 이름이 정해지면 api호출해서
     const request: CreatePartyRequest = {
@@ -40,6 +41,7 @@ const HomeContainer = () => {
     }
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
     setNickname(e.target.value);
   };
   
@@ -47,7 +49,6 @@ const HomeContainer = () => {
     setRandomName("random name");
     setNickname(randomName);
   }, [randomName]);
-
 
   return (
     <HomePresentation
