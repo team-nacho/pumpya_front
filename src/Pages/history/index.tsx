@@ -8,9 +8,16 @@ import {
   AccordionPanel,
   AccordionIcon,
   Box,
+  Container,
   MenuButton,
   MenuList,
   MenuItem,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  TabIndicator,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +31,12 @@ const HistoryPage = () => {
   const hasSelectedTag = dummyReceipts.some(
     (receipt) => receipt.tag?.name === selectedTag
   );
+
+  const categories = ["음식", "보관", "교통", "입장료", "숙박", "엔터"];
+
+  const getCategoryReceipts = (category: string) => {
+    return dummyReceipts.filter((receipt) => receipt.tag?.name === category);
+  };
 
   const partyID = dummyParties.map((party) => party.id);
 
@@ -52,6 +65,7 @@ const HistoryPage = () => {
     (acc, party) => acc + party.totalCost,
     0
   );
+  
 
   const handleTagClick = (tag: string) => {
     const filteredReciepts = dummyReceipts.filter(
@@ -81,14 +95,21 @@ const HistoryPage = () => {
           <Accordion allowMultiple>
             <AccordionItem key={index} style={{ margin: "10px 0" }}>
               <h2>
-                <AccordionButton style={{ backgroundColor: "#EDF2F7" }}>
+                <AccordionButton
+                  as="span"
+                  flex="1"
+                  textAlign="left"
+                  style={{ backgroundColor: "#EDF2F7" }}
+                >
                   <Button as="span" flex="1" textAlign="left">
-                    <p style={{fontSize:20}}>{name}님의 뿜빠이 결과</p>
+                    <p style={{ fontSize: 20 }}>{name}님의 뿜빠이 결과</p>
                   </Button>
                 </AccordionButton>
               </h2>
               <AccordionPanel bg="#EDF2F7">
-                <p>누구에게 얼마를 주세요.</p>
+                <Container as="span" flex="1" textAlign="left">
+                  <p style={{ fontSize: 15 }}>{name}님에게 얼마를 주세요</p>
+                </Container>
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
@@ -123,6 +144,9 @@ const HistoryPage = () => {
         </Menu>
       </div>
       <div>
+        <br></br>
+      </div>
+      <div>
         {selectedTag === "전체" ? (
           dummyReceipts.map((receipt, index) => (
             <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
@@ -134,7 +158,7 @@ const HistoryPage = () => {
               <p>
                 {receipt.useCurrency?.currencyId} {receipt.cost}
               </p>
-              <b style={{fontSize:25}}>{receipt.name}</b>
+              <b style={{ fontSize: 25 }}>{receipt.name}</b>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
@@ -149,7 +173,7 @@ const HistoryPage = () => {
               <p>
                 {receipt.useCurrency?.currencyId} {receipt.cost}
               </p>
-              <b style={{fontSize:25}}>{receipt.name}</b>
+              <b style={{ fontSize: 20 }}>{receipt.name}</b>
               <p>{receipt.tag?.name}</p>
             </Box>
           ))
@@ -167,12 +191,42 @@ const HistoryPage = () => {
             </Box>
           </div>
         )}
-        <div>
-          <img
-            src="https://cdn.news.cauon.net/news/photo/202203/36524_26498_1343.png"
-            alt="Jennie"
-          />
-        </div>
+      </div>
+      <div>
+      <Box textAlign="left" p={4} borderWidth={1} borderRadius="lg" mb={2}>
+          <Tabs position="relative" variant="unstyled">
+            <TabList>
+              {categories.map((category, index) => (
+                <Tab key={index}>{category}</Tab>
+              ))}
+            </TabList>
+            <TabIndicator mt="-1.5px" height="2px" bg="blue.500" borderRadius="1px" />
+            <TabPanels>
+              {categories.map((category, index) => (
+                <TabPanel key={index}>
+                  {getCategoryReceipts(category).length > 0 ? (
+                    getCategoryReceipts(category).map((receipt, idx) => (
+                      <Box key={idx} p={4} borderWidth={1} borderRadius="lg" mb={2}>
+                        <p>{receipt.createDate ? new Date(receipt.createDate).toLocaleDateString() : "N/A"}</p>
+                        <p>{receipt.useCurrency?.currencyId} {receipt.cost}</p>
+                        <b style={{ fontSize: 20 }}>{receipt.name}</b>
+                        <p>{receipt.tag?.name}</p>
+                      </Box>
+                    ))
+                  ) : (
+                    <p>해당 카테고리에 등록된 영수증이 없습니다.</p>
+                  )}
+                </TabPanel>
+              ))}
+            </TabPanels>
+          </Tabs>
+        </Box>
+      </div>
+      <div>
+        <img
+          src="https://cdn.news.cauon.net/news/photo/202203/36524_26498_1343.png"
+          alt="Jennie"
+        />
       </div>
     </div>
   );
