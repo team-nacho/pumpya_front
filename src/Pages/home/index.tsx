@@ -19,13 +19,14 @@ import { CreatePartyResponse } from "../../Interfaces/response";
 import { useNavigate } from "react-router-dom";
 import { partyApi } from "../../Apis/apis";
 import { AxiosResponse, HttpStatusCode } from "axios";
+import { useAppContext } from "../../AppContext";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [randomName, setRandomName] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
-
+  const appContext = useAppContext();
   const onClickCreateParty = async () => {
     //첫 사용자 이름이 정해지면 api호출해서
     const request: CreatePartyRequest = {
@@ -35,15 +36,16 @@ const HomePage: React.FC = () => {
       await partyApi.createParty(request);
 
     if (response.status === HttpStatusCode.Ok) {
-      console.log(response);
       //그리고 생성된 유저 내용은 local history에 저장
-
       localStorage.setItem(
         "pumpya_user_name",
         nickname !== null ? nickname : randomName
       );
       onClose();
-      navigate(`/party/${response.data.id}`);
+      //save party info
+      appContext?.setParty(response.data);
+      console.log(response.data);
+      navigate(`/party/${response.data.partyId}`);
     }
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {

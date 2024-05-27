@@ -1,11 +1,21 @@
 import { createContext, useContext, useState } from "react";
-import { Member } from "./Interfaces/interfaces";
+import { Member, Party } from "./Interfaces/interfaces";
 
-const AppContext = createContext({});
+interface AppContextType {
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  currentUser?: Member;
+  setCurrentUser: React.Dispatch<React.SetStateAction<Member | undefined>>;
+  party: Party | null;
+  setParty: React.Dispatch<React.SetStateAction<Party | null>>;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProdiver = ({ children }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<Member>();
+  const [party, setParty] = useState<Party | null>(null);
 
   return (
     <AppContext.Provider 
@@ -13,7 +23,9 @@ export const AppProdiver = ({ children }: any) => {
         loading,
         setLoading, 
         currentUser,
-        setCurrentUser
+        setCurrentUser,
+        party,
+        setParty
       }}
     >
       {children}
@@ -21,6 +33,4 @@ export const AppProdiver = ({ children }: any) => {
   );
 };
 
-export const useAppContext = () => {
-  return useContext(AppContext);
-};
+export const useAppContext = () => useContext(AppContext);

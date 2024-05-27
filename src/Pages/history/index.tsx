@@ -14,39 +14,27 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyMembers, dummyParties, dummyReceipts, dummyTags } from "./dummy";
+import { dummyMembers, dummyParties, dummyTags } from "./dummy";
 import { Receipt } from "../../Interfaces/interfaces";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
-  const hasSelectedTag = dummyReceipts.some(
-    (receipt) => receipt.tag?.name === selectedTag
-  );
 
-  const partyID = dummyParties.map((party) => party.id);
+  const partyID = dummyParties.map((party) => party.partyId);
 
   const onBack = () => {
     navigate(`/party/${partyID[0]}`);
   };
 
   useEffect(() => {
-    // "전체" 태그가 선택되었을 때 모든 영수증을 표시
-    if (selectedTag === "전체") {
-      setFilteredReceipts(dummyReceipts);
-    } else {
-      // 선택된 태그에 맞는 영수증을 필터링하여 표시
-      const filteredReciepts = dummyReceipts.filter(
-        (receipt) => receipt.tag?.name === selectedTag
-      );
-      setFilteredReceipts(filteredReciepts);
-    }
+   
   }, [selectedTag]);
 
   const memberNames = dummyMembers.map((member) => member.name);
 
-  const partyName = dummyParties.map((party) => party.name);
+  const partyName = dummyParties.map((party) => party.partyName);
 
   const partyTotal = dummyParties.reduce(
     (acc, party) => acc + party.totalCost,
@@ -54,15 +42,7 @@ const HistoryPage = () => {
   );
 
   const handleTagClick = (tag: string) => {
-    const filteredReciepts = dummyReceipts.filter(
-      (receipt) => receipt.tag?.name === tag
-    );
-    setFilteredReceipts(filteredReciepts);
-    if (selectedTag === tag) {
-      setSelectedTag("전체");
-    } else {
-      setSelectedTag(tag); // 선택된 태그 업데이트
-    }
+   
   };
 
   return (
@@ -122,7 +102,7 @@ const HistoryPage = () => {
           </MenuList>
         </Menu>
       </div>
-      <div>
+      {/* <div>
         {selectedTag === "전체" ? (
           dummyReceipts.map((receipt, index) => (
             <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
@@ -173,7 +153,7 @@ const HistoryPage = () => {
             alt="Jennie"
           />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

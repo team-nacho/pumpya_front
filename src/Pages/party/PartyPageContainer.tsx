@@ -26,13 +26,6 @@ import {
 import { useParams } from "react-router-dom";
 import { Member, Receipt, Currency, Tag } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
-import {
-  dummyReceipts,
-  dummyMembers,
-  currencyList,
-  dummyTags,
-  dummyParties,
-} from "./dummy";
 
 const PartyPageContainer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -45,21 +38,19 @@ const PartyPageContainer = () => {
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
   const btnReceipt = useRef<HTMLButtonElement | null>(null);
 
+  const party = useAppContext()?.party;
   const { partyId } = useParams();
   const [cost, setCost] = useState<number>(0);
-  //const currentUser = useAppContext();
-  const [currentUser, setCurrentUser] = useState<Member>(
-    dummyParties[0].member[0]
-  );
+  const [currentUser, setCurrentUser] = useState<Member>();
   const [restMembers, setRestMembers] = useState<Member[]>();
   const [membersJoin, setMembersJoin] = useState<boolean[]>();
   const [name, setName] = useState<string>("");
-  const [currency, setCurrency] = useState<Currency>(currencyList[0]);
+  const [currency, setCurrency] = useState<Currency>();
   const [tag, setTag] = useState<Tag>();
   const [join, setJoin] = useState<string[]>([]);
 
   const [receipt, setReceipt] = useState<Receipt>({
-    id: "",
+    partyId: partyId!!,
     name: "",
     author: undefined,
     join: [],
@@ -72,10 +63,10 @@ const PartyPageContainer = () => {
   const [stompClient, setStompClient] = useState<Client | null>(null);
 
   const deleteMemberWithFilter = (memberToDelete: Member) => {
-    const filteredMembers: Member[] = dummyParties[0].member.filter(
-      (members) => members !== memberToDelete
-    );
-    setRestMembers(filteredMembers);
+    // const filteredMembers: Member[] = dummyParties[0].member.filter(
+    //   (members) => members !== memberToDelete
+    // );
+    // setRestMembers(filteredMembers);
   };
 
   /* const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,18 +80,23 @@ const PartyPageContainer = () => {
     setName(e.target.value);
   };
   const onClickSendButton = () => {
-    setReceipt({ ...receipt, name: name, cost: cost });
+    // setReceipt({ ...receipt, name: name, cost: cost });
+
     const destination = `/pub/receipt/${partyId}`;
     //이 부분은 예시임
     stompClient?.publish({
       destination,
       body: JSON.stringify({
+        cost: cost,
+        name: name,
         partyId: partyId,
-        ...receipt,
+        join: receipt.join,
         author: {
           name: "test name",
           totalCoat: 0,
         },
+        useCurrency: receipt.useCurrency,
+        tag: tag,
         createdAt: new Date(),
       }),
     });
@@ -259,8 +255,11 @@ const PartyPageContainer = () => {
   }, []);
 
   useEffect(() => {
-    setRestMembers(dummyParties[0].member);
-    deleteMemberWithFilter(currentUser);
+    // setRestMembers(dummyParties[0].member);
+    // deleteMemberWithFilter(currentUser);
+    if(party === null) {
+      
+    }
     setMembersJoin(Array(restMembers?.length).fill(false));
   }, [currentUser]);
 
@@ -268,10 +267,11 @@ const PartyPageContainer = () => {
     <div>
       <Flex verticalAlign="center">
         <Heading as="h2" size="xl">
-          {dummyParties[0].name}
-          {"\u00B7"}
+          {party?.partyName}
+          {/* {dummyParties[0].name}
+          {"\u00B7"} */}
         </Heading>
-        <Text fontSize="2xl">{dummyParties[0].member.length}명</Text>
+        {/* <Text fontSize="2xl">{dummyParties[0].member.length}명</Text> */}
         <Spacer />
 
         <Button ref={btnDrawer} colorScheme="teal" onClick={onOpen}>
@@ -287,9 +287,9 @@ const PartyPageContainer = () => {
           <DrawerContent>
             <DrawerCloseButton />
             <DrawerHeader>
-              {currentUser.name}님의
+              {/* {currentUser.name}님의 */}
               <Heading as="h2" size="xl">
-                {dummyParties[0].name}
+                {/* {dummyParties[0].name} */}
               </Heading>
               <ButtonStackMembers members={restMembers} />
             </DrawerHeader>
@@ -319,25 +319,25 @@ const PartyPageContainer = () => {
 
       <Text fontSize="lg">이번 여행에서 소비했어요</Text>
       <Heading as="h2" size="2xl">
-        totalAmount원
+      {party?.totalCost}원
       </Heading>
       <Flex justifyContent="space-between">
         <Input
           value={cost}
           onChange={onChangeCostInput}
-          placeholder={currency.country}
+          // placeholder={currency.country}
           w="70%"
         />
 
         <Menu>
           <MenuButton textAlign="center" as={Button}>
-            {currency.country}
+            {/* {currency.country} */}
           </MenuButton>
-          <MenuList>
+          {/* <MenuList>
             {currencyList.map((currency) => (
               <MenuItemCurrency {...currency} />
             ))}
-          </MenuList>
+          </MenuList> */}
         </Menu>
       </Flex>
 
@@ -346,14 +346,14 @@ const PartyPageContainer = () => {
         onChange={onChangeNameInput}
         placeholder="소비를 입력해 주세요"
       />
-      <ButtonStackTag tags={dummyTags} />
+      {/* <ButtonStackTag tags={dummyTags} /> */}
       <Text>{tag === undefined ? "언디파인" : tag.name}</Text>
       <ButtonStackJoin members={restMembers} />
       <Button onClick={onClickSendButton}>button</Button>
 
-      {dummyReceipts.map((receipt) => (
+      {/* {dummyReceipts.map((receipt) => (
         <ContainerReceipt {...receipt} />
-      ))}
+      ))} */}
       <Drawer
         isOpen={isOpenReceipt}
         placement="bottom"

@@ -3,14 +3,14 @@ export interface Member {
   usedCost: number;
 }
 export interface Party {
-  id: string;
-  name: string;
+  partyId: string;
+  partyName: string;
   member: Member[];
   receipts: Receipt[];
   totalCost: number;
 }
 export interface Receipt {
-  id: string;
+  partyId: string;
   name: string;
   author: Member | undefined;
   join: Member[];
