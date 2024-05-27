@@ -19,7 +19,12 @@ export const routes: RouteObject[] = [
   },
   {
     path: "history",
-    element: <HistoryPage />,
+    children: [
+      {
+        path: ":partyId",
+        element: <HistoryPage />,
+      }
+    ]
   },
   {
     path: "*",
