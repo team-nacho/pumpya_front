@@ -5,7 +5,7 @@ export interface Member {
 export interface Party {
   partyId: string;
   partyName: string;
-  member: Member[];
+  members: Member[];
   receipts: Receipt[];
   totalCost: number;
 }
