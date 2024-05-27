@@ -11,16 +11,14 @@ export const partyApi = {
   createParty: async (
     request: CreatePartyRequest
   ): Promise<AxiosResponse<CreatePartyResponse>> => {
-    const resposne = await api.post("create-party", request);
+    const resposne = await api.post("/create-party", request);
     return resposne;
   },
   getParty: async (
     partyId: string
   ): Promise<AxiosResponse<GetPartyResponse>> => {
-    const response = await api.get(`get-party/${partyId}`);
+    const response = await api.get(`/get-party/${partyId}`);
     return response;
   }
 }
-export const receiptApi = {
-  
-}
+export const receiptApi = {}
