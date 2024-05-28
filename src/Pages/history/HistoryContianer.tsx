@@ -19,25 +19,22 @@ const HistoryContainer = () => {
   const categories = ["음식", "보관", "교통", "입장료", "숙박", "엔터"];
 
   const getCategoryReceipts = (category: string) => {
-    return dummyReceipts.filter((receipt) => receipt.tag?.name === category);
+    return context.receipts.filter((receipt: Receipt) => receipt.tag === category);
   };
 
 
   const onBack = () => navigate(-1);
 
-  const memberNames = dummyMembers.map((member) => member.name);
+  const memberNames = context.party?.members ?? [];
 
-  const partyName = dummyParties.map((party) => party.name);
+  const partyName = context.party?.partyName ?? "";
 
-  const partyTotal = dummyParties.reduce(
-    (acc, party) => acc + party.totalCost,
-    0
-  );
+  const partyTotal = context.party?.totalCost.toLocalString() ?? 0;
   
 
   const handleTagClick = (tag: string) => {
-    const filteredReciepts = dummyReceipts.filter(
-      (receipt) => receipt.tag?.name === tag
+    const filteredReciepts = context.receipts.filter(
+      (receipt : Receipt) => receipt.tag === tag
     );
     setFilteredReceipts(filteredReciepts);
     if (selectedTag === tag) {
@@ -55,11 +52,11 @@ const HistoryContainer = () => {
     });
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
     if (selectedTag === "전체") {
-      setFilteredReceipts(dummyReceipts);
+      setFilteredReceipts(context.receipts);
     } else {
       // 선택된 태그에 맞는 영수증을 필터링하여 표시
-      const filteredReciepts = dummyReceipts.filter(
-        (receipt) => receipt.tag?.name === selectedTag
+      const filteredReciepts = context.receipts.filter(
+        (receipt : Receipt) => receipt.tag === selectedTag
       );
       setFilteredReceipts(filteredReciepts);
     }
@@ -80,6 +77,7 @@ const HistoryContainer = () => {
           hasSelectedTag={hasSelectedTag}
           categories={categories}
           getCategoryReceipts={getCategoryReceipts} dummyReceipts={[]}
+          handleTagClick={handleTagClick}
         />
   );
 };

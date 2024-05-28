@@ -19,6 +19,7 @@ interface HistoryPresentationProps {
   filteredReceipts: any[];
   hasSelectedTag: boolean;
   categories: string[];
+  handleTagClick : (arg0: string) => void;
   getCategoryReceipts: (category: string) => any[];
 }
 const HistoryPresentation = (props:HistoryPresentationProps) => (
@@ -33,7 +34,7 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
     <Heading fontSize="50">{props.partyTotal.toLocaleString()}원</Heading>
   </div>
   <div>
-    {memberNames.map((name, index) => (
+    {props.memberNames.map((name, index) => (
       <Accordion allowMultiple>
         <AccordionItem key={index} style={{ margin: "10px 0" }}>
           <h2>
@@ -59,27 +60,27 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
   </div>
   <div>
     <Menu>
-      <MenuButton as={Button}>{selectedTag || "전체"}</MenuButton>
+      <MenuButton as={Button}>{props.selectedTag || "전체"}</MenuButton>
       <MenuList>
-        <MenuItem value="" onClick={() => handleTagClick("전체")}>
+        <MenuItem value="" onClick={() => props.handleTagClick("전체")}>
           전체
         </MenuItem>
-        <MenuItem value="음식" onClick={() => handleTagClick("음식")}>
+        <MenuItem value="음식" onClick={() => props.handleTagClick("음식")}>
           음식
         </MenuItem>
-        <MenuItem value="보관" onClick={() => handleTagClick("보관")}>
+        <MenuItem value="보관" onClick={() => props.handleTagClick("보관")}>
           보관
         </MenuItem>
-        <MenuItem value="교통" onClick={() => handleTagClick("교통")}>
+        <MenuItem value="교통" onClick={() => props.handleTagClick("교통")}>
           교통
         </MenuItem>
-        <MenuItem value="입장료" onClick={() => handleTagClick("입장료")}>
+        <MenuItem value="입장료" onClick={() => props.handleTagClick("입장료")}>
           입장료
         </MenuItem>
-        <MenuItem value="숙박" onClick={() => handleTagClick("숙박")}>
+        <MenuItem value="숙박" onClick={() => props.handleTagClick("숙박")}>
           숙박
         </MenuItem>
-        <MenuItem value="엔터" onClick={() => handleTagClick("엔터")}>
+        <MenuItem value="엔터" onClick={() => props.handleTagClick("엔터")}>
           엔터
         </MenuItem>
       </MenuList>
@@ -89,8 +90,8 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
     <br></br>
   </div>
   <div>
-    {selectedTag === "전체" ? (
-      dummyReceipts.map((receipt, index) => (
+    {props.selectedTag === "전체" ? (
+      props.filteredReceipts.map((receipt, index) => (
         <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
           <p>
             {receipt.createDate
@@ -104,8 +105,8 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
           <p>{receipt.tag?.name}</p>
         </Box>
       ))
-    ) : hasSelectedTag ? (
-      filteredReceipts.map((receipt, index) => (
+    ) : props.hasSelectedTag ? (
+      props.filteredReceipts.map((receipt, index) => (
         <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
           <p>
             {receipt.createDate
@@ -128,7 +129,7 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
           borderRadius="lg"
           mb={2}
         >
-          <p>{selectedTag}(으)로 등록된 소비가 없어요</p>
+          <p>{props.selectedTag}(으)로 등록된 소비가 없어요</p>
           <b>소비를 등록해보세요</b>
         </Box>
       </div>
@@ -138,16 +139,16 @@ const HistoryPresentation = (props:HistoryPresentationProps) => (
   <Box textAlign="left" p={4} borderWidth={1} borderRadius="lg" mb={2}>
       <Tabs position="relative" variant="unstyled">
         <TabList>
-          {categories.map((category, index) => (
+          {props.categories.map((category, index) => (
             <Tab key={index}>{category}</Tab>
           ))}
         </TabList>
         <TabIndicator mt="-1.5px" height="2px" bg="blue.500" borderRadius="1px" />
         <TabPanels>
-          {categories.map((category, index) => (
+          {props.categories.map((category, index) => (
             <TabPanel key={index}>
-              {getCategoryReceipts(category).length > 0 ? (
-                getCategoryReceipts(category).map((receipt, idx) => (
+              {props.getCategoryReceipts(category).length > 0 ? (
+                props.getCategoryReceipts(category).map((receipt, idx) => (
                   <Box key={idx} p={4} borderWidth={1} borderRadius="lg" mb={2}>
                     <p>{receipt.createDate ? new Date(receipt.createDate).toLocaleDateString() : "N/A"}</p>
                     <p>{receipt.useCurrency?.currencyId} {receipt.cost}</p>
