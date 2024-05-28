@@ -1,5 +1,5 @@
-import PartyPageContainer from "./PartyPageContainer";
+import PartyContainer from "./PartyContainer";
 
 export {
-  PartyPageContainer
+  PartyContainer
 };
