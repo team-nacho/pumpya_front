@@ -11,6 +11,7 @@ const HistoryContainer = () => {
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
   const { partyId } = useParams();
+  const { receipts } = useParams();
   const context = useAppContext();
 
   const hasSelectedTag = context.receipts.some(
@@ -63,7 +64,7 @@ const HistoryContainer = () => {
     }
   }, [selectedTag]);
 
-  return context.loading ? (
+  /*return context.loading ? (
     <LoadingPresentation/>
   ) : (
     <HistoryPresentation
@@ -76,9 +77,28 @@ const HistoryContainer = () => {
       hasSelectedTag={hasSelectedTag}
       categories={categories}
       getCategoryReceipts={getCategoryReceipts}
-      dummyReceipts={[]}
       handleTagClick={handleTagClick}
     />
+  );*/
+
+
+  // 서버 연결 없을 때를 위한 코드
+  return context.loading ? (
+    <HistoryPresentation
+      partyName={partyName[0]}
+      partyTotal={partyTotal}
+      memberNames={memberNames}
+      receipts={context.receipts}
+      onBack={onBack}
+      selectedTag={selectedTag}
+      filteredReceipts={filteredReceipts}
+      hasSelectedTag={hasSelectedTag}
+      categories={categories}
+      getCategoryReceipts={getCategoryReceipts}
+      handleTagClick={handleTagClick}
+    />
+  ) : (
+    <LoadingPresentation />
   );
 };
 
