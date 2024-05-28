@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { Member, Party } from "./Interfaces/interfaces";
+import { Member, Party, Receipt } from "./Interfaces/interfaces";
 
 const AppContext = createContext<any | undefined>(undefined);
 
@@ -7,6 +7,8 @@ export const AppProdiver = ({ children }: any) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [party, setParty] = useState<Party | undefined>(undefined);
   const [currentMember, setCurrentMember] = useState<Member | undefined>(undefined);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  
   return (
     <AppContext.Provider value={{
       loading,
@@ -15,6 +17,8 @@ export const AppProdiver = ({ children }: any) => {
       setParty,
       currentMember,
       setCurrentMember,
+      receipts,
+      setReceipts
     }}>
       {children}
     </AppContext.Provider>

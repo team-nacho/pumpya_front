@@ -21,4 +21,11 @@ export const partyApi = {
     return response;
   }
 }
-export const receiptApi = {}
+export const receiptApi = {
+  getReceipts: async (
+    partyId: string
+  ): Promise<AxiosResponse<GetPartyResponse>> => {
+    const response = await api.get(`/get-receipts/${partyId}`);
+    return response;
+  }
+}

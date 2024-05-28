@@ -12,12 +12,12 @@ export interface Party {
 export interface Receipt {
   partyId: string;
   receiptName: string;
-  author: String | undefined;
-  joins: String[];
+  author: string | undefined;
+  joins: string[];
   cost: number;
   useCurrency: string | undefined;
   createdAt: Date | undefined;
-  tag: String | undefined;
+  tag: string | undefined;
 }
 export interface Tag {
   name: string;

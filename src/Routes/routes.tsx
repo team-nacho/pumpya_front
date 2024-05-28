@@ -1,7 +1,7 @@
 import { RouteObject } from "react-router-dom";
 import { HomeContainer } from "../Pages/home";
 import { PartyContainer } from "../Pages/party";
-import HistoryPage from "../Pages/history";
+import {HistoryContainer} from "../Pages/history";
 
 export const routes: RouteObject[] = [
   {
@@ -22,7 +22,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         path: ":partyId",
-        element: <HistoryPage />,
+        element: <HistoryContainer />,
       }
     ]
   },
