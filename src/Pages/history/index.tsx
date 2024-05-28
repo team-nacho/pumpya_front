@@ -21,13 +21,14 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyMembers, dummyParties, dummyReceipts, dummyTags } from "./dummy";
 import { Receipt } from "../../Interfaces/interfaces";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
+  const context = useAppContext();
+  
   const hasSelectedTag = dummyReceipts.some(
     (receipt) => receipt.tag?.name === selectedTag
   );
@@ -45,6 +46,7 @@ const HistoryPage = () => {
   };
 
   useEffect(() => {
+    //로딩 로직 추가
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
     if (selectedTag === "전체") {
       setFilteredReceipts(dummyReceipts);

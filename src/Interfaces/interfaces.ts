@@ -3,21 +3,21 @@ export interface Member {
   usedCost: number;
 }
 export interface Party {
-  id: string;
-  name: string;
-  member: Member[];
+  partyId: string;
+  partyName: string;
+  members: String[];
   receipts: Receipt[];
   totalCost: number;
 }
 export interface Receipt {
-  id: string;
-  name: string;
-  author: Member | undefined;
-  join: Member[];
+  partyId: string;
+  receiptName: string;
+  author: String | undefined;
+  joins: String[];
   cost: number;
-  useCurrency: Currency | undefined;
-  createDate: Date | undefined;
-  tag: Tag | undefined;
+  useCurrency: string | undefined;
+  createdAt: Date | undefined;
+  tag: String | undefined;
 }
 export interface Tag {
   name: string;
