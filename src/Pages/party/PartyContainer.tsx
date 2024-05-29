@@ -1,14 +1,30 @@
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
-import { useEffect, useState } from "react";
-import { Currency, Member, Party, Receipt, Tag } from "../../Interfaces/interfaces";
+import { useEffect, useState, useRef } from "react";
+import { useDisclosure } from "@chakra-ui/react";
+import {
+  Currency,
+  Member,
+  Party,
+  Receipt,
+  Tag,
+} from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
+import {
+  dummyMembers,
+  dummyParty,
+  dummyReceipts,
+  dummyTags,
+  dummyCurrencies,
+} from "./dummy";
 
 const PartyContainer = () => {
   const { partyId } = useParams();
   const contexts = useAppContext();
+  contexts.party = dummyParty; //test
+  contexts.setCurrentMember(dummyMembers[0]); //test
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [tag, setTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
@@ -34,13 +50,13 @@ const PartyContainer = () => {
         name: "newMemberName",
       }),
     });
-  }
+  };
   const deleteReceipt = () => {
     //파티 아이디와 영수증 아이디를 전달
     const destination = `/pub/receipt/${partyId}/delete`;
-  }
+  };
   const saveReceipt = () => {
-    console.log(receipt)
+    console.log(receipt);
     const destination = `/pub/party/${partyId}/create`;
     //이 부분은 예시임
     const createdAt = new Date();
@@ -54,11 +70,15 @@ const PartyContainer = () => {
         useCurrency: useCurrency.currencyId,
       }),
     });
-  }
+  };
   const onClickCreateReceipt = () => {
     //영수증에 들어갈 내용 추합
     saveReceipt();
-  }
+  };
+  const onClickChangeCurrentMember = () => {
+    //현재 유저를 변경
+    //contexts.setCurrentMember();
+  };
   //stomp
   useEffect(() => {
     const initializeChat = async () => {
@@ -88,11 +108,11 @@ const PartyContainer = () => {
                   ...prev,
                   members: [...prev.members, parsedMessage],
                 };
-              });;
+              });
             } catch (err) {
               console.log(err);
             }
-          })
+          });
           //create Receipt
           stomp.subscribe(`/sub/receipt/${partyId}`, function (frame) {
             try {
@@ -103,7 +123,7 @@ const PartyContainer = () => {
                   ...prev,
                   receipts: [...prev.receipts, parsedMessage],
                 };
-              });;
+              });
             } catch (err) {
               console.log(err);
             }
@@ -112,7 +132,7 @@ const PartyContainer = () => {
         stomp.onDisconnect = () => {
           console.log("WebSocket 연결이 끊겼습니다.");
           contexts.setLoading(true);
-        }
+        };
       } catch (err) {
         console.log(err);
       }
@@ -129,53 +149,60 @@ const PartyContainer = () => {
 
   //get party data
   useEffect(() => {
-    if(contexts.party === undefined) {
+    if (contexts.party === undefined) {
       contexts.setLoading(true);
       //get partyId with partyId
       //만약에 다른 방에 있다가 들어오면 해당 유저가 존재하지 않는 경우일 수 있음
       //이 경우 해당 방에 있는 유저를 선택하도록 모달을 띄워줘야함
-    
+
       //useEffect 실행 순서 제어해야함. 로컬 유저 판단 -> 방 활성화 판단 -> 방 정보 할당 -> 소켓연결
-      const localCurrentMember = JSON.parse(localStorage.getItem("pumpya_user")!!);
+      const localCurrentMember = JSON.parse(
+        localStorage.getItem("pumpya_user")!!
+      );
       contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
       //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
-      partyApi.getParty(partyId!!).then((response) => {
-        console.log(response.data);
-        contexts.setParty((prev: Party) => {
-          return {
-            ...prev,
-            partyId: response.data.partyId,
-            partyName: response.data.partyName,
-            members: response.data.members,
-            receipts: [],
-            totalCost: 0,
-          }
-        });
-        setReceipt((prev: Receipt) => {
-          return {
-            ...prev, 
-            author: localCurrentMember.pumpya_user_name
-          }
+      partyApi
+        .getParty(partyId!!)
+        .then((response) => {
+          console.log(response.data);
+          contexts.setParty((prev: Party) => {
+            return {
+              ...prev,
+              partyId: response.data.partyId,
+              partyName: response.data.partyName,
+              members: response.data.members,
+              receipts: [],
+              totalCost: 0,
+            };
+          });
+          setReceipt((prev: Receipt) => {
+            return {
+              ...prev,
+              author: localCurrentMember.pumpya_user_name,
+            };
+          });
+          contexts.setLoading(false);
         })
-        contexts.setLoading(false);
-      }).catch((err) => {
-        console.log(err);
-      });
-      
-      
+        .catch((err) => {
+          console.log(err);
+        });
     }
-  }, [contexts, partyId])
+  }, [contexts, partyId]);
   return (
     <>
-    {
-      contexts.loading ? 
-        <div>loading...</div> : 
-        <PartyPresentation 
-          party={contexts.party}
-          onClickCreateReceipt={onClickCreateReceipt}
-          onClickAddMember={onClickAddMember}
-        />
-    }
+      {
+        /*contexts.loading*/ false ? (
+          <div>loading...</div>
+        ) : (
+          <PartyPresentation
+            party={contexts.party}
+            currentMember={contexts.currentMember}
+            onClickCreateReceipt={onClickCreateReceipt}
+            onClickChangeCurrentMember={onClickChangeCurrentMember}
+            onClickAddMember={onClickAddMember}
+          />
+        )
+      }
     </>
   );
 };
