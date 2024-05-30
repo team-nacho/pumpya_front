@@ -7,7 +7,7 @@ export interface CreatePartyResponse extends Party {}
 export interface GetPartyResponse {
   partyId: string;
   partyName: string;
-  members: Member[];
-  usedCurrencies: String;
+  members: string[];
+  usedCurrencies: string[];
 }
 export interface createReceiptResponse extends Receipt {}
