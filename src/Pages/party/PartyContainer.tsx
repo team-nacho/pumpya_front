@@ -21,11 +21,20 @@ import {
 } from "./dummy";
 
 const PartyContainer = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const disclosureReceipt = useDisclosure();
+  const isOpenReceipt = disclosureReceipt.isOpen;
+  const onOpenReceipt = disclosureReceipt.onOpen;
+  const onCloseReceipt = disclosureReceipt.onClose;
+  const [receiptDetail, setReceiptDetail] = useState<Receipt>();
+  const btnDrawer = useRef<HTMLButtonElement | null>(null);
+  const btnReceipt = useRef<HTMLButtonElement | null>(null);
+
   const { partyId } = useParams();
   const contexts = useAppContext();
-  contexts.party = dummyParty; //test
-  contexts.setCurrentMember(dummyMembers[0]); //test
   const [stompClient, setStompClient] = useState<Client | null>(null);
+  const [cost, setCost] = useState<number>(0);
+  const [receiptName, setReceiptName] = useState<string>("");
   const [tag, setTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
     partyId: partyId!!,
@@ -37,10 +46,13 @@ const PartyContainer = () => {
     createdAt: undefined,
     tag: undefined,
   });
-  const [join, setJoin] = useState<Member[]>([]); // [Member, Member, Member
+  const [join, setJoin] = useState<Member[]>([]); // [Member, Member,
+  const memberList = dummyMembers; //test
+  const currencyList = dummyCurrencies; //test
+  const tagList = dummyTags; // test
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
-    country: "United States of America",
+    country: "미국",
   });
   const onClickAddMember = () => {
     const destination = `/pub/party/${partyId}/new-member`;
@@ -50,6 +62,10 @@ const PartyContainer = () => {
         name: "newMemberName",
       }),
     });
+  };
+  const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value)) setCost(value);
   };
   const deleteReceipt = () => {
     //파티 아이디와 영수증 아이디를 전달
@@ -75,11 +91,31 @@ const PartyContainer = () => {
     //영수증에 들어갈 내용 추합
     saveReceipt();
   };
-  const onClickChangeCurrentMember = () => {
+  const onClickChangeCurrentMember = (member: string) => {
     //현재 유저를 변경
-    //contexts.setCurrentMember();
+    contexts.setCurrentMember(
+      contexts.party.members.find((e: Member) => e.name === member)
+    );
+  };
+  const onClickChangeCurrency = (index: number) => {
+    setUseCurrency(currencyList[index]);
+  };
+  const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setReceiptName(e.target.value);
   };
   //stomp
+  const addJoin = (index: number) => {
+    const newJoin = [...join];
+    newJoin.push(memberList[index]);
+    setJoin(newJoin);
+  };
+
+  const deleteJoin = (index: number) => {
+    const newJoin = [...join];
+    newJoin.push(memberList[index]);
+    setJoin(newJoin);
+  };
+
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -188,23 +224,49 @@ const PartyContainer = () => {
         });
     }
   }, [contexts, partyId]);
+
   return (
     <>
-      {
-        /*contexts.loading*/ false ? (
-          <div>loading...</div>
-        ) : (
-          <PartyPresentation
-            party={contexts.party}
-            currentMember={contexts.currentMember}
-            onClickCreateReceipt={onClickCreateReceipt}
-            onClickChangeCurrentMember={onClickChangeCurrentMember}
-            onClickAddMember={onClickAddMember}
-          />
-        )
-      }
+      {contexts.loading ? (
+        <div>loading...</div>
+      ) : (
+        <PartyPresentation
+          party={contexts.party}
+          memberList={memberList}
+          currentMember={contexts.currentMember}
+          currencyList={currencyList}
+          tagList={tagList}
+          onClickCreateReceipt={onClickCreateReceipt}
+          onClickChangeCurrentMember={onClickChangeCurrentMember}
+          onClickAddMember={onClickAddMember}
+          onClickChangeCurrency={onClickChangeCurrency}
+          isOpen={isOpen}
+          onOpen={onOpen}
+          onClose={onClose}
+          btnDrawer={btnDrawer}
+          onChangeCostInput={onChangeCostInput}
+          onChangeNameInput={onChangeNameInput}
+          cost={cost}
+          setCost={setCost}
+          useCurrency={useCurrency}
+          setUseCurrency={setUseCurrency}
+          receiptName={receiptName}
+          setReceiptName={setReceiptName}
+          tag={tag}
+          setTag={setTag}
+          join={join}
+          setJoin={setJoin}
+          addJoin={addJoin}
+          deleteJoin={deleteJoin}
+          isOpenReceipt={isOpenReceipt}
+          onOpenReceipt={onOpenReceipt}
+          onCloseReceipt={onCloseReceipt}
+          btnReceipt={btnReceipt}
+          receiptDetail={receiptDetail}
+          setReceiptDetail={setReceiptDetail}
+        />
+      )}
     </>
   );
 };
-
 export default PartyContainer;
