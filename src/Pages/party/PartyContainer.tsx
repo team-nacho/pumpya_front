@@ -3,22 +3,9 @@ import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import { useEffect, useState, useRef } from "react";
 import { useDisclosure } from "@chakra-ui/react";
-import {
-  Currency,
-  Member,
-  Party,
-  Receipt,
-  Tag,
-} from "../../Interfaces/interfaces";
+import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
-import {
-  dummyMembers,
-  dummyParty,
-  dummyReceipts,
-  dummyTags,
-  dummyCurrencies,
-} from "./dummy";
 import { tagList, currencyList } from "./datafile";
 
 const PartyContainer = () => {
@@ -47,8 +34,8 @@ const PartyContainer = () => {
     createdAt: undefined,
     tag: undefined,
   });
-  const [join, setJoin] = useState<Member[]>([]); // [Member, Member,
-  const memberList = dummyMembers; //test
+  const [join, setJoin] = useState<string[]>([]); // [Member, Member,
+  const [memberList, setMemberList] = useState<string[]>(["jaeyoon"]); //test
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
     country: "미국",
@@ -90,11 +77,24 @@ const PartyContainer = () => {
     //영수증에 들어갈 내용 추합
     saveReceipt();
   };
-  const onClickChangeCurrentMember = (member: string) => {
+  const onClickChangeCurrentMember = (memberName: string) => {
     //현재 유저를 변경
-    contexts.setCurrentMember(
-      contexts.party.members.find((e: Member) => e.name === member)
+    const foundMember = contexts.party.members.find(
+      (member: string) => member === memberName
     );
+    console.log(foundMember);
+
+    if (foundMember) {
+      contexts.setCurrentMember(foundMember);
+
+      const localCurrentMember = {
+        pumpya_user_name: memberName,
+        pumpya_party_id: contexts.party.partyId,
+      };
+      localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
+    } else {
+      console.log("Member not found");
+    }
   };
   const onClickChangeCurrency = (index: number) => {
     setUseCurrency(currencyList[index]);

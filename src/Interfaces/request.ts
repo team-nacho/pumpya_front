@@ -1,14 +1,14 @@
-import { Member, Receipt } from "./interfaces";
+import { Receipt } from "./interfaces";
 
 export interface CreatePartyRequest {
   userName: string;
 }
 export interface CreateReceiptRequest {
-  sender: String;
+  sender: string;
   receipt: Receipt;
 }
 export interface CreateMemberReqeust {
-  member: Member;
+  member: string;
 }
 
 export interface GetParty {

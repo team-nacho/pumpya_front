@@ -1,11 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import {
-  Currency,
-  Member,
-  Party,
-  Receipt,
-  Tag,
-} from "../../Interfaces/interfaces";
+import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import {
   Heading,
   Text,
@@ -32,8 +26,8 @@ import {
 
 interface PartyPresentationProps {
   party: Party;
-  memberList: Member[];
-  currentMember: Member;
+  memberList: string[];
+  currentMember: string;
   currencyList: Currency[];
   tagList: Tag[];
   onClickCreateReceipt: () => void;
@@ -54,8 +48,8 @@ interface PartyPresentationProps {
   setReceiptName: (receiptName: string) => void;
   tag: Tag | undefined;
   setTag: (tag: Tag | undefined) => void;
-  join: Member[];
-  setJoin: (join: Member[]) => void;
+  join: string[];
+  setJoin: (join: string[]) => void;
   addJoin: (index: number) => void;
   deleteJoin: (index: number) => void;
   isOpenReceipt: boolean;
@@ -127,19 +121,17 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>
-            {props.currentMember.name}님의
+            {props.currentMember}님의
             <Heading as="h2" size="xl">
               {props.party.partyName}
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
               {props.party.members?.map((member, index) => {
-                if (member !== props.currentMember.name) {
+                if (member !== props.currentMember) {
                   return (
                     <Button
                       key={index}
-                      onClick={() =>
-                        props.onClickChangeCurrentMember(member.valueOf())
-                      }
+                      onClick={() => props.onClickChangeCurrentMember(member)}
                       colorScheme="gray"
                       variant="ghost"
                     >
@@ -230,15 +222,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     {props.party.members?.length !== 1 ? (
       <Stack direction="row" spacing={4} align="center">
         {props.party.members?.map((member, index) =>
-          props.join.find((e: Member) => e.name === member.valueOf()) !==
-          undefined ? (
+          props.join.find((e: string) => e === member) !== undefined ? (
             <ClickedButton
-              element={member.valueOf()}
+              element={member}
               clickHandler={() => props.addJoin(index)}
             ></ClickedButton>
           ) : (
             <UnClickedButton
-              element={member.valueOf()}
+              element={member}
               clickHandler={() => props.deleteJoin(index)}
             ></UnClickedButton>
           )
@@ -246,39 +237,38 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       </Stack>
     ) : null}
     <Text>{props.tag === undefined ? "언디파인" : props.tag.name} //test</Text>
-    <Button onClick={props.onClickCreateReceipt}>create Reciept</Button>
-    <div>receipts</div>
-    {props.party.receipts.map((receipt, index) => {
-      return <div key={index}>{receipt.receiptName}</div>;
-    })}
+    <Button onClick={props.onClickCreateReceipt}>create Receipt</Button>
 
-    {props.party.receipts.map((receipt) => (
-      <Container
-        onClick={() => {
-          props.setReceiptDetail(receipt);
-          props.onOpenReceipt();
-        }}
-      >
-        <Flex justifyContent="space-between">
-          <Text fontSize="lg" as="b">
-            {receipt.receiptName}
-          </Text>
-          <Text fontSize="lg" as="b">
-            {receipt.author}
-          </Text>
-        </Flex>
-        <Flex justifyContent="space-between">
-          <Text fontSize="lg">
-            {receipt.createdAt?.getHours()}:{receipt.createdAt?.getMinutes()}
-            {receipt.tag}
-          </Text>
-          <Text fontSize="lg">
-            {receipt.useCurrency}
-            {receipt.cost}
-          </Text>
-        </Flex>
-      </Container>
-    ))}
+    {props.party.receipts === undefined
+      ? "영수증을 등록해주세요"
+      : props.party.receipts.map((receipt) => (
+          <Container
+            onClick={() => {
+              props.setReceiptDetail(receipt);
+              props.onOpenReceipt();
+            }}
+          >
+            <Flex justifyContent="space-between">
+              <Text fontSize="lg" as="b">
+                {receipt.receiptName}
+              </Text>
+              <Text fontSize="lg" as="b">
+                {receipt.author}
+              </Text>
+            </Flex>
+            <Flex justifyContent="space-between">
+              <Text fontSize="lg">
+                {receipt.createdAt?.getHours()}:
+                {receipt.createdAt?.getMinutes()}
+                {receipt.tag}
+              </Text>
+              <Text fontSize="lg">
+                {receipt.useCurrency}
+                {receipt.cost}
+              </Text>
+            </Flex>
+          </Container>
+        ))}
     <Drawer
       isOpen={props.isOpenReceipt}
       placement="bottom"

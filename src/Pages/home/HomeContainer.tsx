@@ -29,7 +29,7 @@ const HomeContainer = () => {
       const localCurrentMember = {
         pumpya_user_name: request.userName,
         pumpya_party_id: response.data.partyId,
-      }
+      };
       localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
       onClose();
       //save current memeber
@@ -44,7 +44,7 @@ const HomeContainer = () => {
     //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
     setNickname(e.target.value);
   };
-  
+
   useEffect(() => {
     setRandomName("random name");
     setNickname(randomName);
@@ -60,7 +60,7 @@ const HomeContainer = () => {
       onOpen={onOpen}
       onClose={onClose}
     />
-  )
-}
+  );
+};
 
 export default HomeContainer;
