@@ -19,6 +19,7 @@ import {
   dummyTags,
   dummyCurrencies,
 } from "./dummy";
+import { tagList, currencyList } from "./datafile";
 
 const PartyContainer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -48,8 +49,6 @@ const PartyContainer = () => {
   });
   const [join, setJoin] = useState<Member[]>([]); // [Member, Member,
   const memberList = dummyMembers; //test
-  const currencyList = dummyCurrencies; //test
-  const tagList = dummyTags; // test
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
     country: "미국",
