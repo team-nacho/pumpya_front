@@ -17,6 +17,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  VStack,
 } from "@chakra-ui/react";
 
 interface HistoryPresentationProps {
@@ -29,16 +30,20 @@ interface HistoryPresentationProps {
   filteredReceipts: any[];
   hasSelectedTag: boolean;
   categories: string[];
+  selectedCurrency: string;
   handleTagClick: (arg0: string) => void;
+  handleCurrencyClick : (arg0: string) => void;
   getCategoryReceipts: (category: string) => any[];
+  getReceiptsByCurrency: () => { [key: string]: any[] };
 }
 const HistoryPresentation = (props: HistoryPresentationProps) => (
-  <div>
+  <VStack spacing={3} align="stretch">
     <div>
+      <br></br>
       <Button onClick={props.onBack}>뒤로가기</Button>
     </div>
     <div>
-      <Heading fontSize="30">{props.partyName}🎉</Heading>
+      <Heading fontSize="30">{props.partyName || "족병신 건영이"}🎉</Heading>
     </div>
     <div>
       <Heading fontSize="50">{props.partyTotal.toLocaleString()}원</Heading>
@@ -51,11 +56,11 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
         </Box>
       </div>
     ) : (
-      <div>
+      <VStack spacing={3} align="stretch">
         <div>
           {props.memberNames.map((name, index) => (
-            <Accordion allowMultiple>
-              <AccordionItem key={index} style={{ margin: "10px 0" }}>
+            <Accordion allowMultiple key={index}>
+              <AccordionItem style={{ margin: "10px 0" }}>
                 <h2>
                   <AccordionButton
                     as="span"
@@ -84,47 +89,20 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
               <MenuItem value="" onClick={() => props.handleTagClick("전체")}>
                 전체
               </MenuItem>
-              <MenuItem
-                value="음식"
-                onClick={() => props.handleTagClick("음식")}
-              >
-                음식
-              </MenuItem>
-              <MenuItem
-                value="보관"
-                onClick={() => props.handleTagClick("보관")}
-              >
-                보관
-              </MenuItem>
-              <MenuItem
-                value="교통"
-                onClick={() => props.handleTagClick("교통")}
-              >
-                교통
-              </MenuItem>
-              <MenuItem
-                value="입장료"
-                onClick={() => props.handleTagClick("입장료")}
-              >
-                입장료
-              </MenuItem>
-              <MenuItem
-                value="숙박"
-                onClick={() => props.handleTagClick("숙박")}
-              >
-                숙박
-              </MenuItem>
-              <MenuItem
-                value="엔터"
-                onClick={() => props.handleTagClick("엔터")}
-              >
-                엔터
-              </MenuItem>
+              {props.categories.map((category, index) => (
+                <MenuItem
+                  key={index}
+                  value={category}
+                  onClick={() => props.handleTagClick(category)}
+                >
+                  {category}
+                </MenuItem>
+              ))}
             </MenuList>
           </Menu>
         </div>
         <div>
-          <br></br>
+          <br />
         </div>
         <div>
           {props.selectedTag === "전체" ? (
@@ -223,28 +201,15 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
             </Tabs>
           </Box>
         </div>
-      </div>
+      </VStack>
     )}
-
     <div>
       <img
         src="https://cdn.news.cauon.net/news/photo/202203/36524_26498_1343.png"
         alt="Jennie"
       />
     </div>
-  </div>
+  </VStack>
 );
-
-const LoadingPresentation = () => {
-  <div>
-    <Button
-      isLoading
-      loadingText="Loading"
-      colorScheme="teal"
-      variant="outline"
-      spinnerPlacement="start"
-    ></Button>
-  </div>;
-};
 
 export default HistoryPresentation;

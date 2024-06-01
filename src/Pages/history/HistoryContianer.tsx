@@ -10,6 +10,7 @@ const HistoryContainer = () => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("전체");
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
@@ -24,6 +25,18 @@ const HistoryContainer = () => {
     return context.receipts.filter(
       (receipt: Receipt) => receipt.tag === category
     );
+  };
+
+  const getReceiptsByCurrency = () => {
+    const receiptsByCurrency: { [key: string]: Receipt[] } = {};
+    context.receipts.forEach((receipt: Receipt) => {
+      const currency = receipt.useCurrency ?? "전체";
+      if (!receiptsByCurrency[currency]) {
+        receiptsByCurrency[currency] = [];
+      }
+      receiptsByCurrency[currency].push(receipt);
+    });
+    return receiptsByCurrency;
   };
 
   const onBack = () => navigate(-1);
@@ -46,6 +59,19 @@ const HistoryContainer = () => {
     }
   };
 
+  const handleCurrencyClick = (currency: string) => {
+    setSelectedCurrency(currency);
+    if (currency === "전체") {
+      setFilteredReceipts(context.receipts);
+    } else {
+      setFilteredReceipts(
+        context.receipts.filter(
+          (receipt: Receipt) => receipt.useCurrency === currency
+        )
+      );
+    }
+  };
+
   useEffect(() => {
     //로딩 로직 추가
     receiptApi.getReceipts(partyId!!).then((response) => {
@@ -65,25 +91,8 @@ const HistoryContainer = () => {
   }, [selectedTag]);
 
   /*return context.loading ? (
-    <LoadingPresentation/>
+    <LoadingPresentation />
   ) : (
-    <HistoryPresentation
-      partyName={partyName[0]}
-      partyTotal={partyTotal}
-      memberNames={memberNames}
-      onBack={onBack}
-      selectedTag={selectedTag}
-      filteredReceipts={filteredReceipts}
-      hasSelectedTag={hasSelectedTag}
-      categories={categories}
-      getCategoryReceipts={getCategoryReceipts}
-      handleTagClick={handleTagClick}
-    />
-  );*/
-
-
-  // 서버 연결 없을 때를 위한 코드
-  return context.loading ? (
     <HistoryPresentation
       partyName={partyName[0]}
       partyTotal={partyTotal}
@@ -96,6 +105,26 @@ const HistoryContainer = () => {
       categories={categories}
       getCategoryReceipts={getCategoryReceipts}
       handleTagClick={handleTagClick}
+    />
+  );*/
+
+  // 서버 연결 없을 때를 위한 코드
+  return context.loading ? (
+    <HistoryPresentation
+      partyName={partyName}
+      partyTotal={partyTotal}
+      memberNames={memberNames}
+      receipts={context.receipts}
+      onBack={onBack}
+      selectedTag={selectedTag}
+      selectedCurrency={selectedCurrency}
+      filteredReceipts={filteredReceipts}
+      hasSelectedTag={hasSelectedTag}
+      categories={categories}
+      getCategoryReceipts={getCategoryReceipts}
+      handleTagClick={handleTagClick}
+      handleCurrencyClick={handleCurrencyClick}
+      getReceiptsByCurrency={getReceiptsByCurrency}
     />
   ) : (
     <LoadingPresentation />
