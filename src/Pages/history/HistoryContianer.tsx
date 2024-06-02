@@ -73,11 +73,15 @@ const HistoryContainer = () => {
   };
 
   useEffect(() => {
-    //로딩 로직 추가
+    // 로딩 로직 추가
     receiptApi.getReceipts(partyId!!).then((response) => {
       context.setReceipts(response.data);
-      context.setLoading(false); //로딩 완료
+      console.log(response.data); // Fetch and log receipts
+      context.setLoading(false); // 로딩 완료
     });
+  }, [partyId]);
+
+  useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
     if (selectedTag === "전체") {
       setFilteredReceipts(context.receipts);
@@ -88,28 +92,31 @@ const HistoryContainer = () => {
       );
       setFilteredReceipts(filteredReciepts);
     }
-  }, [selectedTag]);
+  }, [selectedTag, context.receipts]);
 
-  /*return context.loading ? (
+  return context.loading ? (
     <LoadingPresentation />
   ) : (
     <HistoryPresentation
-      partyName={partyName[0]}
-      partyTotal={partyTotal}
-      memberNames={memberNames}
-      receipts={context.receipts}
-      onBack={onBack}
-      selectedTag={selectedTag}
-      filteredReceipts={filteredReceipts}
-      hasSelectedTag={hasSelectedTag}
-      categories={categories}
-      getCategoryReceipts={getCategoryReceipts}
-      handleTagClick={handleTagClick}
+    partyName={partyName}
+    partyTotal={partyTotal}
+    memberNames={memberNames}
+    receipts={context.receipts}
+    onBack={onBack}
+    selectedTag={selectedTag}
+    selectedCurrency={selectedCurrency}
+    filteredReceipts={filteredReceipts}
+    hasSelectedTag={hasSelectedTag}
+    categories={categories}
+    getCategoryReceipts={getCategoryReceipts}
+    handleTagClick={handleTagClick}
+    handleCurrencyClick={handleCurrencyClick}
+    getReceiptsByCurrency={getReceiptsByCurrency}
     />
-  );*/
+  );
 
   // 서버 연결 없을 때를 위한 코드
-  return context.loading ? (
+  /*return context.loading ? (
     <HistoryPresentation
       partyName={partyName}
       partyTotal={partyTotal}
@@ -128,7 +135,7 @@ const HistoryContainer = () => {
     />
   ) : (
     <LoadingPresentation />
-  );
+  );*/
 };
 
 export default HistoryContainer;

@@ -193,7 +193,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
                           </Box>
                         ))
                     ) : (
-                      <p>해당 카테고리에 등록된 영수증이 없습니다.</p>
+                      <p>등록된 영수증이 없습니다.</p>
                     )}
                   </TabPanel>
                 ))}
