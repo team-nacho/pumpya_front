@@ -29,3 +29,10 @@ export const receiptApi = {
     return response;
   }
 }
+export const tagApi = {
+  getTags: async (
+  ): Promise<AxiosResponse<GetPartyResponse>> => {
+    const response = await api.get(`/get-tags`);
+    return response;
+  }
+}

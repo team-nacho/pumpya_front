@@ -8,6 +8,7 @@ export const AppProdiver = ({ children }: any) => {
   const [party, setParty] = useState<Party | undefined>(undefined);
   const [currentMember, setCurrentMember] = useState<Member | undefined>(undefined);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   
   return (
     <AppContext.Provider value={{
@@ -18,7 +19,9 @@ export const AppProdiver = ({ children }: any) => {
       currentMember,
       setCurrentMember,
       receipts,
-      setReceipts
+      setReceipts,
+      tags,
+      setTags
     }}>
       {children}
     </AppContext.Provider>
