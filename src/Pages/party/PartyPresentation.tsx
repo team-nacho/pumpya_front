@@ -1,4 +1,3 @@
-import { useContext, useEffect, useRef, useState } from "react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import {
   Heading,
@@ -16,7 +15,6 @@ import {
   DrawerHeader,
   DrawerBody,
   DrawerFooter,
-  useDisclosure,
   Menu,
   MenuButton,
   MenuItem,
@@ -97,6 +95,21 @@ const copyToClipboard = () => {
     .catch((err) => {
       console.error("복사 실패: ", err);
     });
+};
+
+function formatTwoDigits(value: number | undefined): string {
+  if (value !== undefined) return value.toString().padStart(2, "0");
+  else return "00";
+}
+
+const receiptTime = (receiptDetail: Receipt | undefined) => {
+  if (!receiptDetail?.createdAt) return null;
+
+  const year = receiptDetail.createdAt.getFullYear();
+  const month = receiptDetail.createdAt.getMonth(); // Month is 0-based
+  const date = receiptDetail.createdAt.getDate();
+
+  return `${year}년 ${month}월 ${date}일`;
 };
 
 const PartyPresentation = (props: PartyPresentationProps) => (
@@ -236,11 +249,10 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         )}
       </Stack>
     ) : null}
-    <Text>{props.tag === undefined ? "언디파인" : props.tag.name} //test</Text>
     <Button onClick={props.onClickCreateReceipt}>create Receipt</Button>
 
     {props.party.receipts === undefined
-      ? "영수증을 등록해주세요"
+      ? "등록된 영수증이 없습니다"
       : props.party.receipts.map((receipt) => (
           <Container
             onClick={() => {
@@ -258,8 +270,8 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             </Flex>
             <Flex justifyContent="space-between">
               <Text fontSize="lg">
-                {receipt.createdAt?.getHours()}:
-                {receipt.createdAt?.getMinutes()}
+                {formatTwoDigits(receipt.createdAt?.getHours())}:
+                {formatTwoDigits(receipt.createdAt?.getMinutes())}
                 {receipt.tag}
               </Text>
               <Text fontSize="lg">
@@ -281,11 +293,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerHeader></DrawerHeader>
 
         <DrawerBody>
-          <Text fontSize="2xl">
-            {props.receiptDetail?.createdAt?.getFullYear()}년{" "}
-            {props.receiptDetail?.createdAt?.getMonth()}월{" "}
-            {props.receiptDetail?.createdAt?.getDate()}일
-          </Text>
+          <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
           <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
           <Button>{props.receiptDetail?.tag}</Button>
           <Text fontSize="2xl">에</Text>
