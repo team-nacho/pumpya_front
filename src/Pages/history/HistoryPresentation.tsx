@@ -32,7 +32,7 @@ interface HistoryPresentationProps {
   categories: string[];
   selectedCurrency: string;
   handleTagClick: (arg0: string) => void;
-  handleCurrencyClick : (arg0: string) => void;
+  handleCurrencyClick: (arg0: string) => void;
   getCategoryReceipts: (category: string) => any[];
   getReceiptsByCurrency: () => { [key: string]: any[] };
 }

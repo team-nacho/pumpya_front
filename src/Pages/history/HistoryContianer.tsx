@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Receipt } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
 import HistoryPresentation from "./HistoryPresentation";
-import { receiptApi } from "../../Apis/apis";
+import { receiptApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const HistoryContainer = () => {
@@ -19,7 +19,7 @@ const HistoryContainer = () => {
     (receipt: Receipt) => receipt.tag === selectedTag
   );
 
-  const categories = ["음식", "보관", "교통", "입장료", "숙박", "엔터"];
+  const categories = context.tags;
 
   const getCategoryReceipts = (category: string) => {
     return context.receipts.filter(
@@ -79,7 +79,12 @@ const HistoryContainer = () => {
       console.log(response.data); // Fetch and log receipts
       context.setLoading(false); // 로딩 완료
     });
-  }, [partyId]);
+    tagApi.getTags().then((response)=>{
+      context.setTags(response.data);
+      console.log(response.data); // Fetch and log receipts
+      context.setLoading(false); // 로딩 완료
+    })
+  }, []);
 
   useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
@@ -98,20 +103,20 @@ const HistoryContainer = () => {
     <LoadingPresentation />
   ) : (
     <HistoryPresentation
-    partyName={partyName}
-    partyTotal={partyTotal}
-    memberNames={memberNames}
-    receipts={context.receipts}
-    onBack={onBack}
-    selectedTag={selectedTag}
-    selectedCurrency={selectedCurrency}
-    filteredReceipts={filteredReceipts}
-    hasSelectedTag={hasSelectedTag}
-    categories={categories}
-    getCategoryReceipts={getCategoryReceipts}
-    handleTagClick={handleTagClick}
-    handleCurrencyClick={handleCurrencyClick}
-    getReceiptsByCurrency={getReceiptsByCurrency}
+      partyName={partyName}
+      partyTotal={partyTotal}
+      memberNames={memberNames}
+      receipts={context.receipts}
+      onBack={onBack}
+      selectedTag={selectedTag}
+      selectedCurrency={selectedCurrency}
+      filteredReceipts={filteredReceipts}
+      hasSelectedTag={hasSelectedTag}
+      categories={categories}
+      getCategoryReceipts={getCategoryReceipts}
+      handleTagClick={handleTagClick}
+      handleCurrencyClick={handleCurrencyClick}
+      getReceiptsByCurrency={getReceiptsByCurrency}
     />
   );
 
