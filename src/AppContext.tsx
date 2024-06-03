@@ -10,20 +10,21 @@ export const AppProdiver = ({ children }: any) => {
     undefined
   );
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-
+  const [tags, setTags] = useState<string[]>([]);
+  
   return (
-    <AppContext.Provider
-      value={{
-        loading,
-        setLoading,
-        party,
-        setParty,
-        currentMember,
-        setCurrentMember,
-        receipts,
-        setReceipts,
-      }}
-    >
+    <AppContext.Provider value={{
+      loading,
+      setLoading,
+      party,
+      setParty,
+      currentMember,
+      setCurrentMember,
+      receipts,
+      setReceipts,
+      tags,
+      setTags
+    }}>
       {children}
     </AppContext.Provider>
   );
