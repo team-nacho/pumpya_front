@@ -36,6 +36,7 @@ interface PartyPresentationProps {
   onOpen: () => void;
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
+  onClickEndParty: () => void;
   onChangeCostInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   cost: number;
@@ -69,6 +70,7 @@ const ClickedButton: React.FC<{
       borderColor="teal"
       colorScheme="teal"
       variant="solid"
+      marginY="5px"
     >
       {element}
     </Button>
@@ -79,7 +81,12 @@ const UnClickedButton: React.FC<{
   clickHandler: () => void;
 }> = ({ element, clickHandler }) => {
   return (
-    <Button onClick={clickHandler} colorScheme="teal" variant="outline">
+    <Button
+      onClick={clickHandler}
+      colorScheme="teal"
+      variant="outline"
+      marginY="5px"
+    >
       {element}
     </Button>
   );
@@ -119,9 +126,17 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         {props.party.partyName}
         {"\u00B7"}
       </Heading>
-      <Text fontSize="2xl">{props.party.members.length}명</Text>
+      <Text fontSize="2xl" marginY="5px">
+        {props.party.members.length}명
+      </Text>
       <Spacer />
-      <Button ref={props.btnDrawer} colorScheme="teal" onClick={props.onOpen}>
+      <Button
+        ref={props.btnDrawer}
+        colorScheme="teal"
+        onClick={props.onOpen}
+        marginY="3px"
+        marginLeft="15px"
+      >
         Open
       </Button>
       <Drawer
@@ -133,17 +148,17 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>
+          <DrawerHeader marginY="3px">
             {props.currentMember}님의
-            <Heading as="h2" size="xl">
+            <Heading as="h2" size="xl" marginY="7px">
               {props.party.partyName}
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
-              {props.party.members?.map((member, index) => {
+              {props.party.members?.map((member) => {
                 if (member !== props.currentMember) {
                   return (
                     <Button
-                      key={index}
+                      key={member}
                       onClick={() => props.onClickChangeCurrentMember(member)}
                       colorScheme="gray"
                       variant="ghost"
@@ -177,15 +192,23 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             </Button>
           </DrawerBody>
           <DrawerFooter>
-            <Button colorScheme="red" variant="solid" w="100%" h="48px">
+            <Button
+              onClick={props.onClickEndParty}
+              colorScheme="red"
+              variant="solid"
+              w="100%"
+              h="48px"
+            >
               여행 끝내기
             </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </Flex>
-    <Text fontSize="lg">이번 여행에서 소비했어요</Text>
-    <Heading as="h2" size="2xl">
+    <Text fontSize="lg" marginY="5px">
+      이번 여행에서 소비했어요
+    </Text>
+    <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
       {props.party.totalCost}원
     </Heading>
     <Flex justifyContent="space-between">
@@ -193,17 +216,18 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         value={props.cost}
         onChange={props.onChangeCostInput}
         placeholder={props.useCurrency.country}
+        marginY="5px"
         w="70%"
       />
 
       <Menu>
-        <MenuButton textAlign="center" as={Button} width="25%">
+        <MenuButton textAlign="center" as={Button} width="25%" marginY="5px">
           {props.useCurrency.country}
         </MenuButton>
         <MenuList>
           {props.currencyList.map((currency, index) => (
             <MenuItem
-              key={index}
+              key={currency.currencyId}
               onClick={() => props.onClickChangeCurrency(index)}
             >
               {currency.country}
@@ -215,17 +239,20 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     <Input
       value={props.receiptName}
       onChange={props.onChangeNameInput}
+      marginY="5px"
       placeholder="소비를 입력해 주세요"
     />
     <Stack direction="row" spacing={4} align="center">
       {props.tagList.map((choiceTag) =>
         choiceTag === props.tag ? (
           <ClickedButton
+            key={choiceTag.name}
             element={choiceTag.name}
             clickHandler={() => props.setTag(undefined)}
           ></ClickedButton>
         ) : (
           <UnClickedButton
+            key={choiceTag.name}
             element={choiceTag.name}
             clickHandler={() => props.setTag(choiceTag)}
           ></UnClickedButton>
@@ -237,11 +264,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         {props.party.members?.map((member, index) =>
           props.join.find((e: string) => e === member) !== undefined ? (
             <ClickedButton
+              key={member}
               element={member}
               clickHandler={() => props.addJoin(index)}
             ></ClickedButton>
           ) : (
             <UnClickedButton
+              key={member}
               element={member}
               clickHandler={() => props.deleteJoin(index)}
             ></UnClickedButton>
@@ -249,12 +278,15 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         )}
       </Stack>
     ) : null}
-    <Button onClick={props.onClickCreateReceipt}>create Receipt</Button>
+    <Button onClick={props.onClickCreateReceipt} marginY="5px">
+      create Receipt
+    </Button>
 
     {props.party.receipts === undefined
       ? "등록된 영수증이 없습니다"
-      : props.party.receipts.map((receipt) => (
+      : props.party.receipts.map((receipt, index) => (
           <Container
+            key={index}
             onClick={() => {
               props.setReceiptDetail(receipt);
               props.onOpenReceipt();

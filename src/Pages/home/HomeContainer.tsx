@@ -3,10 +3,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import HomePresentation from "./HomePresentation";
-import { CreatePartyRequest } from "../../Interfaces/request";
+import { CreatePartyRequest, GetParty } from "../../Interfaces/request";
 import { AxiosResponse, HttpStatusCode } from "axios";
 import { partyApi } from "../../Apis/apis";
-import { CreatePartyResponse } from "../../Interfaces/response";
+import {
+  CreatePartyResponse,
+  GetPartyResponse,
+} from "../../Interfaces/response";
+import { Party } from "../../Interfaces/interfaces";
 
 const HomeContainer = () => {
   const navigate = useNavigate();
@@ -24,6 +28,12 @@ const HomeContainer = () => {
     const response: AxiosResponse<CreatePartyResponse> =
       await partyApi.createParty(request);
 
+    const requestMembers: GetParty = {
+      partyId: response.data.partyId,
+    };
+    const responseMembers: AxiosResponse<GetPartyResponse> =
+      await partyApi.getParty(requestMembers.partyId);
+
     if (response.status === HttpStatusCode.Ok) {
       //그리고 생성된 유저 내용은 local history에 저장
       const localCurrentMember = {
@@ -31,12 +41,19 @@ const HomeContainer = () => {
         pumpya_party_id: response.data.partyId,
       };
       localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
-      onClose();
       //save current memeber
+      onClose();
+
       appContext.setCurrentMember(request.userName);
       //save party data
       appContext.setParty(response.data);
+      appContext.setParty((prev: Party) => ({
+        ...prev,
+        members: responseMembers.data.members,
+      }));
       console.log(response.data);
+      console.log(responseMembers.data.members);
+      console.log(appContext.party);
       navigate(`/party/${response.data.partyId}`);
     }
   };

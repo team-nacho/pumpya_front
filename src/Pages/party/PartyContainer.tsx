@@ -7,8 +7,10 @@ import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
 import { tagList, currencyList } from "./datafile";
+import { useNavigate } from "react-router-dom";
 
 const PartyContainer = () => {
+  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const disclosureReceipt = useDisclosure();
   const isOpenReceipt = disclosureReceipt.isOpen;
@@ -41,6 +43,10 @@ const PartyContainer = () => {
     country: "미국",
   });
   const onClickAddMember = () => {
+    if (stompClient && stompClient.connected) {
+      console.log("STOMP client is not connected");
+      return;
+    }
     const destination = `/pub/party/${partyId}/new-member`;
     stompClient?.publish({
       destination,
@@ -96,6 +102,9 @@ const PartyContainer = () => {
       console.log("Member not found");
     }
   };
+  const onClickEndParty = () => {
+    navigate(`/history/${contexts.party.partyId}`);
+  };
   const onClickChangeCurrency = (index: number) => {
     setUseCurrency(currencyList[index]);
   };
@@ -131,7 +140,7 @@ const PartyContainer = () => {
 
         stomp.onConnect = () => {
           console.log("WebSocket 연결이 열렸습니다.");
-          // contexts.setLoading(false);
+          contexts.setLoading(false);
           //영수증 삭제
 
           //create new member
@@ -153,6 +162,7 @@ const PartyContainer = () => {
             try {
               const parsedMessage = JSON.parse(frame.body);
               //새로운 영수증이 들어오면 추가
+              //console.log(parsedMessage);
               contexts.setParty((prev: Party) => {
                 return {
                   ...prev,
@@ -243,6 +253,7 @@ const PartyContainer = () => {
           onOpen={onOpen}
           onClose={onClose}
           btnDrawer={btnDrawer}
+          onClickEndParty={onClickEndParty}
           onChangeCostInput={onChangeCostInput}
           onChangeNameInput={onChangeNameInput}
           cost={cost}
