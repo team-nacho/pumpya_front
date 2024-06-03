@@ -43,10 +43,6 @@ const PartyContainer = () => {
     country: "미국",
   });
   const onClickAddMember = () => {
-    if (stompClient && stompClient.connected) {
-      console.log("STOMP client is not connected");
-      return;
-    }
     const destination = `/pub/party/${partyId}/new-member`;
     stompClient?.publish({
       destination,
@@ -120,7 +116,7 @@ const PartyContainer = () => {
 
   const deleteJoin = (index: number) => {
     const newJoin = [...join];
-    newJoin.push(memberList[index]);
+    newJoin.splice(index, 1);
     setJoin(newJoin);
   };
 
@@ -232,7 +228,7 @@ const PartyContainer = () => {
           console.log(err);
         });
     }
-  }, [contexts, partyId]);
+  }, [contexts]);
 
   return (
     <>

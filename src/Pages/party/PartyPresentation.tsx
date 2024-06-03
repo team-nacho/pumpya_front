@@ -154,11 +154,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               {props.party.partyName}
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
-              {props.party.members?.map((member) => {
+              {props.party.members?.map((member, index) => {
                 if (member !== props.currentMember) {
                   return (
                     <Button
-                      key={member}
+                      key={index}
                       onClick={() => props.onClickChangeCurrentMember(member)}
                       colorScheme="gray"
                       variant="ghost"
@@ -264,15 +264,15 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         {props.party.members?.map((member, index) =>
           props.join.find((e: string) => e === member) !== undefined ? (
             <ClickedButton
-              key={member}
+              key={`${index}-join`}
               element={member}
-              clickHandler={() => props.addJoin(index)}
+              clickHandler={() => props.deleteJoin(index)}
             ></ClickedButton>
           ) : (
             <UnClickedButton
-              key={member}
+              key={`${index}-notjoin`}
               element={member}
-              clickHandler={() => props.deleteJoin(index)}
+              clickHandler={() => props.addJoin(index)}
             ></UnClickedButton>
           )
         )}
@@ -282,7 +282,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       create Receipt
     </Button>
 
-    {props.party.receipts === undefined
+    {props.party.receipts === undefined || props.party.receipts.length === 0
       ? "등록된 영수증이 없습니다"
       : props.party.receipts.map((receipt, index) => (
           <Container
