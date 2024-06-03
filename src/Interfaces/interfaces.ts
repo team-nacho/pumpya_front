@@ -1,11 +1,7 @@
-export interface Member {
-  name: string;
-  usedCost: number;
-}
 export interface Party {
   partyId: string;
   partyName: string;
-  members: String[];
+  members: string[];
   receipts: Receipt[];
   totalCost: number;
 }
