@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import { useEffect, useState, useRef } from "react";
-import { useDisclosure } from "@chakra-ui/react";
+import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
@@ -13,13 +13,17 @@ const PartyContainer = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const disclosureReceipt = useDisclosure();
+  const disclosureModal = useDisclosure();
   const isOpenReceipt = disclosureReceipt.isOpen;
   const onOpenReceipt = disclosureReceipt.onOpen;
   const onCloseReceipt = disclosureReceipt.onClose;
+  const isOpenModal = disclosureModal.isOpen;
+  const onOpenModal = disclosureModal.onOpen;
+  const onCloseModal = disclosureModal.onClose;
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
   const btnReceipt = useRef<HTMLButtonElement | null>(null);
-
+  const toast = useToast();
   const { partyId } = useParams();
   const contexts = useAppContext();
   const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -36,7 +40,8 @@ const PartyContainer = () => {
     createdAt: undefined,
     tag: undefined,
   });
-  const [join, setJoin] = useState<string[]>([]); // [Member, Member,
+  const [join, setJoin] = useState<string[]>([]);
+  const [nickname, setNickname] = useState<string>("");
   const [memberList, setMemberList] = useState<string[]>(["jaeyoon"]); //test
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
@@ -47,9 +52,39 @@ const PartyContainer = () => {
     stompClient?.publish({
       destination,
       body: JSON.stringify({
-        name: "newMemberName",
+        name: nickname,
       }),
     });
+  };
+  const duplicatedName = () => {
+    toast({
+      title: `중복된 이름은 사용할 수 없어요`,
+      status: "error",
+      isClosable: true,
+    });
+  };
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: `success copy`,
+          status: "success",
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: `error copy`,
+          status: "error",
+          isClosable: true,
+        });
+      });
+  };
+  const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
+    setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
@@ -227,8 +262,8 @@ const PartyContainer = () => {
         .catch((err) => {
           console.log(err);
         });
-    }
-  }, [contexts]);
+    } else contexts.setLoading(false);
+  }, [contexts?.party, partyId]);
 
   return (
     <>
@@ -249,7 +284,15 @@ const PartyContainer = () => {
           onOpen={onOpen}
           onClose={onClose}
           btnDrawer={btnDrawer}
+          duplicatedName={duplicatedName}
+          copyToClipboard={copyToClipboard}
           onClickEndParty={onClickEndParty}
+          isOpenModal={isOpenModal}
+          onOpenModal={onOpenModal}
+          onCloseModal={onCloseModal}
+          nickname={nickname}
+          setNickname={setNickname}
+          handleInputNickName={handleInputNickName}
           onChangeCostInput={onChangeCostInput}
           onChangeNameInput={onChangeNameInput}
           cost={cost}

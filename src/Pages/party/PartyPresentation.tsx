@@ -20,10 +20,18 @@ import {
   MenuItem,
   MenuList,
   Container,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useToast,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
-  party: Party;
+  party: Party | undefined;
   memberList: string[];
   currentMember: string;
   currencyList: Currency[];
@@ -36,7 +44,15 @@ interface PartyPresentationProps {
   onOpen: () => void;
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
+  duplicatedName: () => void;
+  copyToClipboard: () => void;
   onClickEndParty: () => void;
+  isOpenModal: boolean;
+  onOpenModal: () => void;
+  onCloseModal: () => void;
+  nickname: string;
+  setNickname: (nickname: string) => void;
+  handleInputNickName: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeCostInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   cost: number;
@@ -92,18 +108,6 @@ const UnClickedButton: React.FC<{
   );
 };
 
-const copyToClipboard = () => {
-  const url = window.location.href;
-  navigator.clipboard
-    .writeText(url)
-    .then(() => {
-      alert("URL이 복사되었습니다: " + url);
-    })
-    .catch((err) => {
-      console.error("복사 실패: ", err);
-    });
-};
-
 function formatTwoDigits(value: number | undefined): string {
   if (value !== undefined) return value.toString().padStart(2, "0");
   else return "00";
@@ -123,11 +127,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
   <div>
     <Flex verticalAlign="center">
       <Heading as="h2" size="xl">
-        {props.party.partyName}
+        {props.party?.partyName}
         {"\u00B7"}
       </Heading>
       <Text fontSize="2xl" marginY="5px">
-        {props.party.members.length}명
+        {props.party?.members.length}명
       </Text>
       <Spacer />
       <Button
@@ -151,10 +155,10 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           <DrawerHeader marginY="3px">
             {props.currentMember}님의
             <Heading as="h2" size="xl" marginY="7px">
-              {props.party.partyName}
+              {props.party?.partyName}
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
-              {props.party.members?.map((member, index) => {
+              {props.party?.members?.map((member, index) => {
                 if (member !== props.currentMember) {
                   return (
                     <Button
@@ -169,7 +173,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
                 }
               })}
               <Button
-                onClick={props.onClickAddMember}
+                onClick={props.onOpenModal}
                 colorScheme="gray"
                 variant="ghost"
               >
@@ -183,7 +187,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               variant="ghost"
               w="100%"
               h="48px"
-              onClick={copyToClipboard}
+              onClick={props.copyToClipboard}
             >
               URL 복사하기
             </Button>
@@ -205,11 +209,47 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </DrawerContent>
       </Drawer>
     </Flex>
+    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>새로운 맴버를 추가하세요</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Text>you can use your nickname!</Text>
+          <Text>but also can use random animal nickname!</Text>
+          <Input
+            placeholder={props.nickname}
+            onChange={props.handleInputNickName}
+          />
+        </ModalBody>
+
+        <ModalFooter>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={() => {
+              if (
+                props.party?.members.find(
+                  (member: string) => member === props.nickname
+                ) === undefined
+              ) {
+                props.onClickAddMember();
+                props.onClose();
+              } else {
+                props.duplicatedName();
+              }
+            }}
+          >
+            Create!
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
     <Text fontSize="lg" marginY="5px">
       이번 여행에서 소비했어요
     </Text>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party.totalCost}원
+      {props.party?.totalCost}원
     </Heading>
     <Flex justifyContent="space-between">
       <Input
@@ -259,9 +299,9 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         )
       )}
     </Stack>
-    {props.party.members?.length !== 1 ? (
+    {props.party?.members?.length !== 1 ? (
       <Stack direction="row" spacing={4} align="center">
-        {props.party.members?.map((member, index) =>
+        {props.party?.members?.map((member, index) =>
           props.join.find((e: string) => e === member) !== undefined ? (
             <ClickedButton
               key={`${index}-join`}
@@ -282,7 +322,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       create Receipt
     </Button>
 
-    {props.party.receipts === undefined || props.party.receipts.length === 0
+    {props.party?.receipts === undefined || props.party?.receipts.length === 0
       ? "등록된 영수증이 없습니다"
       : props.party.receipts.map((receipt, index) => (
           <Container
