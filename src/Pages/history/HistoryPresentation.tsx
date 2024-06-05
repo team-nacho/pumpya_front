@@ -43,7 +43,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
       <Button onClick={props.onBack}>뒤로가기</Button>
     </div>
     <div>
-      <Heading fontSize="30">{props.partyName || "족병신 건영이"}🎉</Heading>
+      <Heading fontSize="30">{props.partyName || "기다려주세요..."}🎉</Heading>
     </div>
     <div>
       <Heading fontSize="50">{props.partyTotal.toLocaleString()}원</Heading>
@@ -77,7 +77,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
                   <Container as="span" flex="1" textAlign="left">
                     <p style={{ fontSize: 15 }}>{name}님에게 얼마를 주세요</p>
                   </Container>
-                </AccordionPanel>
+                </AccordionPanel>*
               </AccordionItem>
             </Accordion>
           ))}

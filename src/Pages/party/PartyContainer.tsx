@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import { useEffect, useState } from "react";
-import { Currency, Member, Party, Receipt, Tag } from "../../Interfaces/interfaces";
+import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
 
@@ -21,7 +21,7 @@ const PartyContainer = () => {
     createdAt: undefined,
     tag: undefined,
   });
-  const [join, setJoin] = useState<Member[]>([]); // [Member, Member, Member
+  const [join, setJoin] = useState<string[]>([]); // [Member, Member, Member
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
     country: "United States of America",

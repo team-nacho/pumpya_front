@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Receipt } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
 import HistoryPresentation from "./HistoryPresentation";
-import { receiptApi, tagApi } from "../../Apis/apis";
+import { receiptApi, tagApi, partyApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const HistoryContainer = () => {
@@ -45,7 +45,30 @@ const HistoryContainer = () => {
 
   const partyName = context.party?.partyName ?? "";
 
-  const partyTotal = context.party?.totalCost.toLocalString() ?? 0;
+  const partyTotal = context.totalCost?.toLocaleString();
+
+  const calTotalCost = (receipts: Receipt[]) => {
+    // 통화별 총 금액을 저장할 객체
+    const totalCostsByCurrency: { [key: string]: number } = {};
+
+    if (receipts) {
+      receipts.forEach((receipt) => {
+        // useCurrency가 undefined인 경우를 처리
+        if (receipt.useCurrency) {
+          if (!totalCostsByCurrency[receipt.useCurrency]) {
+            totalCostsByCurrency[receipt.useCurrency] = 0;
+          }
+          totalCostsByCurrency[receipt.useCurrency] += receipt.cost;
+        } else {
+          console.warn(`Receipt with undefined currency found`);
+        }
+      });
+    } else {
+      console.log("등록된 영수증이 없습니다.");
+    }
+
+    return totalCostsByCurrency.value;
+  };
 
   const handleTagClick = (tag: string) => {
     const filteredReciepts = context.receipts.filter(
@@ -76,13 +99,24 @@ const HistoryContainer = () => {
     // 로딩 로직 추가
     receiptApi.getReceipts(partyId!!).then((response) => {
       context.setReceipts(response.data);
-      console.log(response.data); // Fetch and log receipts
+      calTotalCost(response.data.receipts);
+      context.setTotalCost(calTotalCost(response.data.receipts) || []);
       context.setLoading(false); // 로딩 완료
     });
-    tagApi.getTags().then((response)=>{
+    tagApi.getTags().then((response) => {
       context.setTags(response.data);
-      console.log(response.data); // Fetch and log receipts
       context.setLoading(false); // 로딩 완료
+    });
+    partyApi.getParty(partyId!!).then((response) => {
+      context.setParty(response.data);
+      console.log(response.data);
+      context.setLoading(false);
+    });
+    partyApi.getResult(partyId!!).then((response)=>{
+      context.setSettlements(response.data.result);
+      console.log("돈줘" + context.settlements);
+      console.log("디버그디버그");
+      context.setLoading(false);
     })
   }, []);
 

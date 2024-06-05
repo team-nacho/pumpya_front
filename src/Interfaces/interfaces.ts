@@ -1,11 +1,7 @@
-export interface Member {
-  name: string;
-  usedCost: number;
-}
 export interface Party {
   partyId: string;
   partyName: string;
-  members: String[];
+  members: string[];
   receipts: Receipt[];
   totalCost: number;
 }
@@ -26,4 +22,19 @@ export interface Tag {
 export interface Currency {
   currencyId: string;
   country: string;
+}
+
+export interface from {
+  from: string;
+  to: To[];
+}
+
+export interface To{
+  to: string;
+  amount: number;
+}
+
+export interface Settlement {
+  currency: string;
+  transactions: from[];
 }

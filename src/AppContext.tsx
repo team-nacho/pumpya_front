@@ -1,14 +1,16 @@
 import { createContext, useContext, useState } from "react";
-import { Member, Party, Receipt } from "./Interfaces/interfaces";
+import { Party, Receipt, Tag, Currency, Settlement } from "./Interfaces/interfaces";
 
 const AppContext = createContext<any | undefined>(undefined);
 
 export const AppProdiver = ({ children }: any) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [party, setParty] = useState<Party | undefined>(undefined);
-  const [currentMember, setCurrentMember] = useState<Member | undefined>(undefined);
+  const [currentMember, setCurrentMember] = useState<string | undefined>(undefined);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [totalCost, setTotalCost] = useState<Number>(0);
+  const [settlements, setSettlements] = useState<any>([]);
   
   return (
     <AppContext.Provider value={{
@@ -21,7 +23,11 @@ export const AppProdiver = ({ children }: any) => {
       receipts,
       setReceipts,
       tags,
-      setTags
+      setTags,
+      totalCost,
+      setTotalCost,
+      settlements,
+      setSettlements
     }}>
       {children}
     </AppContext.Provider>
