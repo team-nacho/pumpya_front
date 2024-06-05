@@ -49,17 +49,35 @@ const PartyContainer = () => {
     country: "미국",
   });
   const onClickAddMember = () => {
-    const destination = `/pub/party/${partyId}/new-member`;
-    stompClient?.publish({
-      destination,
-      body: JSON.stringify({
-        name: nickname,
-      }),
-    });
+    if (nickname === "") noName();
+    else {
+      if (
+        contexts.party.members.find((member: string) => member === nickname) ===
+        undefined
+      ) {
+        const destination = `/pub/party/${partyId}/new-member`;
+        stompClient?.publish({
+          destination,
+          body: JSON.stringify({
+            name: nickname,
+          }),
+        });
+        onClose();
+      } else {
+        duplicatedName();
+      }
+    }
   };
   const duplicatedName = () => {
     toast({
       title: `중복된 이름은 사용할 수 없어요`,
+      status: "error",
+      isClosable: true,
+    });
+  };
+  const noName = () => {
+    toast({
+      title: `이름을 입력해주세요`,
       status: "error",
       isClosable: true,
     });
@@ -309,6 +327,7 @@ const PartyContainer = () => {
           onClose={onClose}
           btnDrawer={btnDrawer}
           duplicatedName={duplicatedName}
+          noName={noName}
           copyToClipboard={copyToClipboard}
           onClickEndParty={onClickEndParty}
           isOpenModal={isOpenModal}

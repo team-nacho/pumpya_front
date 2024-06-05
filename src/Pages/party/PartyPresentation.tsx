@@ -44,6 +44,7 @@ interface PartyPresentationProps {
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
   duplicatedName: () => void;
+  noName: () => void;
   copyToClipboard: () => void;
   onClickEndParty: () => void;
   isOpenModal: boolean;
@@ -215,30 +216,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <ModalCloseButton />
         <ModalBody>
           <Text>you can use your nickname!</Text>
-          <Text>but also can use random animal nickname!</Text>
           <Input
-            placeholder={props.nickname}
+            placeholder={"nickname"}
             onChange={props.handleInputNickName}
           />
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={() => {
-              if (
-                props.party?.members.find(
-                  (member: string) => member === props.nickname
-                ) === undefined
-              ) {
-                props.onClickAddMember();
-                props.onClose();
-              } else {
-                props.duplicatedName();
-              }
-            }}
-          >
+          <Button colorScheme="blue" mr={3} onClick={props.onClickAddMember}>
             Create!
           </Button>
         </ModalFooter>
