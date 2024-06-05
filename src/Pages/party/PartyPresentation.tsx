@@ -54,8 +54,8 @@ interface PartyPresentationProps {
   handleInputNickName: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeCostInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  cost: number;
-  setCost: (cost: number) => void;
+  cost: string;
+  setCost: (cost: string) => void;
   useCurrency: Currency;
   setUseCurrency: (useCurrency: Currency) => void;
   receiptName: string;
