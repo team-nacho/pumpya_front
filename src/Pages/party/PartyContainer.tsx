@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
+import PartyModal from "./PartyModal";
 import { useEffect, useState, useRef } from "react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
@@ -21,6 +22,7 @@ const PartyContainer = () => {
   const onOpenModal = disclosureModal.onOpen;
   const onCloseModal = disclosureModal.onClose;
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
+  const [isLocalCurrent, setIsLocalCurrent] = useState<boolean>(false);
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
   const btnReceipt = useRef<HTMLButtonElement | null>(null);
   const toast = useToast();
@@ -42,7 +44,6 @@ const PartyContainer = () => {
   });
   const [join, setJoin] = useState<string[]>([]);
   const [nickname, setNickname] = useState<string>("");
-  const [memberList, setMemberList] = useState<string[]>(["jaeyoon"]); //test
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
     country: "미국",
@@ -83,7 +84,6 @@ const PartyContainer = () => {
       });
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
     setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +119,6 @@ const PartyContainer = () => {
     const foundMember = contexts.party.members.find(
       (member: string) => member === memberName
     );
-    console.log(foundMember);
 
     if (foundMember) {
       contexts.setCurrentMember(foundMember);
@@ -143,15 +142,14 @@ const PartyContainer = () => {
     setReceiptName(e.target.value);
   };
   //stomp
-  const addJoin = (index: number) => {
+  const addJoin = (addMember: string) => {
     const newJoin = [...join];
-    newJoin.push(memberList[index]);
+    newJoin.push(addMember);
     setJoin(newJoin);
   };
 
-  const deleteJoin = (index: number) => {
-    const newJoin = [...join];
-    newJoin.splice(index, 1);
+  const deleteJoin = (deleteMember: string) => {
+    const newJoin = join.filter((member: string) => member !== deleteMember);
     setJoin(newJoin);
   };
 
@@ -193,7 +191,7 @@ const PartyContainer = () => {
             try {
               const parsedMessage = JSON.parse(frame.body);
               //새로운 영수증이 들어오면 추가
-              //console.log(parsedMessage);
+              console.log(parsedMessage);
               contexts.setParty((prev: Party) => {
                 return {
                   ...prev,
@@ -235,8 +233,6 @@ const PartyContainer = () => {
       const localCurrentMember = JSON.parse(
         localStorage.getItem("pumpya_user")!!
       );
-      contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
-      //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
       partyApi
         .getParty(partyId!!)
         .then((response) => {
@@ -251,12 +247,14 @@ const PartyContainer = () => {
               totalCost: 0,
             };
           });
-          setReceipt((prev: Receipt) => {
-            return {
-              ...prev,
-              author: localCurrentMember.pumpya_user_name,
-            };
-          });
+
+          if (localCurrentMember !== null) {
+            contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
+            //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
+            setIsLocalCurrent(true);
+          } else {
+            setIsLocalCurrent(false);
+          }
           contexts.setLoading(false);
         })
         .catch((err) => {
@@ -265,14 +263,25 @@ const PartyContainer = () => {
     } else contexts.setLoading(false);
   }, [contexts?.party, partyId]);
 
+  useEffect(() => {
+    setReceipt((prev: Receipt) => {
+      return {
+        ...prev,
+        author: contexts.currentMember,
+      };
+    });
+    setJoin([]);
+  }, [contexts.currentMember]);
+
   return (
     <>
       {contexts.loading ? (
         <div>loading...</div>
+      ) : isLocalCurrent === false ? (
+        <PartyModal party={contexts.party} />
       ) : (
         <PartyPresentation
           party={contexts.party}
-          memberList={memberList}
           currentMember={contexts.currentMember}
           currencyList={currencyList}
           tagList={tagList}

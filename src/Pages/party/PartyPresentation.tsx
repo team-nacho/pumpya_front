@@ -32,7 +32,6 @@ import {
 
 interface PartyPresentationProps {
   party: Party | undefined;
-  memberList: string[];
   currentMember: string;
   currencyList: Currency[];
   tagList: Tag[];
@@ -65,8 +64,8 @@ interface PartyPresentationProps {
   setTag: (tag: Tag | undefined) => void;
   join: string[];
   setJoin: (join: string[]) => void;
-  addJoin: (index: number) => void;
-  deleteJoin: (index: number) => void;
+  addJoin: (member: string) => void;
+  deleteJoin: (member: string) => void;
   isOpenReceipt: boolean;
   onOpenReceipt: () => void;
   onCloseReceipt: () => void;
@@ -124,7 +123,7 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 };
 
 const PartyPresentation = (props: PartyPresentationProps) => (
-  <div>
+  <div style={{ padding: "10px" }}>
     <Flex verticalAlign="center">
       <Heading as="h2" size="xl">
         {props.party?.partyName}
@@ -300,28 +299,33 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       )}
     </Stack>
     {props.party?.members?.length !== 1 ? (
-      <Stack direction="row" spacing={4} align="center">
-        {props.party?.members?.map((member, index) =>
-          props.join.find((e: string) => e === member) !== undefined ? (
-            <ClickedButton
-              key={`${index}-join`}
-              element={member}
-              clickHandler={() => props.deleteJoin(index)}
-            ></ClickedButton>
-          ) : (
-            <UnClickedButton
-              key={`${index}-notjoin`}
-              element={member}
-              clickHandler={() => props.addJoin(index)}
-            ></UnClickedButton>
-          )
-        )}
-      </Stack>
+      <>
+        <Text>누구와 함께 하셨나요?</Text>
+        <Stack direction="row" spacing={4} align="center">
+          {props.party?.members
+            ?.filter((member: string) => member !== props.currentMember)
+            .map((member, index) =>
+              props.join.find((e: string) => e === member) !== undefined ? (
+                <ClickedButton
+                  key={`${index}-join`}
+                  element={member}
+                  clickHandler={() => props.deleteJoin(member)}
+                ></ClickedButton>
+              ) : (
+                <UnClickedButton
+                  key={`${index}-notjoin`}
+                  element={member}
+                  clickHandler={() => props.addJoin(member)}
+                ></UnClickedButton>
+              )
+            )}
+        </Stack>
+      </>
     ) : null}
     <Button onClick={props.onClickCreateReceipt} marginY="5px">
       create Receipt
     </Button>
-
+    <p></p>
     {props.party?.receipts === undefined || props.party?.receipts.length === 0
       ? "등록된 영수증이 없습니다"
       : props.party.receipts.map((receipt, index) => (
