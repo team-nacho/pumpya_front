@@ -1,8 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
+import PartyModal from "./PartyModal";
 import { useEffect, useState, useRef } from "react";
-import { useDisclosure } from "@chakra-ui/react";
+import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
 import { partyApi } from "../../Apis/apis";
@@ -13,19 +14,24 @@ const PartyContainer = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const disclosureReceipt = useDisclosure();
+  const disclosureModal = useDisclosure();
   const isOpenReceipt = disclosureReceipt.isOpen;
   const onOpenReceipt = disclosureReceipt.onOpen;
   const onCloseReceipt = disclosureReceipt.onClose;
+  const isOpenModal = disclosureModal.isOpen;
+  const onOpenModal = disclosureModal.onOpen;
+  const onCloseModal = disclosureModal.onClose;
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
+  const [isLocalCurrent, setIsLocalCurrent] = useState<boolean>(false);
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
   const btnReceipt = useRef<HTMLButtonElement | null>(null);
-
+  const toast = useToast();
   const { partyId } = useParams();
   const contexts = useAppContext();
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [cost, setCost] = useState<number>(0);
   const [receiptName, setReceiptName] = useState<string>("");
-  const [tag, setTag] = useState<Tag | undefined>(undefined);
+  const [useTag, setUseTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
     partyId: partyId!!,
     receiptName: "ttt",
@@ -34,26 +40,51 @@ const PartyContainer = () => {
     cost: 0,
     useCurrency: undefined,
     createdAt: undefined,
-    tag: undefined,
+    useTag: undefined,
   });
-  const [join, setJoin] = useState<string[]>([]); // [Member, Member,
-  const [memberList, setMemberList] = useState<string[]>(["jaeyoon"]); //test
+  const [join, setJoin] = useState<string[]>([]);
+  const [nickname, setNickname] = useState<string>("");
   const [useCurrency, setUseCurrency] = useState<Currency>({
     currencyId: "USD",
     country: "미국",
   });
   const onClickAddMember = () => {
-    if (stompClient && stompClient.connected) {
-      console.log("STOMP client is not connected");
-      return;
-    }
     const destination = `/pub/party/${partyId}/new-member`;
     stompClient?.publish({
       destination,
       body: JSON.stringify({
-        name: "newMemberName",
+        name: nickname,
       }),
     });
+  };
+  const duplicatedName = () => {
+    toast({
+      title: `중복된 이름은 사용할 수 없어요`,
+      status: "error",
+      isClosable: true,
+    });
+  };
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: `success copy`,
+          status: "success",
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: `error copy`,
+          status: "error",
+          isClosable: true,
+        });
+      });
+  };
+  const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
@@ -88,7 +119,6 @@ const PartyContainer = () => {
     const foundMember = contexts.party.members.find(
       (member: string) => member === memberName
     );
-    console.log(foundMember);
 
     if (foundMember) {
       contexts.setCurrentMember(foundMember);
@@ -102,6 +132,10 @@ const PartyContainer = () => {
       console.log("Member not found");
     }
   };
+  const onClickSetCurrentMember = (memberName: string) => {
+    onClickChangeCurrentMember(memberName);
+    setIsLocalCurrent(true);
+  };
   const onClickEndParty = () => {
     navigate(`/history/${contexts.party.partyId}`);
   };
@@ -112,15 +146,14 @@ const PartyContainer = () => {
     setReceiptName(e.target.value);
   };
   //stomp
-  const addJoin = (index: number) => {
+  const addJoin = (addMember: string) => {
     const newJoin = [...join];
-    newJoin.push(memberList[index]);
+    newJoin.push(addMember);
     setJoin(newJoin);
   };
 
-  const deleteJoin = (index: number) => {
-    const newJoin = [...join];
-    newJoin.push(memberList[index]);
+  const deleteJoin = (deleteMember: string) => {
+    const newJoin = join.filter((member: string) => member !== deleteMember);
     setJoin(newJoin);
   };
 
@@ -162,7 +195,7 @@ const PartyContainer = () => {
             try {
               const parsedMessage = JSON.parse(frame.body);
               //새로운 영수증이 들어오면 추가
-              //console.log(parsedMessage);
+              console.log(parsedMessage);
               contexts.setParty((prev: Party) => {
                 return {
                   ...prev,
@@ -204,8 +237,6 @@ const PartyContainer = () => {
       const localCurrentMember = JSON.parse(
         localStorage.getItem("pumpya_user")!!
       );
-      contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
-      //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
       partyApi
         .getParty(partyId!!)
         .then((response) => {
@@ -220,28 +251,44 @@ const PartyContainer = () => {
               totalCost: 0,
             };
           });
-          setReceipt((prev: Receipt) => {
-            return {
-              ...prev,
-              author: localCurrentMember.pumpya_user_name,
-            };
-          });
+
+          if (localCurrentMember !== null) {
+            contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
+            //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
+            setIsLocalCurrent(true);
+          } else {
+            setIsLocalCurrent(false);
+          }
           contexts.setLoading(false);
         })
         .catch((err) => {
           console.log(err);
         });
-    }
-  }, [contexts, partyId]);
+    } else contexts.setLoading(false);
+  }, [contexts?.party, partyId]);
+
+  useEffect(() => {
+    setReceipt((prev: Receipt) => {
+      return {
+        ...prev,
+        author: contexts.currentMember,
+      };
+    });
+    setJoin([]);
+  }, [contexts.currentMember]);
 
   return (
     <>
       {contexts.loading ? (
         <div>loading...</div>
+      ) : isLocalCurrent === false ? (
+        <PartyModal
+          party={contexts.party}
+          onClickSetCurrentMember={onClickSetCurrentMember}
+        />
       ) : (
         <PartyPresentation
           party={contexts.party}
-          memberList={memberList}
           currentMember={contexts.currentMember}
           currencyList={currencyList}
           tagList={tagList}
@@ -253,7 +300,15 @@ const PartyContainer = () => {
           onOpen={onOpen}
           onClose={onClose}
           btnDrawer={btnDrawer}
+          duplicatedName={duplicatedName}
+          copyToClipboard={copyToClipboard}
           onClickEndParty={onClickEndParty}
+          isOpenModal={isOpenModal}
+          onOpenModal={onOpenModal}
+          onCloseModal={onCloseModal}
+          nickname={nickname}
+          setNickname={setNickname}
+          handleInputNickName={handleInputNickName}
           onChangeCostInput={onChangeCostInput}
           onChangeNameInput={onChangeNameInput}
           cost={cost}
@@ -262,8 +317,8 @@ const PartyContainer = () => {
           setUseCurrency={setUseCurrency}
           receiptName={receiptName}
           setReceiptName={setReceiptName}
-          tag={tag}
-          setTag={setTag}
+          useTag={useTag}
+          setUseTag={setUseTag}
           join={join}
           setJoin={setJoin}
           addJoin={addJoin}

@@ -17,6 +17,7 @@ const HomeContainer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [randomName, setRandomName] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
+  const [partyCreated, setPartyCreated] = useState<boolean>(false);
   const appContext = useAppContext();
 
   const onClickCreateParty = async () => {
@@ -46,15 +47,16 @@ const HomeContainer = () => {
 
       appContext.setCurrentMember(request.userName);
       //save party data
-      appContext.setParty(response.data);
       appContext.setParty((prev: Party) => ({
         ...prev,
+        partyId: response.data.partyId,
+        partyName: response.data.partyName,
         members: responseMembers.data.members,
+        totalCost: response.data.totalCost,
       }));
-      console.log(response.data);
-      console.log(responseMembers.data.members);
-      console.log(appContext.party);
-      navigate(`/party/${response.data.partyId}`);
+
+      // 상태 업데이트 후 navigate를 호출하기 위한 플래그 설정
+      setPartyCreated(true);
     }
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +64,13 @@ const HomeContainer = () => {
     setNickname(e.target.value);
   };
 
+  useEffect(() => {
+    if (partyCreated) {
+      navigate(`/party/${appContext.party.partyId}`);
+      console.log(appContext);
+      setPartyCreated(false); // 플래그를 리셋하여 무한 루프 방지
+    }
+  }, [partyCreated, navigate, appContext?.party?.partyId]);
   useEffect(() => {
     setRandomName("random name");
     setNickname(randomName);

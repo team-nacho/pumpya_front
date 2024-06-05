@@ -16,14 +16,14 @@ const HistoryContainer = () => {
   const context = useAppContext();
 
   const hasSelectedTag = context.receipts.some(
-    (receipt: Receipt) => receipt.tag === selectedTag
+    (receipt: Receipt) => receipt.useTag === selectedTag
   );
 
   const categories = context.tags;
 
   const getCategoryReceipts = (category: string) => {
     return context.receipts.filter(
-      (receipt: Receipt) => receipt.tag === category
+      (receipt: Receipt) => receipt.useTag === category
     );
   };
 
@@ -49,7 +49,7 @@ const HistoryContainer = () => {
 
   const handleTagClick = (tag: string) => {
     const filteredReciepts = context.receipts.filter(
-      (receipt: Receipt) => receipt.tag === tag
+      (receipt: Receipt) => receipt.useTag === tag
     );
     setFilteredReceipts(filteredReciepts);
     if (selectedTag === tag) {
@@ -79,11 +79,11 @@ const HistoryContainer = () => {
       console.log(response.data); // Fetch and log receipts
       context.setLoading(false); // 로딩 완료
     });
-    tagApi.getTags().then((response)=>{
+    tagApi.getTags().then((response) => {
       context.setTags(response.data);
       console.log(response.data); // Fetch and log receipts
       context.setLoading(false); // 로딩 완료
-    })
+    });
   }, []);
 
   useEffect(() => {
@@ -93,7 +93,7 @@ const HistoryContainer = () => {
     } else {
       // 선택된 태그에 맞는 영수증을 필터링하여 표시
       const filteredReciepts = context.receipts.filter(
-        (receipt: Receipt) => receipt.tag === selectedTag
+        (receipt: Receipt) => receipt.useTag === selectedTag
       );
       setFilteredReceipts(filteredReciepts);
     }

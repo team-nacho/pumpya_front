@@ -20,11 +20,18 @@ import {
   MenuItem,
   MenuList,
   Container,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useToast,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
-  party: Party;
-  memberList: string[];
+  party: Party | undefined;
   currentMember: string;
   currencyList: Currency[];
   tagList: Tag[];
@@ -36,7 +43,15 @@ interface PartyPresentationProps {
   onOpen: () => void;
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
+  duplicatedName: () => void;
+  copyToClipboard: () => void;
   onClickEndParty: () => void;
+  isOpenModal: boolean;
+  onOpenModal: () => void;
+  onCloseModal: () => void;
+  nickname: string;
+  setNickname: (nickname: string) => void;
+  handleInputNickName: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeCostInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   cost: number;
@@ -45,12 +60,12 @@ interface PartyPresentationProps {
   setUseCurrency: (useCurrency: Currency) => void;
   receiptName: string;
   setReceiptName: (receiptName: string) => void;
-  tag: Tag | undefined;
-  setTag: (tag: Tag | undefined) => void;
+  useTag: Tag | undefined;
+  setUseTag: (useTag: Tag | undefined) => void;
   join: string[];
   setJoin: (join: string[]) => void;
-  addJoin: (index: number) => void;
-  deleteJoin: (index: number) => void;
+  addJoin: (member: string) => void;
+  deleteJoin: (member: string) => void;
   isOpenReceipt: boolean;
   onOpenReceipt: () => void;
   onCloseReceipt: () => void;
@@ -92,18 +107,6 @@ const UnClickedButton: React.FC<{
   );
 };
 
-const copyToClipboard = () => {
-  const url = window.location.href;
-  navigator.clipboard
-    .writeText(url)
-    .then(() => {
-      alert("URL이 복사되었습니다: " + url);
-    })
-    .catch((err) => {
-      console.error("복사 실패: ", err);
-    });
-};
-
 function formatTwoDigits(value: number | undefined): string {
   if (value !== undefined) return value.toString().padStart(2, "0");
   else return "00";
@@ -120,14 +123,14 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 };
 
 const PartyPresentation = (props: PartyPresentationProps) => (
-  <div>
+  <div style={{ padding: "10px" }}>
     <Flex verticalAlign="center">
       <Heading as="h2" size="xl">
-        {props.party.partyName}
+        {props.party?.partyName}
         {"\u00B7"}
       </Heading>
       <Text fontSize="2xl" marginY="5px">
-        {props.party.members.length}명
+        {props.party?.members.length}명
       </Text>
       <Spacer />
       <Button
@@ -151,14 +154,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           <DrawerHeader marginY="3px">
             {props.currentMember}님의
             <Heading as="h2" size="xl" marginY="7px">
-              {props.party.partyName}
+              {props.party?.partyName}
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
-              {props.party.members?.map((member) => {
+              {props.party?.members?.map((member, index) => {
                 if (member !== props.currentMember) {
                   return (
                     <Button
-                      key={member}
+                      key={index}
                       onClick={() => props.onClickChangeCurrentMember(member)}
                       colorScheme="gray"
                       variant="ghost"
@@ -169,7 +172,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
                 }
               })}
               <Button
-                onClick={props.onClickAddMember}
+                onClick={props.onOpenModal}
                 colorScheme="gray"
                 variant="ghost"
               >
@@ -183,7 +186,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               variant="ghost"
               w="100%"
               h="48px"
-              onClick={copyToClipboard}
+              onClick={props.copyToClipboard}
             >
               URL 복사하기
             </Button>
@@ -205,11 +208,47 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </DrawerContent>
       </Drawer>
     </Flex>
+    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>새로운 맴버를 추가하세요</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Text>you can use your nickname!</Text>
+          <Text>but also can use random animal nickname!</Text>
+          <Input
+            placeholder={props.nickname}
+            onChange={props.handleInputNickName}
+          />
+        </ModalBody>
+
+        <ModalFooter>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={() => {
+              if (
+                props.party?.members.find(
+                  (member: string) => member === props.nickname
+                ) === undefined
+              ) {
+                props.onClickAddMember();
+                props.onClose();
+              } else {
+                props.duplicatedName();
+              }
+            }}
+          >
+            Create!
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
     <Text fontSize="lg" marginY="5px">
       이번 여행에서 소비했어요
     </Text>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party.totalCost}원
+      {props.party?.totalCost}원
     </Heading>
     <Flex justifyContent="space-between">
       <Input
@@ -244,45 +283,50 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     />
     <Stack direction="row" spacing={4} align="center">
       {props.tagList.map((choiceTag) =>
-        choiceTag === props.tag ? (
+        choiceTag === props.useTag ? (
           <ClickedButton
             key={choiceTag.name}
             element={choiceTag.name}
-            clickHandler={() => props.setTag(undefined)}
+            clickHandler={() => props.setUseTag(undefined)}
           ></ClickedButton>
         ) : (
           <UnClickedButton
             key={choiceTag.name}
             element={choiceTag.name}
-            clickHandler={() => props.setTag(choiceTag)}
+            clickHandler={() => props.setUseTag(choiceTag)}
           ></UnClickedButton>
         )
       )}
     </Stack>
-    {props.party.members?.length !== 1 ? (
-      <Stack direction="row" spacing={4} align="center">
-        {props.party.members?.map((member, index) =>
-          props.join.find((e: string) => e === member) !== undefined ? (
-            <ClickedButton
-              key={member}
-              element={member}
-              clickHandler={() => props.addJoin(index)}
-            ></ClickedButton>
-          ) : (
-            <UnClickedButton
-              key={member}
-              element={member}
-              clickHandler={() => props.deleteJoin(index)}
-            ></UnClickedButton>
-          )
-        )}
-      </Stack>
+    {props.party?.members?.length !== 1 ? (
+      <>
+        <Text>누구와 함께 하셨나요?</Text>
+        <Stack direction="row" spacing={4} align="center">
+          {props.party?.members
+            ?.filter((member: string) => member !== props.currentMember)
+            .map((member, index) =>
+              props.join.find((e: string) => e === member) !== undefined ? (
+                <ClickedButton
+                  key={`${index}-join`}
+                  element={member}
+                  clickHandler={() => props.deleteJoin(member)}
+                ></ClickedButton>
+              ) : (
+                <UnClickedButton
+                  key={`${index}-notjoin`}
+                  element={member}
+                  clickHandler={() => props.addJoin(member)}
+                ></UnClickedButton>
+              )
+            )}
+        </Stack>
+      </>
     ) : null}
     <Button onClick={props.onClickCreateReceipt} marginY="5px">
       create Receipt
     </Button>
-
-    {props.party.receipts === undefined
+    <p></p>
+    {props.party?.receipts === undefined || props.party?.receipts.length === 0
       ? "등록된 영수증이 없습니다"
       : props.party.receipts.map((receipt, index) => (
           <Container
@@ -304,7 +348,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               <Text fontSize="lg">
                 {formatTwoDigits(receipt.createdAt?.getHours())}:
                 {formatTwoDigits(receipt.createdAt?.getMinutes())}
-                {receipt.tag}
+                {receipt.useTag}
               </Text>
               <Text fontSize="lg">
                 {receipt.useCurrency}
@@ -327,7 +371,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerBody>
           <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
           <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
-          <Button>{props.receiptDetail?.tag}</Button>
+          <Button>{props.receiptDetail?.useTag}</Button>
           <Text fontSize="2xl">에</Text>
           <Button>{props.receiptDetail?.receiptName}</Button>
           <Button>
