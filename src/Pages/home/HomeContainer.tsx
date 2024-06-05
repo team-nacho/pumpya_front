@@ -100,7 +100,7 @@ const HomeContainer = () => {
   useEffect(() => {
     combineNames();
     setNickname(randomName);
-  }, []);
+  }, [animals1, animals2]);
 
   return (
     <HomePresentation
