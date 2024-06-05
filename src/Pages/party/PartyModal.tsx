@@ -3,6 +3,7 @@ import { Box, Text, Button } from "@chakra-ui/react";
 
 interface PartyModalProps {
   party: Party | undefined;
+  onClickSetCurrentMember: (member: string) => void;
 }
 
 const PartyModal = (props: PartyModalProps) => (
@@ -27,7 +28,7 @@ const PartyModal = (props: PartyModalProps) => (
           mb={2}
           width="100%"
           key={index}
-          onClick={() => console.log({ member })}
+          onClick={() => props.onClickSetCurrentMember(member)}
         >
           {member}
         </Button>

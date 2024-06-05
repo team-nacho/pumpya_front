@@ -31,7 +31,7 @@ const PartyContainer = () => {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [cost, setCost] = useState<number>(0);
   const [receiptName, setReceiptName] = useState<string>("");
-  const [tag, setTag] = useState<Tag | undefined>(undefined);
+  const [useTag, setUseTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
     partyId: partyId!!,
     receiptName: "ttt",
@@ -40,7 +40,7 @@ const PartyContainer = () => {
     cost: 0,
     useCurrency: undefined,
     createdAt: undefined,
-    tag: undefined,
+    useTag: undefined,
   });
   const [join, setJoin] = useState<string[]>([]);
   const [nickname, setNickname] = useState<string>("");
@@ -131,6 +131,10 @@ const PartyContainer = () => {
     } else {
       console.log("Member not found");
     }
+  };
+  const onClickSetCurrentMember = (memberName: string) => {
+    onClickChangeCurrentMember(memberName);
+    setIsLocalCurrent(true);
   };
   const onClickEndParty = () => {
     navigate(`/history/${contexts.party.partyId}`);
@@ -278,7 +282,10 @@ const PartyContainer = () => {
       {contexts.loading ? (
         <div>loading...</div>
       ) : isLocalCurrent === false ? (
-        <PartyModal party={contexts.party} />
+        <PartyModal
+          party={contexts.party}
+          onClickSetCurrentMember={onClickSetCurrentMember}
+        />
       ) : (
         <PartyPresentation
           party={contexts.party}
@@ -310,8 +317,8 @@ const PartyContainer = () => {
           setUseCurrency={setUseCurrency}
           receiptName={receiptName}
           setReceiptName={setReceiptName}
-          tag={tag}
-          setTag={setTag}
+          useTag={useTag}
+          setUseTag={setUseTag}
           join={join}
           setJoin={setJoin}
           addJoin={addJoin}

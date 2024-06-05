@@ -60,8 +60,8 @@ interface PartyPresentationProps {
   setUseCurrency: (useCurrency: Currency) => void;
   receiptName: string;
   setReceiptName: (receiptName: string) => void;
-  tag: Tag | undefined;
-  setTag: (tag: Tag | undefined) => void;
+  useTag: Tag | undefined;
+  setUseTag: (useTag: Tag | undefined) => void;
   join: string[];
   setJoin: (join: string[]) => void;
   addJoin: (member: string) => void;
@@ -283,17 +283,17 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     />
     <Stack direction="row" spacing={4} align="center">
       {props.tagList.map((choiceTag) =>
-        choiceTag === props.tag ? (
+        choiceTag === props.useTag ? (
           <ClickedButton
             key={choiceTag.name}
             element={choiceTag.name}
-            clickHandler={() => props.setTag(undefined)}
+            clickHandler={() => props.setUseTag(undefined)}
           ></ClickedButton>
         ) : (
           <UnClickedButton
             key={choiceTag.name}
             element={choiceTag.name}
-            clickHandler={() => props.setTag(choiceTag)}
+            clickHandler={() => props.setUseTag(choiceTag)}
           ></UnClickedButton>
         )
       )}
@@ -348,7 +348,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               <Text fontSize="lg">
                 {formatTwoDigits(receipt.createdAt?.getHours())}:
                 {formatTwoDigits(receipt.createdAt?.getMinutes())}
-                {receipt.tag}
+                {receipt.useTag}
               </Text>
               <Text fontSize="lg">
                 {receipt.useCurrency}
@@ -371,7 +371,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerBody>
           <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
           <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
-          <Button>{props.receiptDetail?.tag}</Button>
+          <Button>{props.receiptDetail?.useTag}</Button>
           <Text fontSize="2xl">에</Text>
           <Button>{props.receiptDetail?.receiptName}</Button>
           <Button>
