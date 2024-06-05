@@ -117,7 +117,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
                   {receipt.useCurrency?.currencyId} {receipt.cost}
                 </p>
                 <b style={{ fontSize: 25 }}>{receipt.name}</b>
-                <p>{receipt.tag?.name}</p>
+                <p>{receipt.useTag?.name}</p>
               </Box>
             ))
           ) : props.hasSelectedTag ? (
@@ -132,7 +132,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
                   {receipt.useCurrency?.currencyId} {receipt.cost}
                 </p>
                 <b style={{ fontSize: 20 }}>{receipt.name}</b>
-                <p>{receipt.tag?.name}</p>
+                <p>{receipt.useTag?.name}</p>
               </Box>
             ))
           ) : (
