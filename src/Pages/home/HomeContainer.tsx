@@ -1,5 +1,6 @@
 import { useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { useAsync } from "react-use";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import HomePresentation from "./HomePresentation";
@@ -19,9 +20,34 @@ const HomeContainer = () => {
   const [nickname, setNickname] = useState<string>("");
   const [partyCreated, setPartyCreated] = useState<boolean>(false);
   const appContext = useAppContext();
+  const [animals1, setAnimals1] = useState<string[]>([]);
+  const [animals2, setAnimals2] = useState<string[]>([]);
+
+  const fetchTextFile = async (url: string) => {
+    const response = await fetch(url);
+    const text = await response.text();
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line);
+  };
+
+  useAsync(async () => {
+    const data1 = await fetchTextFile("/f.txt");
+    const data2 = await fetchTextFile("/s.txt");
+    setAnimals1(data1);
+    setAnimals2(data2);
+  }, []);
+
+  const combineNames = () => {
+    if (animals1.length > 0 && animals2.length > 0) {
+      const randomIndex1 = Math.floor(Math.random() * animals1.length);
+      const randomIndex2 = Math.floor(Math.random() * animals2.length);
+      setRandomName(animals1[randomIndex1] + " " + animals2[randomIndex2]);
+    }
+  };
 
   const onClickCreateParty = async () => {
-    //첫 사용자 이름이 정해지면 api호출해서
     const request: CreatePartyRequest = {
       userName: nickname !== null ? nickname : randomName,
     };
@@ -72,9 +98,9 @@ const HomeContainer = () => {
     }
   }, [partyCreated, navigate, appContext?.party?.partyId]);
   useEffect(() => {
-    setRandomName("random name");
+    combineNames();
     setNickname(randomName);
-  }, [randomName]);
+  }, []);
 
   return (
     <HomePresentation

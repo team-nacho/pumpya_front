@@ -27,7 +27,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useToast,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
