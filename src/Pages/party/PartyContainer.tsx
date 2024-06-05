@@ -6,7 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
-import { partyApi } from "../../Apis/apis";
+import { partyApi, receiptApi } from "../../Apis/apis";
 import { tagList, currencyList } from "./datafile";
 import { useNavigate } from "react-router-dom";
 
@@ -253,10 +253,15 @@ const PartyContainer = () => {
     if (contexts.party === undefined) {
       contexts.setLoading(true);
       //get partyId with partyId
-      //만약에 다른 방에 있다가 들어오면 해당 유저가 존재하지 않는 경우일 수 있음
-      //이 경우 해당 방에 있는 유저를 선택하도록 모달을 띄워줘야함
-
       //useEffect 실행 순서 제어해야함. 로컬 유저 판단 -> 방 활성화 판단 -> 방 정보 할당 -> 소켓연결
+
+      receiptApi.getReceipts(partyId!!).then((response) => {
+        console.log(response.data);
+        contexts.setParty((prev: Party) => {
+          return { ...prev, receipt: response.data };
+        });
+      });
+
       const localCurrentMember = JSON.parse(
         localStorage.getItem("pumpya_user")!!
       );
@@ -270,7 +275,6 @@ const PartyContainer = () => {
               partyId: response.data.partyId,
               partyName: response.data.partyName,
               members: response.data.members,
-              receipts: [],
               totalCost: 0,
             };
           });
