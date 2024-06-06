@@ -1,6 +1,5 @@
 import { useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { useAsync } from "react-use";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import HomePresentation from "./HomePresentation";
@@ -12,6 +11,7 @@ import {
   GetPartyResponse,
 } from "../../Interfaces/response";
 import { Party } from "../../Interfaces/interfaces";
+import { createRandomName } from "./randomName";
 
 const HomeContainer = () => {
   const navigate = useNavigate();
@@ -20,36 +20,10 @@ const HomeContainer = () => {
   const [nickname, setNickname] = useState<string>("");
   const [partyCreated, setPartyCreated] = useState<boolean>(false);
   const appContext = useAppContext();
-  const [animals1, setAnimals1] = useState<string[]>([]);
-  const [animals2, setAnimals2] = useState<string[]>([]);
-
-  const fetchTextFile = async (url: string) => {
-    const response = await fetch(url);
-    const text = await response.text();
-    return text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line);
-  };
-
-  useAsync(async () => {
-    const data1 = await fetchTextFile("/f.txt");
-    const data2 = await fetchTextFile("/s.txt");
-    setAnimals1(data1);
-    setAnimals2(data2);
-  }, []);
-
-  const combineNames = () => {
-    if (animals1.length > 0 && animals2.length > 0) {
-      const randomIndex1 = Math.floor(Math.random() * animals1.length);
-      const randomIndex2 = Math.floor(Math.random() * animals2.length);
-      setRandomName(animals1[randomIndex1] + " " + animals2[randomIndex2]);
-    }
-  };
 
   const onClickCreateParty = async () => {
     const request: CreatePartyRequest = {
-      userName: nickname !== null ? nickname : randomName,
+      userName: nickname !== null && nickname !== "" ? nickname : randomName,
     };
 
     const response: AxiosResponse<CreatePartyResponse> =
@@ -89,7 +63,6 @@ const HomeContainer = () => {
     //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
     setNickname(e.target.value);
   };
-
   useEffect(() => {
     if (partyCreated) {
       navigate(`/party/${appContext.party.partyId}`);
@@ -98,14 +71,18 @@ const HomeContainer = () => {
     }
   }, [partyCreated, navigate, appContext?.party?.partyId]);
   useEffect(() => {
-    combineNames();
-    setNickname(randomName);
-  }, [animals1, animals2]);
+    createRandomName().then((result: string) => {
+      setRandomName(result);
+      console.log(result);
+      setNickname(result);
+    });
+  }, []);
 
   return (
     <HomePresentation
       nickname={nickname}
       setNickname={setNickname}
+      randomName={randomName}
       onClickCreateParty={onClickCreateParty}
       handleInputNickName={handleInputNickName}
       isOpen={isOpen}
