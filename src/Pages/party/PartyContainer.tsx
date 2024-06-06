@@ -105,9 +105,6 @@ const PartyContainer = () => {
     setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //const value = Number(e.target.value);
-    // if (!isNaN(value)) setCost(value);
-
     const value = e.target.value;
     if (/^(\d+\.?\d*|\.\d+)$/.test(value) || value === "") {
       setCost(value);

@@ -351,7 +351,6 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       <DrawerContent>
         <DrawerCloseButton />
         <DrawerHeader></DrawerHeader>
-
         <DrawerBody>
           <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
           <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
@@ -364,7 +363,6 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           </Button>
           <Text fontSize="2xl">지출</Text>
         </DrawerBody>
-
         <DrawerFooter>
           <Button colorScheme="orange" variant="solid" w="100%" h="48px">
             영수증 삭제하기
