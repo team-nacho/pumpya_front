@@ -15,17 +15,17 @@ const HistoryContainer = () => {
   const { receipts } = useParams();
   const context = useAppContext();
 
-  const hasSelectedTag = context.receipts.some(
-    (receipt: Receipt) => receipt.tag === selectedTag
-  );
-
-  const categories = context.tags;
+  const hasSelectedTag = context.receipts?.some(
+    (receipt: Receipt) => receipt.useTag === selectedTag
+  ) ?? false;
+  
 
   const getCategoryReceipts = (category: string) => {
-    return context.receipts.filter(
-      (receipt: Receipt) => receipt.tag === category
+    const receipts = context.receipts || [];
+    return receipts.filter(
+      (receipt: Receipt) => receipt.useTag === category
     );
-  };
+  };  
 
   const getReceiptsByCurrency = () => {
     const receiptsByCurrency: { [key: string]: Receipt[] } = {};
@@ -67,18 +67,19 @@ const HistoryContainer = () => {
       console.log("등록된 영수증이 없습니다.");
     }
 
-    return totalCostsByCurrency.value;
+    return totalCostsByCurrency;
   };
 
   const handleTagClick = (tag: string) => {
     const filteredReciepts = context.receipts.filter(
-      (receipt: Receipt) => receipt.tag === tag
+      (receipt: Receipt) => receipt.useTag === tag
     );
     setFilteredReceipts(filteredReciepts);
     if (selectedTag === tag) {
       setSelectedTag("전체");
     } else {
       setSelectedTag(tag); // 선택된 태그 업데이트
+      console.log(tag);
     }
   };
 
@@ -96,28 +97,32 @@ const HistoryContainer = () => {
   };
 
   useEffect(() => {
+    
     // 로딩 로직 추가
     receiptApi.getReceipts(partyId!!).then((response) => {
-      context.setReceipts(response.data);
+      context.setReceipts(response.data.receipts);
+      console.log("히히" + context.receipts);
+      console.log("안녕");
       calTotalCost(response.data.receipts);
-      context.setTotalCost(calTotalCost(response.data.receipts) || []);
-      context.setLoading(false); // 로딩 완료
+      context.setTotalCost(calTotalCost(response.data.receipts) || 0);
+      console.log(context.totalCost);
     });
     tagApi.getTags().then((response) => {
-      context.setTags(response.data);
-      context.setLoading(false); // 로딩 완료
+      context.setTags(response.data.tags);
+      console.log(response.data.tags)
     });
     partyApi.getParty(partyId!!).then((response) => {
       context.setParty(response.data);
       console.log(response.data);
-      context.setLoading(false);
     });
     partyApi.getResult(partyId!!).then((response)=>{
       context.setSettlements(response.data.result);
       console.log("돈줘" + context.settlements);
       console.log("디버그디버그");
-      context.setLoading(false);
+      
     })
+    console.log(context.tags);
+    context.setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -127,7 +132,7 @@ const HistoryContainer = () => {
     } else {
       // 선택된 태그에 맞는 영수증을 필터링하여 표시
       const filteredReciepts = context.receipts.filter(
-        (receipt: Receipt) => receipt.tag === selectedTag
+        (receipt: Receipt) => receipt.useTag === selectedTag
       );
       setFilteredReceipts(filteredReciepts);
     }
@@ -146,7 +151,7 @@ const HistoryContainer = () => {
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
       hasSelectedTag={hasSelectedTag}
-      categories={categories}
+      tags={context.tags}
       getCategoryReceipts={getCategoryReceipts}
       handleTagClick={handleTagClick}
       handleCurrencyClick={handleCurrencyClick}
@@ -166,7 +171,7 @@ const HistoryContainer = () => {
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
       hasSelectedTag={hasSelectedTag}
-      categories={categories}
+      tags={context.tags}
       getCategoryReceipts={getCategoryReceipts}
       handleTagClick={handleTagClick}
       handleCurrencyClick={handleCurrencyClick}

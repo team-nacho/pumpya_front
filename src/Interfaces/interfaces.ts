@@ -13,7 +13,7 @@ export interface Receipt {
   cost: number;
   useCurrency: string | undefined;
   createdAt: Date | undefined;
-  tag: string | undefined;
+  useTag: string | undefined;
 }
 export interface Tag {
   name: string;

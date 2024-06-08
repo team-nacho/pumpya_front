@@ -19,7 +19,7 @@ const PartyContainer = () => {
     cost: 0,
     useCurrency: undefined,
     createdAt: undefined,
-    tag: undefined,
+    useTag: undefined,
   });
   const [join, setJoin] = useState<string[]>([]); // [Member, Member, Member
   const [useCurrency, setUseCurrency] = useState<Currency>({

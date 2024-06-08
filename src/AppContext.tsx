@@ -8,7 +8,7 @@ export const AppProdiver = ({ children }: any) => {
   const [party, setParty] = useState<Party | undefined>(undefined);
   const [currentMember, setCurrentMember] = useState<string | undefined>(undefined);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<Receipt[]>([]);
   const [totalCost, setTotalCost] = useState<Number>(0);
   const [settlements, setSettlements] = useState<any>([]);
   

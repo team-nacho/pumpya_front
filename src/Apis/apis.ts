@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { CreatePartyRequest } from "../Interfaces/request";
-import { CreatePartyResponse, GetResultResponse, GetPartyResponse, GetReceiptResponse, GetTagResponse } from "../Interfaces/response";
+import { CreatePartyResponse, GetResultResponse, GetPartyResponse, GetReceiptResponse, GetTagResponse, GetCurrencyResponse } from "../Interfaces/response";
 import { get } from "http";
 
 const api = axios.create({
@@ -42,3 +42,10 @@ export const tagApi = {
     return response;
   }
 }
+
+export const currencyApi = {
+  getCurrencies: async (): Promise<AxiosResponse<GetCurrencyResponse>> => {
+    const response = await api.get(`/get-currencies`);
+    return response;
+  },
+};
