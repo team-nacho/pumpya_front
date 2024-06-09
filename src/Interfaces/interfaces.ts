@@ -6,6 +6,7 @@ export interface Party {
   totalCost: number;
 }
 export interface Receipt {
+  receiptId: string;
   partyId: string;
   receiptName: string;
   author: string | undefined;
