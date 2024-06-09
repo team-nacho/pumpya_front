@@ -16,6 +16,7 @@ import {
   TabList,
   VStack,
   Tabs,
+  Center,
 } from "@chakra-ui/react";
 
 interface HistoryPresentationProps {
@@ -28,6 +29,7 @@ interface HistoryPresentationProps {
   hasSelectedTag: boolean;
   tags: string[];
   currencies: any[];
+  exchange: any;
   selectedCurrency: string;
   handleTagClick: (arg0: string) => void;
   handleCurrencyClick: (arg0: string) => void;
@@ -47,6 +49,7 @@ const HistoryPresentation = ({
   tags = [],
   currencies = [],
   selectedCurrency,
+  exchange = [],
   handleTagClick,
   handleCurrencyClick,
   totalCostsByCurrency,
@@ -62,12 +65,15 @@ const HistoryPresentation = ({
     <div>
       {receipts.length === 0 ? (
         <Heading fontSize="50">0원</Heading>
+      ) : selectedCurrency === "전체" ? (
+        <Heading fontSize="50">전체</Heading>
       ) : (
         <Heading fontSize="50">
           {totalCostsByCurrency[selectedCurrency] || 0} ({selectedCurrency})
         </Heading>
       )}
     </div>
+
     <div>
       <Box textAlign="center" p={4} borderWidth={1} borderRadius="lg" mb={0.5}>
         <Tabs position="relative" variant="unstyled">
@@ -102,29 +108,48 @@ const HistoryPresentation = ({
     ) : (
       <VStack spacing={3} align="stretch">
         <div>
-          {memberNames.map((name, index) => (
-            <Accordion allowMultiple key={index}>
-              <AccordionItem style={{ margin: "10px 0" }}>
-                <h2>
-                  <AccordionButton
-                    as="span"
-                    flex="1"
-                    textAlign="left"
-                    style={{ backgroundColor: "#EDF2F7" }}
-                  >
-                    <Button as="span" flex="1" textAlign="left">
-                      <p style={{ fontSize: 20 }}>{name}님의 뿜빠이 결과</p>
-                    </Button>
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel bg="#EDF2F7">
-                  <Container as="span" flex="1" textAlign="left">
-                    <p style={{ fontSize: 15 }}>{name}님에게 얼마를 주세요</p>
-                  </Container>
-                </AccordionPanel>
-              </AccordionItem>
-            </Accordion>
-          ))}
+          {Object.keys(exchange).map((currency: string, index: number) =>
+            selectedCurrency === "전체" || selectedCurrency === currency
+              ? Object.keys(exchange[currency]).map(
+                  (sender: string, senderIndex: number) => (
+                    <Accordion allowMultiple key={`${currency}-${senderIndex}`}>
+                      <AccordionItem style={{ margin: "10px 0" }}>
+                        <h2>
+                          <AccordionButton
+                            as="span"
+                            flex="1"
+                            textAlign="left"
+                            style={{ backgroundColor: "#EDF2F7" }}
+                          >
+                            <Button as="span" flex="1" textAlign="left">
+                              <p style={{ fontSize: 20 }}>
+                                <b>{sender}</b>님의 뿜빠이 결과
+                              </p>
+                            </Button>
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel bg="#EDF2F7">
+                          <Container as="span" flex="1" textAlign="center">
+                            {Object.keys(exchange[currency][sender]).map(
+                              (receiver: string, receiverIndex: number) => (
+                                <div
+                                  key={`${index}-${senderIndex}-${receiverIndex}`}
+                                >
+                                  <p style={{ fontSize: 15 }}>
+                                    <b>{receiver}</b>님에게{" "}
+                                    <b>{exchange[currency][sender][receiver]}</b>({currency}) 주세요
+                                  </p>
+                                </div>
+                              )
+                            )}
+                          </Container>
+                        </AccordionPanel>
+                      </AccordionItem>
+                    </Accordion>
+                  )
+                )
+              : null
+          )}
         </div>
         <div>
           <Menu>

@@ -1,4 +1,4 @@
-import { Party, Receipt, Currency, Settlement } from "./interfaces";
+import { Party, Receipt, Currency, ExchangeRate } from "./interfaces";
 
 export interface CreatePartyResponse extends Party {}
 export interface GetPartyResponse {
@@ -31,5 +31,5 @@ export interface ReceiptResponse {
 export type GetReceiptsResponse = ReceiptResponse[];
 
 export interface GetResultResponse{
-  result: any;
+  result: ExchangeRate[];
 }

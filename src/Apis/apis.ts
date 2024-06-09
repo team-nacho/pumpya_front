@@ -14,19 +14,23 @@ export const partyApi = {
     const resposne = await api.post("/create-party", request);
     return resposne;
   },
+
   getParty: async (
     partyId: string
   ): Promise<AxiosResponse<GetPartyResponse>> => {
     const response = await api.get(`/get-party/${partyId}`);
     return response;
   },
+  
   getResult: async (
     partyId: string
-  ): Promise<AxiosResponse<any>> => {
+  ): Promise<AxiosResponse<GetResultResponse>> => {
     const response = await api.get(`/get-pumppay-result/${partyId}`);
     return response;
   }
-}
+};
+
+
 export const receiptApi = {
   getReceipts: async (
     partyId: string
@@ -35,6 +39,8 @@ export const receiptApi = {
     return response;
   },
 };
+
+
 export const tagApi = {
   getTags: async (
   ): Promise<AxiosResponse<GetTagResponse>> => {
@@ -42,6 +48,8 @@ export const tagApi = {
     return response;
   }
 };
+
+
 export const currencyApi = {
   getCurrencies: async (): Promise<AxiosResponse<GetCurrencyResponse>> => {
     const response = await api.get(`/get-currencies`);

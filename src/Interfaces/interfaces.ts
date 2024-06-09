@@ -25,17 +25,10 @@ export interface Currency {
   country: string;
 }
 
-export interface from {
-  from: string;
-  to: To[];
-}
-
-export interface To{
-  to: string;
-  amount: number;
-}
-
-export interface Settlement {
-  currency: string;
-  transactions: from[];
+export interface ExchangeRate {
+  [currency: string]: {
+    [sender: string]: {
+      [receiver: string]: number;
+    };
+  };
 }
