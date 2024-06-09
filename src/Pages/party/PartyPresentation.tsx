@@ -36,8 +36,8 @@ interface PartyPresentationProps {
   party: Party | undefined;
   receipts: Receipt[];
   currentMember: string;
-  currencyList: Currency[];
-  tagList: Tag[];
+  currencyList: Currency[] | undefined;
+  tagList: Tag[] | undefined;
   onClickCreateReceipt: () => void;
   onClickChangeCurrentMember: (member: string) => void;
   onClickAddMember: () => void;
@@ -124,7 +124,7 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
   if (!receiptDetail?.createdAt) return null;
 
   const year = receiptDetail.createdAt.getFullYear();
-  const month = receiptDetail.createdAt.getMonth(); // Month is 0-based
+  const month = receiptDetail.createdAt.getMonth() + 1; // Month is 0-based
   const date = receiptDetail.createdAt.getDate();
 
   return `${year}년 ${month}월 ${date}일`;
@@ -269,7 +269,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           {props.useCurrency.country}
         </MenuButton>
         <MenuList>
-          {props.currencyList.map((currency, index) => (
+          {props.currencyList?.map((currency, index) => (
             <MenuItem
               key={currency.currencyId}
               onClick={() => props.onClickChangeCurrency(index)}
@@ -287,7 +287,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       placeholder="소비를 입력해 주세요"
     />
     <Stack direction="row" spacing={4} align="center">
-      {props.tagList.map((choiceTag) =>
+      {props.tagList?.map((choiceTag) =>
         choiceTag === props.useTag ? (
           <ClickedButton
             key={choiceTag.name}
@@ -348,6 +348,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           <Container
             key={index}
             p={4}
+            alignItems="flex-start"
             onClick={() => {
               props.setReceiptDetail(receipt);
               props.onOpenReceipt();
@@ -362,11 +363,15 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               </Text>
             </Flex>
             <Flex justifyContent="space-between">
-              <Text fontSize="lg" color="gray.500">
-                {formatTwoDigits(receipt.createdAt?.getHours())}:
-                {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                {receipt.useTag}
-              </Text>
+              {receipt?.createdAt !== undefined ? (
+                <Text fontSize="lg" color="gray.500">
+                  {receipt?.createdAt?.getMonth() + 1}월{" "}
+                  {receipt?.createdAt?.getDate()}일{" "}
+                  {formatTwoDigits(receipt.createdAt?.getHours())}:
+                  {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
+                  {receipt.useTag}
+                </Text>
+              ) : null}
               <Text fontSize="lg" color="gray.500">
                 {receipt.author}
               </Text>

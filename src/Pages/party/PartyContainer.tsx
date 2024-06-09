@@ -7,13 +7,14 @@ import { useEffect, useState, useRef } from "react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import { Client } from "@stomp/stompjs";
-import { partyApi, receiptApi } from "../../Apis/apis";
-import { tagList, currencyList } from "./datafile";
+import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const PartyContainer = () => {
   const navigate = useNavigate();
+  const [tagList, setTagList] = useState<Tag[]>();
+  const [currencyList, setCurrencyList] = useState<Currency[]>();
   const [historyComponent, setHistoryComponent] = useState<boolean>(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenCollapse, onToggle } = useDisclosure();
@@ -211,7 +212,7 @@ const PartyContainer = () => {
   };
   const onClickChangeCurrency = (index: number) => {
     console.log(contexts);
-    setUseCurrency(currencyList[index]);
+    if (currencyList !== undefined) setUseCurrency(currencyList[index]);
   };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceiptName(e.target.value);
@@ -228,6 +229,16 @@ const PartyContainer = () => {
     setJoin(newJoin);
   };
   useEffect(() => {
+    tagApi.getTags().then((response) => {
+      const newTagList = response.data.tags.map((tag) => ({
+        name: tag,
+      }));
+      setTagList(newTagList);
+    });
+    currencyApi.getCurrencies().then((currencyResponse) => {
+      setCurrencyList(currencyResponse.data.currencies);
+    });
+
     const initializeChat = async () => {
       try {
         const stomp = new Client({

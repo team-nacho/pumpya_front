@@ -1,4 +1,4 @@
-import { Party, Receipt } from "./interfaces";
+import { Party, Receipt, Currency } from "./interfaces";
 
 export interface CreateMemberResponse {
   member: string;
@@ -11,6 +11,13 @@ export interface GetPartyResponse {
   usedCurrencies: string[];
 }
 export interface CreateReceiptResponse extends Receipt {}
+export interface GetTagResponse {
+  tags: string[];
+}
+
+export interface GetCurrencyResponse {
+  currencies: Currency[];
+}
 export interface ReceiptResponse {
   receiptId: string;
   partyId: string;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Text, Collapse, Button } from "@chakra-ui/react";
+import { Box, Text, Collapse, Button, Flex } from "@chakra-ui/react";
 
 interface CollapseBoxProps {
   title: string;
@@ -14,7 +14,7 @@ const CollapseBox = ({ title, details }: CollapseBoxProps) => {
   };
 
   return (
-    <Box>
+    <Flex>
       <Button onClick={toggleCollapse} p={0}>
         <Box
           display="inline-block"
@@ -37,7 +37,7 @@ const CollapseBox = ({ title, details }: CollapseBoxProps) => {
       <Text fontSize="2xl" display="inline-block" ml={4}>
         과 함께
       </Text>
-    </Box>
+    </Flex>
   );
 };
 
