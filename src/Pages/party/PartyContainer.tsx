@@ -177,7 +177,6 @@ const PartyContainer = () => {
       body: JSON.stringify({
         ...receipt,
         receiptName: receiptName,
-        author: contexts.currentMember,
         joins: join,
         cost: cost,
         useTag: useTag!!.name,
