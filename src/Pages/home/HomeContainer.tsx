@@ -73,7 +73,6 @@ const HomeContainer = () => {
   useEffect(() => {
     createRandomName().then((result: string) => {
       setRandomName(result);
-      console.log(result);
       setNickname(result);
     });
   }, []);
