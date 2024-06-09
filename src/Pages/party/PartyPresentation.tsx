@@ -293,7 +293,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Stack>
     {props.party?.members?.length !== 1 ? (
       <>
-        <Text>누구와 함께 하셨나요?</Text>
+        <Text fontSize="2xl">누구와 함께 하셨나요?</Text>
         <Stack direction="row" spacing={4} align="center">
           {props.party?.members
             ?.filter((member: string) => member !== props.currentMember)
@@ -315,7 +315,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </Stack>
       </>
     ) : null}
-    <Button onClick={props.onClickCreateReceipt} marginY="5px">
+    <Button
+      isDisabled={!props.receiptName}
+      onClick={props.onClickCreateReceipt}
+      marginY="9px"
+      colorScheme="gray"
+      w="100%"
+      h="50px"
+    >
       create Receipt
     </Button>
     <p></p>
@@ -324,28 +331,28 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       : props.receipts.map((receipt, index) => (
           <Container
             key={index}
+            p={4}
             onClick={() => {
               props.setReceiptDetail(receipt);
               props.onOpenReceipt();
             }}
           >
-            <Flex justifyContent="space-between">
+            <Flex justify="space-between" align="center">
               <Text fontSize="lg" as="b">
                 {receipt.receiptName}
               </Text>
               <Text fontSize="lg" as="b">
-                {receipt.author}
+                {receipt.useCurrency} {receipt.cost}
               </Text>
             </Flex>
             <Flex justifyContent="space-between">
-              <Text fontSize="lg">
+              <Text fontSize="lg" color="gray.500">
                 {formatTwoDigits(receipt.createdAt?.getHours())}:
-                {formatTwoDigits(receipt.createdAt?.getMinutes())}
+                {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
                 {receipt.useTag}
               </Text>
-              <Text fontSize="lg">
-                {receipt.useCurrency}
-                {receipt.cost}
+              <Text fontSize="lg" color="gray.500">
+                {receipt.author}
               </Text>
             </Flex>
           </Container>
@@ -361,16 +368,24 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerCloseButton />
         <DrawerHeader></DrawerHeader>
         <DrawerBody>
-          <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
-          <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
-          <Button>{props.receiptDetail?.useTag}</Button>
-          <Text fontSize="2xl">에</Text>
-          <Button>{props.receiptDetail?.receiptName}</Button>
-          <Button>
-            {props.receiptDetail?.useCurrency}{" "}
-            {props.receiptDetail?.cost.toLocaleString()}{" "}
-          </Button>
-          <Text fontSize="2xl">지출</Text>
+          <VStack spacing={5} alignItems="left">
+            <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
+            <Text fontSize="2xl">
+              {props.receiptDetail?.receiptName}과 함께
+            </Text>
+            <Flex>
+              <Button>{props.receiptDetail?.useTag}</Button>
+              <Text fontSize="2xl">에</Text>
+              <Button>{props.receiptDetail?.receiptName}</Button>
+            </Flex>
+            <Flex>
+              <Button>
+                {props.receiptDetail?.useCurrency}{" "}
+                {props.receiptDetail?.cost.toLocaleString()}{" "}
+              </Button>
+            </Flex>
+            <Text fontSize="2xl">지출</Text>
+          </VStack>
         </DrawerBody>
         <DrawerFooter>
           <Button
