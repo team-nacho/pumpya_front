@@ -10,6 +10,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
+import { createRandomName } from "../home/randomName";
 
 const PartyContainer = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const PartyContainer = () => {
     onOpen: onOpenModal,
     onClose: onCloseModal,
   } = useDisclosure();
+  const [randomName, setRandomName] = useState<string>();
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
   const [isLocalCurrent, setIsLocalCurrent] = useState<boolean>(false);
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
@@ -56,7 +58,12 @@ const PartyContainer = () => {
     currencyId: "USD",
     country: "미국",
   });
-  const [newMemberName, setNewMemberName] = useState("");
+  const [totalCur, setTotalCur] = useState<Currency>({
+    currencyId: "USD",
+    country: "미국",
+  });
+  const [newMemberName, setNewMemberName] = useState<string>("");
+  const [totalCost, setTotalCost] = useState<number[]>([]);
   const onClickSetCurrentMember = (memberName: string) => {
     onClickChangeCurrentMember(memberName);
     setIsLocalCurrent(true);
@@ -83,41 +90,37 @@ const PartyContainer = () => {
       };
       localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
       contexts.setCurrentMember(newMemberName);
+
       setIsLocalCurrent(true);
     } else {
       duplicatedName();
     }
   };
   const onClickAddMember = () => {
-    if (nickname === "") noName();
-    else {
-      if (
-        contexts.party.members.find((member: string) => member === nickname) ===
-        undefined
-      ) {
-        const destination = `/pub/party/${partyId}/new-member`;
-        stompClient?.publish({
-          destination,
-          body: JSON.stringify({
-            name: nickname,
-          }),
-        });
-        onClose();
-      } else {
-        duplicatedName();
-      }
+    if (nickname === "") setNickname(randomName!!);
+    if (
+      contexts.party.members.find((member: string) => member === nickname) ===
+      undefined
+    ) {
+      const destination = `/pub/party/${partyId}/new-member`;
+      stompClient?.publish({
+        destination,
+        body: JSON.stringify({
+          name: nickname,
+        }),
+      });
+      createRandomName().then((result: string) => {
+        setRandomName(result);
+        setNickname(result);
+      });
+      onClose();
+    } else {
+      duplicatedName();
     }
   };
   const duplicatedName = () => {
     toast({
       title: `중복된 이름은 사용할 수 없어요`,
-      status: "error",
-      isClosable: true,
-    });
-  };
-  const noName = () => {
-    toast({
-      title: `이름을 입력해주세요`,
       status: "error",
       isClosable: true,
     });
@@ -145,7 +148,8 @@ const PartyContainer = () => {
     setHistoryComponent(true);
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNickname(e.target.value);
+    if (e.target.value === "") setNickname(randomName!!);
+    else setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -213,6 +217,9 @@ const PartyContainer = () => {
     console.log(contexts);
     if (currencyList !== undefined) setUseCurrency(currencyList[index]);
   };
+  const onClickChangeTotalCurrency = (index: number) => {
+    if (currencyList !== undefined) setTotalCur(currencyList[index]);
+  };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceiptName(e.target.value);
   };
@@ -227,6 +234,11 @@ const PartyContainer = () => {
     const newJoin = join.filter((member: string) => member !== deleteMember);
     setJoin(newJoin);
   };
+
+  const calculateTotalCost = (receipts: Receipt[]): number => {
+    return receipts.reduce((total, receipt) => total + receipt.cost, 0);
+  };
+
   useEffect(() => {
     tagApi.getTags().then((response) => {
       const newTagList = response.data.tags.map((tag) => ({
@@ -237,7 +249,10 @@ const PartyContainer = () => {
     currencyApi.getCurrencies().then((currencyResponse) => {
       setCurrencyList(currencyResponse.data.currencies);
     });
-
+    createRandomName().then((result: string) => {
+      setRandomName(result);
+      setNickname(result);
+    });
     const initializeChat = async () => {
       try {
         const stomp = new Client({
@@ -340,6 +355,7 @@ const PartyContainer = () => {
           }));
           // 변환된 배열을 상태에 저장
           contexts.setReceipts(transformedReceipts);
+          contexts.party.cost = calculateTotalCost(transformedReceipts);
         })
         .catch((err) => {
           console.log(err);
@@ -377,7 +393,7 @@ const PartyContainer = () => {
       contexts.setLoading(false);
     }
     if (contexts.currentMember !== undefined) setIsLocalCurrent(true);
-  }, [contexts?.party, partyId]);
+  }, [partyId]);
 
   useEffect(() => {
     setReceipt((prev: Receipt) => {
@@ -388,6 +404,11 @@ const PartyContainer = () => {
     });
     setJoin([]);
   }, [contexts.currentMember]);
+
+  useEffect(() => {
+    if (contexts.receipt !== undefined)
+      contexts.party.cost = calculateTotalCost(contexts.receipt);
+  }, [contexts.receipt]);
 
   return (
     <>
@@ -419,7 +440,6 @@ const PartyContainer = () => {
           onClose={onClose}
           btnDrawer={btnDrawer}
           duplicatedName={duplicatedName}
-          noName={noName}
           copyToClipboard={copyToClipboard}
           onClickEndParty={onClickEndParty}
           isOpenModal={isOpenModal}
@@ -451,6 +471,10 @@ const PartyContainer = () => {
           onClickDeleteReceipt={onClickDeleteReceipt}
           isOpenCollapse={isOpenCollapse}
           onToggle={onToggle}
+          randomName={randomName}
+          totalCur={totalCur}
+          setTotalCur={setTotalCur}
+          onClickChangeTotalCurrency={onClickChangeTotalCurrency}
         />
       ) : (
         <div>ss</div>
