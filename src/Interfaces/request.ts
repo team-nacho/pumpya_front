@@ -10,7 +10,6 @@ export interface CreateReceiptRequest {
 export interface CreateMemberReqeust {
   member: string;
 }
-
 export interface GetParty {
   partyId: string;
 }

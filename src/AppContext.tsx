@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { Party, Receipt } from "./Interfaces/interfaces";
+import { Party, Receipt, ExchangeRate } from "./Interfaces/interfaces";
 
 const AppContext = createContext<any | undefined>(undefined);
 
@@ -10,7 +10,8 @@ export const AppProdiver = ({ children }: any) => {
     undefined
   );
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [totalCostsByCurrency, setTotalCostsByCurrency] = useState<{ [key: string]: number }>({});
+  
   
   return (
     <AppContext.Provider value={{
@@ -22,8 +23,8 @@ export const AppProdiver = ({ children }: any) => {
       setCurrentMember,
       receipts,
       setReceipts,
-      tags,
-      setTags
+      totalCostsByCurrency,
+      setTotalCostsByCurrency,
     }}>
       {children}
     </AppContext.Provider>

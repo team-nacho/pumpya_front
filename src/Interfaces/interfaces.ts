@@ -24,3 +24,11 @@ export interface Currency {
   currencyId: string;
   country: string;
 }
+
+export interface ExchangeRate {
+  [currency: string]: {
+    [sender: string]: {
+      [receiver: string]: number;
+    };
+  };
+}
