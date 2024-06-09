@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Receipt } from "../../Interfaces/interfaces";
+import { Receipt, Currency } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
 import HistoryPresentation from "./HistoryPresentation";
-import { receiptApi, tagApi, partyApi } from "../../Apis/apis";
+import { receiptApi, partyApi, currencyApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const HistoryContainer = () => {
@@ -11,21 +11,21 @@ const HistoryContainer = () => {
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
   const [selectedCurrency, setSelectedCurrency] = useState<string>("전체");
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
 
-  const hasSelectedTag = context.receipts?.some(
-    (receipt: Receipt) => receipt.useTag === selectedTag
-  ) ?? false;
-  
+  const hasSelectedTag =
+    context.receipts?.some(
+      (receipt: Receipt) => receipt.useTag === selectedTag
+    ) ?? false;
 
   const getCategoryReceipts = (category: string) => {
     const receipts = context.receipts || [];
-    return receipts.filter(
-      (receipt: Receipt) => receipt.useTag === category
-    );
-  };  
+    return receipts.filter((receipt: Receipt) => receipt.useTag === category);
+  };
 
   const getReceiptsByCurrency = () => {
     const receiptsByCurrency: { [key: string]: Receipt[] } = {};
@@ -47,13 +47,16 @@ const HistoryContainer = () => {
 
   const partyTotal = context.totalCost?.toLocaleString();
 
-  const calTotalCost = (receipts: Receipt[]) => {
-    // 통화별 총 금액을 저장할 객체
-    const totalCostsByCurrency: { [key: string]: number } = {};
+  // 통화별 비용 계산
+  const calTotalCost = (receipts: Receipt[], currencies: Currency[]) => {
+    const totalCostsByCurrency: { [useCurrency: string]: number } = {};
+
+    currencies.forEach(currency => {
+      totalCostsByCurrency[currency.currencyId] = 0;
+    });
 
     if (receipts) {
       receipts.forEach((receipt) => {
-        // useCurrency가 undefined인 경우를 처리
         if (receipt.useCurrency) {
           if (!totalCostsByCurrency[receipt.useCurrency]) {
             totalCostsByCurrency[receipt.useCurrency] = 0;
@@ -66,62 +69,100 @@ const HistoryContainer = () => {
     } else {
       console.log("등록된 영수증이 없습니다.");
     }
+    console.log(totalCostsByCurrency);
 
     return totalCostsByCurrency;
   };
 
+  const getUsedCurrencies = (receipts: Receipt[], allCurrencies: Currency[]) => {
+    const usedCurrencyIds: Set<string> = new Set();
+  
+    receipts.forEach((receipt) => {
+      if (receipt.useCurrency) {
+        usedCurrencyIds.add(receipt.useCurrency);
+      }
+    });
+  
+    // 사용된 통화만 반환
+    return allCurrencies.filter(currency => usedCurrencyIds.has(currency.currencyId));
+  };
+
   const handleTagClick = (tag: string) => {
-    const filteredReciepts = context.receipts.filter(
-      (receipt: Receipt) => receipt.useTag === tag
-    );
-    setFilteredReceipts(filteredReciepts);
+    let newFilteredReceipts: Receipt[] = [];
+  
     if (selectedTag === tag) {
       setSelectedTag("전체");
+      newFilteredReceipts = selectedCurrency === "전체" ? context.receipts : context.receipts.filter((receipt: Receipt) => receipt.useCurrency === selectedCurrency);
     } else {
-      setSelectedTag(tag); // 선택된 태그 업데이트
-      console.log(tag);
+      newFilteredReceipts = selectedCurrency === "전체" ? context.receipts.filter((receipt: Receipt) => receipt.useTag === tag) : context.receipts.filter((receipt: Receipt) => receipt.useTag === tag && receipt.useCurrency === selectedCurrency);
+      setSelectedTag(tag);
     }
+  
+    setFilteredReceipts(newFilteredReceipts);
   };
-
+  
   const handleCurrencyClick = (currency: string) => {
-    setSelectedCurrency(currency);
-    if (currency === "전체") {
-      setFilteredReceipts(context.receipts);
+    let newFilteredReceipts: Receipt[] = [];
+  
+    if (selectedCurrency === currency) {
+      setSelectedCurrency("전체");
+      newFilteredReceipts = selectedTag === "전체" ? context.receipts : context.receipts.filter((receipt : Receipt) => receipt.useTag === selectedTag);
     } else {
-      setFilteredReceipts(
-        context.receipts.filter(
-          (receipt: Receipt) => receipt.useCurrency === currency
-        )
-      );
+      newFilteredReceipts = selectedTag === "전체" ? context.receipts.filter((receipt: Receipt) => receipt.useCurrency === currency) : context.receipts.filter((receipt: Receipt) => receipt.useTag === selectedTag && receipt.useCurrency === currency);
+      setSelectedCurrency(currency);
     }
+  
+    setFilteredReceipts(newFilteredReceipts);
   };
+  
+  
+  
 
   useEffect(() => {
-    
     // 로딩 로직 추가
-    receiptApi.getReceipts(partyId!!).then((response) => {
-      context.setReceipts(response.data.receipts);
-      console.log("히히" + context.receipts);
-      console.log("안녕");
-      calTotalCost(response.data.receipts);
-      context.setTotalCost(calTotalCost(response.data.receipts) || 0);
-      console.log(context.totalCost);
-    });
-    tagApi.getTags().then((response) => {
-      context.setTags(response.data.tags);
-      console.log(response.data.tags)
-    });
+    receiptApi
+      .getReceipts(partyId!!)
+      .then((response) => {
+        console.log(response.data);
+        // receipt를 변환하고 새로운 배열을 반환
+        const transformedReceipts = response.data.map((receipt) => ({
+          ...receipt,
+          joins: JSON.parse(receipt.joins),
+          createdAt: new Date(receipt.createdAt),
+        }));
+        // 변환된 배열을 상태에 저장
+        context.setReceipts(transformedReceipts);
+
+        currencyApi.getCurrencies().then((currencyResponse) => {
+          const allCurrencies = currencyResponse.data.currencies;
+          setCurrencies(getUsedCurrencies(transformedReceipts, allCurrencies));
+        });
+
+        const totalCostsByCurrency = calTotalCost(transformedReceipts, currencies);
+        context.setTotalCostsByCurrency(totalCostsByCurrency);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     partyApi.getParty(partyId!!).then((response) => {
       context.setParty(response.data);
-      console.log(response.data);
     });
-    partyApi.getResult(partyId!!).then((response)=>{
-      context.setSettlements(response.data.result);
-      console.log("돈줘" + context.settlements);
-      console.log("디버그디버그");
-      
+    partyApi.getResult(partyId!!).then((response) => {
+      context.setSettlements(response.data);
+    });
+
+    /*currencyApi.getCurrencies().then((response) => {
+      setCurrencies(response.data.currencies);
+      console.log("Currency");
+      console.log(response.data.currencies);
+    })*/
+
+    tagApi.getTags().then((response)=>{
+      console.log(response.data.tags);
+      setTags(response.data.tags);
     })
-    console.log(context.tags);
+
     context.setLoading(false);
   }, []);
 
@@ -138,12 +179,33 @@ const HistoryContainer = () => {
     }
   }, [selectedTag, context.receipts]);
 
+  useEffect(() => {
+    const filterReceipts = () => {
+      let displayedReceipts = context.receipts;
+
+      if (selectedCurrency !== "전체") {
+        displayedReceipts = context.receipts.filter(
+          (receipt : any) => receipt.useCurrency === selectedCurrency
+        );
+      }
+
+      if (selectedTag !== "전체") {
+        displayedReceipts = displayedReceipts.filter(
+          (receipt : any) => receipt.useTag === selectedTag
+        );
+      }
+
+      setFilteredReceipts(displayedReceipts);
+    };
+
+    filterReceipts();
+  }, [receipts, selectedCurrency, selectedTag]);
+
   return context.loading ? (
     <LoadingPresentation />
   ) : (
     <HistoryPresentation
       partyName={partyName}
-      partyTotal={partyTotal}
       memberNames={memberNames}
       receipts={context.receipts}
       onBack={onBack}
@@ -151,11 +213,13 @@ const HistoryContainer = () => {
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
       hasSelectedTag={hasSelectedTag}
-      tags={context.tags}
+      tags={tags}
+      currencies={currencies}
       getCategoryReceipts={getCategoryReceipts}
       handleTagClick={handleTagClick}
       handleCurrencyClick={handleCurrencyClick}
       getReceiptsByCurrency={getReceiptsByCurrency}
+      totalCostsByCurrency={context.totalCostsByCurrency}
     />
   );
 

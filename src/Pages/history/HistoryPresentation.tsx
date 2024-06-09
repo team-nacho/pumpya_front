@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Container,
-  Flex,
   Heading,
   Menu,
   MenuButton,
@@ -15,45 +14,42 @@ import {
   Tab,
   TabIndicator,
   TabList,
-  TabPanel,
-  TabPanels,
-  Spacer,
-  Tabs,
   VStack,
+  Tabs,
 } from "@chakra-ui/react";
 
 interface HistoryPresentationProps {
   onBack: () => void;
   memberNames: string[];
   partyName: string;
-  partyTotal: number;
   receipts: string[] | undefined;
   selectedTag: string;
   filteredReceipts: any[];
   hasSelectedTag: boolean;
   tags: string[];
+  currencies: any[];
   selectedCurrency: string;
   handleTagClick: (arg0: string) => void;
   handleCurrencyClick: (arg0: string) => void;
   getCategoryReceipts: (category: string) => any[];
   getReceiptsByCurrency: () => { [key: string]: any[] };
+  totalCostsByCurrency: { [key: string]: number };
 }
 
 const HistoryPresentation = ({
   onBack,
   memberNames = [],
   partyName,
-  partyTotal,
   receipts = [],
   selectedTag,
   filteredReceipts = [],
   hasSelectedTag,
   tags = [],
+  currencies = [],
   selectedCurrency,
   handleTagClick,
   handleCurrencyClick,
-  getCategoryReceipts,
-  getReceiptsByCurrency,
+  totalCostsByCurrency,
 }: HistoryPresentationProps) => (
   <VStack spacing={3} align="stretch">
     <div>
@@ -64,17 +60,28 @@ const HistoryPresentation = ({
       <Heading fontSize="30">{partyName || "기다려주세요..."}🎉</Heading>
     </div>
     <div>
-      <Heading fontSize="50">{partyTotal.toLocaleString()}원</Heading>
+      {receipts.length === 0 ? (
+        <Heading fontSize="50">0원</Heading>
+      ) : (
+        <Heading fontSize="50">
+          {totalCostsByCurrency[selectedCurrency] || 0} ({selectedCurrency})
+        </Heading>
+      )}
     </div>
     <div>
       <Box textAlign="center" p={4} borderWidth={1} borderRadius="lg" mb={0.5}>
         <Tabs position="relative" variant="unstyled">
           <TabList>
-            <Tab _selected={{ color: "white", bg: "blue.500" }} onClick={() => handleCurrencyClick("KRW")}>대한민국(KRW)</Tab>
-            <Tab _selected={{ color: "white", bg: "blue.500" }} onClick={() => handleCurrencyClick("USD")}>미국(USD)</Tab>
-            <Tab _selected={{ color: "white", bg: "blue.500" }} onClick={() => handleCurrencyClick("EUR")}>유럽(EUR)</Tab>
-            <Tab _selected={{ color: "white", bg: "blue.500" }} onClick={() => handleCurrencyClick("VND")}>베트남(VND)</Tab>
-            <Tab _selected={{ color: "white", bg: "blue.500" }} onClick={() => handleCurrencyClick("CAD")}>캐나다(CAD)</Tab>
+            <Tab onClick={() => handleCurrencyClick("전체")}>전체</Tab>
+            {currencies.map((currency) => (
+              <Tab
+                key={currency.currencyId}
+                _selected={{ color: "white", bg: "blue.500" }}
+                onClick={() => handleCurrencyClick(currency.currencyId)}
+              >
+                {currency.country}({currency.currencyId})
+              </Tab>
+            ))}
           </TabList>
           <TabIndicator
             mt="-1.5px"
@@ -85,7 +92,7 @@ const HistoryPresentation = ({
         </Tabs>
       </Box>
     </div>
-    {receipts ? (
+    {receipts.length === 0 ? (
       <div>
         <Box textAlign="center" p={4} borderWidth={1} borderRadius="lg" mb={2}>
           <p>아직 등록된 소비가 없어요.</p>
@@ -139,41 +146,8 @@ const HistoryPresentation = ({
           </Menu>
         </div>
         <div>
-          <br />
-        </div>
-        <div>
-          {selectedTag === "전체" ? (
-            filteredReceipts.map((receipt, index) => (
-              <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
-                <p>
-                  {receipt.createdAt
-                    ? new Date(receipt.createdAt).toLocaleDateString()
-                    : "N/A"}
-                </p>
-                <p>
-                  {receipt.useCurrency} {receipt.cost}
-                </p>
-                <b style={{ fontSize: 25 }}>{receipt.receiptName}</b>
-                <p>{receipt.useTag}</p>
-              </Box>
-            ))
-          ) : hasSelectedTag ? (
-            filteredReceipts.map((receipt, index) => (
-              <Box key={index} p={4} borderWidth={1} borderRadius="lg" mb={2}>
-                <p>
-                  {receipt.createdAt
-                    ? new Date(receipt.createdAt).toLocaleDateString()
-                    : "N/A"}
-                </p>
-                <p>
-                  {receipt.useCurrency} {receipt.cost}
-                </p>
-                <b style={{ fontSize: 20 }}>{receipt.receiptName}</b>
-                <p>{receipt.useTag}</p>
-              </Box>
-            ))
-          ) : (
-            <div>
+          <div>
+            {filteredReceipts.length === 0 ? (
               <Box
                 textAlign="center"
                 p={4}
@@ -181,67 +155,46 @@ const HistoryPresentation = ({
                 borderRadius="lg"
                 mb={2}
               >
-                <p>{selectedTag}(으)로 등록된 소비가 없어요</p>
+                <p>{selectedTag}(으)로 등록된 소비가 없어요.</p>
                 <b>소비를 등록해보세요</b>
               </Box>
-            </div>
-          )}
-        </div>
-        <div>
-          <Box textAlign="left" p={4} borderWidth={1} borderRadius="lg" mb={2}>
-            <Tabs position="relative" variant="unstyled">
-              <TabList>
-                {tags.map((tag, index) => (
-                  <Tab key={index}>{tag}</Tab>
-                ))}
-              </TabList>
-              <TabIndicator
-                mt="-1.5px"
-                height="2px"
-                bg="blue.500"
-                borderRadius="1px"
-              />
-              <TabPanels>
-                {tags.map((tag, index) => (
-                  <TabPanel key={index}>
-                    {getCategoryReceipts(tag).length > 0 ? (
-                      getCategoryReceipts(tag).map((receipt, idx) => (
-                        <Box
-                          key={idx}
-                          p={4}
-                          borderWidth={1}
-                          borderRadius="lg"
-                          mb={2}
-                        >
-                          <p>
-                            {receipt.createDate
-                              ? new Date(
-                                  receipt.createDate
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </p>
-                          <p>
-                            {receipt.useCurrency?.currencyId} {receipt.cost}
-                          </p>
-                          <b style={{ fontSize: 20 }}>{receipt.name}</b>
-                          <p>{receipt.tag?.name}</p>
-                        </Box>
-                      ))
-                    ) : (
-                      <p>등록된 영수증이 없습니다.</p>
-                    )}
-                  </TabPanel>
-                ))}
-              </TabPanels>
-            </Tabs>
-          </Box>
+            ) : (
+              filteredReceipts
+                .sort((a, b) => {
+                  const dateA: Date = new Date(a.createdAt);
+                  const dateB: Date = new Date(b.createdAt);
+                  return dateA.getTime() - dateB.getTime();
+                })
+                .map((receipt, index) => (
+                  <Box
+                    key={index}
+                    p={4}
+                    borderWidth={1}
+                    borderRadius="lg"
+                    mb={2}
+                  >
+                    <p>
+                      {receipt.createdAt
+                        ? new Date(receipt.createdAt).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                    <p>
+                      {receipt.useCurrency} {receipt.cost}
+                    </p>
+                    <b style={{ fontSize: 25 }}>{receipt.receiptName}</b>
+                    <p>{receipt.useTag}</p>
+                  </Box>
+                ))
+            )}
+          </div>
         </div>
       </VStack>
     )}
     <div>
       <img
-        src="https://cdn.news.cauon.net/news/photo/202203/36524_26498_1343.png"
-        alt="Jennie"
+        src="https://media.bunjang.co.kr/product/242680657_1_1699803985_w360.jpg"
+        width="100%"
+        height="100%"
       />
     </div>
   </VStack>

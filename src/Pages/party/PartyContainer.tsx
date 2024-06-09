@@ -12,6 +12,7 @@ const PartyContainer = () => {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [tag, setTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
+    receiptId: "살려줘",
     partyId: partyId!!,
     receiptName: "ttt",
     author: contexts.currentMember,
