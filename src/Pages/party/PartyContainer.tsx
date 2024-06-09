@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import PartyModal from "./PartyModal";
+import HistoryPresentation from "./HistoryPresentation";
 import { useEffect, useState, useRef } from "react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
@@ -13,15 +14,19 @@ import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const PartyContainer = () => {
   const navigate = useNavigate();
+  const [historyComponent, setHistoryComponent] = useState<boolean>(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const disclosureReceipt = useDisclosure();
-  const disclosureModal = useDisclosure();
-  const isOpenReceipt = disclosureReceipt.isOpen;
-  const onOpenReceipt = disclosureReceipt.onOpen;
-  const onCloseReceipt = disclosureReceipt.onClose;
-  const isOpenModal = disclosureModal.isOpen;
-  const onOpenModal = disclosureModal.onOpen;
-  const onCloseModal = disclosureModal.onClose;
+  const { isOpen: isOpenCollapse, onToggle } = useDisclosure();
+  const {
+    isOpen: isOpenReceipt,
+    onOpen: onOpenReceipt,
+    onClose: onCloseReceipt,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenModal,
+    onOpen: onOpenModal,
+    onClose: onCloseModal,
+  } = useDisclosure();
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
   const [isLocalCurrent, setIsLocalCurrent] = useState<boolean>(false);
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
@@ -135,6 +140,9 @@ const PartyContainer = () => {
         });
       });
   };
+  const onClickHistory = () => {
+    setHistoryComponent(true);
+  };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNickname(e.target.value);
   };
@@ -163,7 +171,6 @@ const PartyContainer = () => {
   const saveReceipt = () => {
     const destination = `/pub/party/${partyId}/create`;
     //이 부분은 예시임
-    const createdAt = new Date();
     stompClient?.publish({
       destination,
       body: JSON.stringify({
@@ -385,7 +392,7 @@ const PartyContainer = () => {
           handleInputChange={handleInputChange}
           onClickAddNewMember={onClickAddNewMember}
         />
-      ) : (
+      ) : !historyComponent ? (
         <PartyPresentation
           party={contexts.party}
           receipts={contexts.receipts}
@@ -396,6 +403,7 @@ const PartyContainer = () => {
           onClickChangeCurrentMember={onClickChangeCurrentMember}
           onClickAddMember={onClickAddMember}
           onClickChangeCurrency={onClickChangeCurrency}
+          onClickHistory={onClickHistory}
           isOpen={isOpen}
           onOpen={onOpen}
           onClose={onClose}
@@ -431,7 +439,11 @@ const PartyContainer = () => {
           receiptDetail={receiptDetail}
           setReceiptDetail={setReceiptDetail}
           onClickDeleteReceipt={onClickDeleteReceipt}
+          isOpenCollapse={isOpenCollapse}
+          onToggle={onToggle}
         />
+      ) : (
+        <div>ss</div>
       )}
     </>
   );

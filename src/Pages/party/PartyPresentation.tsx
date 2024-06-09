@@ -1,4 +1,5 @@
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
+import CollapseBox from "./CollapseBox"; // 경로에 맞게 파일 경로 설정
 import {
   Heading,
   Text,
@@ -27,6 +28,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Collapse,
+  Box,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
@@ -39,6 +42,7 @@ interface PartyPresentationProps {
   onClickChangeCurrentMember: (member: string) => void;
   onClickAddMember: () => void;
   onClickChangeCurrency: (index: number) => void;
+  onClickHistory: () => void;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -74,6 +78,8 @@ interface PartyPresentationProps {
   receiptDetail: Receipt | undefined;
   setReceiptDetail: (receipt: Receipt) => void;
   onClickDeleteReceipt: () => void;
+  isOpenCollapse: boolean;
+  onToggle: () => void;
 }
 
 const ClickedButton: React.FC<{
@@ -192,7 +198,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             >
               URL 복사하기
             </Button>
-            <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
+            <Button
+              onClick={props.onClickHistory}
+              colorScheme="gray"
+              variant="ghost"
+              w="100%"
+              h="48px"
+            >
               현재까지 정산 기록보기
             </Button>
           </DrawerBody>
@@ -317,7 +329,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     ) : null}
     <Button
       isDisabled={!props.receiptName || !props.useTag}
-      onClick={props.onClickCreateReceipt}
+      onClick={() => {
+        props.onClickCreateReceipt();
+        props.setCost("");
+        props.setReceiptName("");
+      }}
       marginY="9px"
       colorScheme="gray"
       w="100%"
@@ -370,9 +386,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <DrawerBody>
           <VStack spacing={5} alignItems="left">
             <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
-            <Text fontSize="2xl">
-              {props.receiptDetail?.receiptName}과 함께
-            </Text>
+            <Text fontSize="2xl">{props.receiptDetail?.author}님이</Text>
+            {props?.receiptDetail?.joins !== undefined &&
+            props?.receiptDetail?.joins.length !== 0 ? (
+              <CollapseBox
+                title={`${props.receiptDetail.author} 외 ${props?.receiptDetail?.joins.length}인`}
+                details={props.receiptDetail?.joins}
+              />
+            ) : null}
             <Flex>
               <Button>{props.receiptDetail?.useTag}</Button>
               <Text fontSize="2xl">에</Text>
