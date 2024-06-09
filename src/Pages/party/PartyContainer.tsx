@@ -172,8 +172,7 @@ const PartyContainer = () => {
         author: contexts.currentMember,
         joins: join,
         cost: cost,
-        createdAt: createdAt,
-        useTag: useTag,
+        useTag: useTag!!.name,
         useCurrency: useCurrency.currencyId,
       }),
     });
@@ -259,7 +258,6 @@ const PartyContainer = () => {
             try {
               console.log(frame.body);
               const parsedMessage = JSON.parse(frame.body);
-              console.log(parsedMessage);
               //새로운 영수증이 들어오면 추가
               const parsedJoin = JSON.parse(parsedMessage.joins);
               const newReceipt: Receipt = {
@@ -267,12 +265,7 @@ const PartyContainer = () => {
                 joins: parsedJoin,
                 createdAt: new Date(parsedMessage.createdAt),
               };
-              contexts.setParty((prev: Party) => {
-                return {
-                  ...prev,
-                  receipts: [...prev.receipts, newReceipt],
-                };
-              });
+              contexts.setReceipts((prev: Receipt[]) => [...prev, newReceipt]);
             } catch (err) {
               console.log(err);
             }
@@ -283,7 +276,7 @@ const PartyContainer = () => {
               console.log(frame.body);
               const receiptId = frame.body;
               //영수증 ID가 들어오면 해당 영수증을 삭제
-              contexts.setReceipt((prev: Receipt[]) =>
+              contexts.setReceipts((prev: Receipt[]) =>
                 prev.filter(
                   (receipt: Receipt) => receipt.receiptId !== receiptId
                 )

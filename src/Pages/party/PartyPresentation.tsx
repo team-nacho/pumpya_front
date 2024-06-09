@@ -316,7 +316,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       </>
     ) : null}
     <Button
-      isDisabled={!props.receiptName}
+      isDisabled={!props.receiptName || !props.useTag}
       onClick={props.onClickCreateReceipt}
       marginY="9px"
       colorScheme="gray"
