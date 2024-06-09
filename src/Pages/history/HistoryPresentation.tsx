@@ -108,12 +108,75 @@ const HistoryPresentation = ({
     ) : (
       <VStack spacing={3} align="stretch">
         <div>
-          {Object.keys(exchange).map((currency: string, index: number) =>
-            selectedCurrency === "전체" || selectedCurrency === currency
-              ? Object.keys(exchange[currency]).map(
-                  (sender: string, senderIndex: number) => (
-                    <Accordion allowMultiple key={`${currency}-${senderIndex}`}>
-                      <AccordionItem style={{ margin: "10px 0" }}>
+        <Accordion allowMultiple>
+            {Object.keys(exchange).length > 0 &&
+              (selectedCurrency === "전체"
+                ? memberNames.map((memberName: string, index: number) =>
+                    Object.keys(exchange).some(
+                      (currency: string) =>
+                        exchange[currency] &&
+                        exchange[currency][memberName]
+                    ) ? (
+                      <AccordionItem
+                        key={`${memberName}-${index}`}
+                        style={{ margin: "10px 0" }}
+                      >
+                        <h2>
+                          <AccordionButton
+                            as="span"
+                            flex="1"
+                            textAlign="left"
+                            style={{ backgroundColor: "#EDF2F7" }}
+                          >
+                            <Button as="span" flex="1" textAlign="left">
+                              <p style={{ fontSize: 20 }}>
+                                <b>{memberName}</b>님의 뿜빠이 결과
+                              </p>
+                            </Button>
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel bg="#EDF2F7">
+                          {Object.keys(exchange).map(
+                            (currencyInner: string) =>
+                              exchange[currencyInner][memberName] &&
+                              Object.keys(
+                                exchange[currencyInner][memberName]
+                              ).map(
+                                (
+                                  receiver: string,
+                                  receiverIndex: number
+                                ) => (
+                                  <Container
+                                    key={`${currencyInner}-${memberName}-${receiverIndex}`}
+                                    as="span"
+                                    flex="1"
+                                    textAlign="center"
+                                  >
+                                    <p style={{ fontSize: 15 }}>
+                                      <b>{receiver}</b>님에게{" "}
+                                      <b>
+                                        {
+                                          exchange[currencyInner][memberName][
+                                            receiver
+                                          ]
+                                        }
+                                      </b>
+                                      ({currencyInner}) 주세요
+                                    </p>
+                                  </Container>
+                                )
+                              )
+                          )}
+                        </AccordionPanel>
+                      </AccordionItem>
+                    ) : null
+                  )
+                : Object.keys(exchange[selectedCurrency] || {}).map(
+                    (sender: string, senderIndex: number) => (
+                      <AccordionItem
+                        key={`${selectedCurrency}-${senderIndex}`}
+                        style={{ margin: "10px 0" }}
+                      >
                         <h2>
                           <AccordionButton
                             as="span"
@@ -129,27 +192,29 @@ const HistoryPresentation = ({
                           </AccordionButton>
                         </h2>
                         <AccordionPanel bg="#EDF2F7">
-                          <Container as="span" flex="1" textAlign="center">
-                            {Object.keys(exchange[currency][sender]).map(
-                              (receiver: string, receiverIndex: number) => (
-                                <div
-                                  key={`${index}-${senderIndex}-${receiverIndex}`}
-                                >
-                                  <p style={{ fontSize: 15 }}>
-                                    <b>{receiver}</b>님에게{" "}
-                                    <b>{exchange[currency][sender][receiver]}</b>({currency}) 주세요
-                                  </p>
-                                </div>
-                              )
-                            )}
-                          </Container>
+                          {Object.keys(
+                            exchange[selectedCurrency][sender] || {}
+                          ).map((receiver: string, receiverIndex: number) => (
+                            <Container
+                              key={`${selectedCurrency}-${sender}-${receiverIndex}`}
+                              as="span"
+                              flex="1"
+                              textAlign="center"
+                            >
+                              <p style={{ fontSize: 15 }}>
+                                <b>{receiver}</b>님에게{" "}
+                                <b>
+                                  {exchange[selectedCurrency][sender][receiver]}
+                                </b>
+                                ({selectedCurrency}) 주세요
+                              </p>
+                            </Container>
+                          ))}
                         </AccordionPanel>
                       </AccordionItem>
-                    </Accordion>
-                  )
-                )
-              : null
-          )}
+                    )
+                  ))}
+          </Accordion>
         </div>
         <div>
           <Menu>
