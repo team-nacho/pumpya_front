@@ -1,11 +1,17 @@
 import axios, { AxiosResponse } from "axios";
 import { CreatePartyRequest } from "../Interfaces/request";
-import { CreatePartyResponse, GetPartyResponse } from "../Interfaces/response";
+import {
+  CreatePartyResponse,
+  GetPartyResponse,
+  GetReceiptsResponse,
+  GetTagResponse,
+  GetCurrencyResponse,
+} from "../Interfaces/response";
 import { get } from "http";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_BASEURL
-})
+  baseURL: process.env.REACT_APP_BASEURL,
+});
 
 export const partyApi = {
   createParty: async (
@@ -19,20 +25,26 @@ export const partyApi = {
   ): Promise<AxiosResponse<GetPartyResponse>> => {
     const response = await api.get(`/get-party/${partyId}`);
     return response;
-  }
-}
+  },
+};
 export const receiptApi = {
   getReceipts: async (
     partyId: string
-  ): Promise<AxiosResponse<GetPartyResponse>> => {
+  ): Promise<AxiosResponse<GetReceiptsResponse>> => {
     const response = await api.get(`/get-receipts/${partyId}`);
     return response;
-  }
-}
+  },
+};
 export const tagApi = {
-  getTags: async (
-  ): Promise<AxiosResponse<GetPartyResponse>> => {
+  getTags: async (): Promise<AxiosResponse<GetTagResponse>> => {
     const response = await api.get(`/get-tags`);
     return response;
-  }
-}
+  },
+};
+
+export const currencyApi = {
+  getCurrencies: async (): Promise<AxiosResponse<GetCurrencyResponse>> => {
+    const response = await api.get(`/get-currencies`);
+    return response;
+  },
+};

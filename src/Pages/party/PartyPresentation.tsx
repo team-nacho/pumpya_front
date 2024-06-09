@@ -1,4 +1,5 @@
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
+import CollapseBox from "./CollapseBox"; // 경로에 맞게 파일 경로 설정
 import {
   Heading,
   Text,
@@ -27,23 +28,27 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useToast,
+  Collapse,
+  Box,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
   party: Party | undefined;
+  receipts: Receipt[];
   currentMember: string;
-  currencyList: Currency[];
-  tagList: Tag[];
+  currencyList: Currency[] | undefined;
+  tagList: Tag[] | undefined;
   onClickCreateReceipt: () => void;
   onClickChangeCurrentMember: (member: string) => void;
   onClickAddMember: () => void;
   onClickChangeCurrency: (index: number) => void;
+  onClickHistory: () => void;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
   duplicatedName: () => void;
+  noName: () => void;
   copyToClipboard: () => void;
   onClickEndParty: () => void;
   isOpenModal: boolean;
@@ -72,6 +77,9 @@ interface PartyPresentationProps {
   btnReceipt: React.RefObject<HTMLButtonElement>;
   receiptDetail: Receipt | undefined;
   setReceiptDetail: (receipt: Receipt) => void;
+  onClickDeleteReceipt: () => void;
+  isOpenCollapse: boolean;
+  onToggle: () => void;
 }
 
 const ClickedButton: React.FC<{
@@ -116,7 +124,7 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
   if (!receiptDetail?.createdAt) return null;
 
   const year = receiptDetail.createdAt.getFullYear();
-  const month = receiptDetail.createdAt.getMonth(); // Month is 0-based
+  const month = receiptDetail.createdAt.getMonth() + 1; // Month is 0-based
   const date = receiptDetail.createdAt.getDate();
 
   return `${year}년 ${month}월 ${date}일`;
@@ -130,7 +138,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         {"\u00B7"}
       </Heading>
       <Text fontSize="2xl" marginY="5px">
-        {props.party?.members.length}명
+        {props.party?.members?.length}명
       </Text>
       <Spacer />
       <Button
@@ -190,7 +198,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             >
               URL 복사하기
             </Button>
-            <Button colorScheme="gray" variant="ghost" w="100%" h="48px">
+            <Button
+              onClick={props.onClickHistory}
+              colorScheme="gray"
+              variant="ghost"
+              w="100%"
+              h="48px"
+            >
               현재까지 정산 기록보기
             </Button>
           </DrawerBody>
@@ -215,9 +229,8 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <ModalCloseButton />
         <ModalBody>
           <Text>you can use your nickname!</Text>
-          <Text>but also can use random animal nickname!</Text>
           <Input
-            placeholder={props.nickname}
+            placeholder={"nickname"}
             onChange={props.handleInputNickName}
           />
         </ModalBody>
@@ -227,16 +240,8 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             colorScheme="blue"
             mr={3}
             onClick={() => {
-              if (
-                props.party?.members.find(
-                  (member: string) => member === props.nickname
-                ) === undefined
-              ) {
-                props.onClickAddMember();
-                props.onClose();
-              } else {
-                props.duplicatedName();
-              }
+              props.onClickAddMember();
+              props.onCloseModal();
             }}
           >
             Create!
@@ -248,13 +253,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       이번 여행에서 소비했어요
     </Text>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party?.totalCost}원
+      {props.party?.totalCost || 0}원
     </Heading>
     <Flex justifyContent="space-between">
       <Input
         value={props.cost}
         onChange={props.onChangeCostInput}
-        placeholder={props.useCurrency.country}
+        placeholder={props.useCurrency.currencyId}
         marginY="5px"
         w="70%"
       />
@@ -264,7 +269,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           {props.useCurrency.country}
         </MenuButton>
         <MenuList>
-          {props.currencyList.map((currency, index) => (
+          {props.currencyList?.map((currency, index) => (
             <MenuItem
               key={currency.currencyId}
               onClick={() => props.onClickChangeCurrency(index)}
@@ -282,7 +287,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       placeholder="소비를 입력해 주세요"
     />
     <Stack direction="row" spacing={4} align="center">
-      {props.tagList.map((choiceTag) =>
+      {props.tagList?.map((choiceTag) =>
         choiceTag === props.useTag ? (
           <ClickedButton
             key={choiceTag.name}
@@ -300,7 +305,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Stack>
     {props.party?.members?.length !== 1 ? (
       <>
-        <Text>누구와 함께 하셨나요?</Text>
+        <Text fontSize="2xl">누구와 함께 하셨나요?</Text>
         <Stack direction="row" spacing={4} align="center">
           {props.party?.members
             ?.filter((member: string) => member !== props.currentMember)
@@ -322,37 +327,53 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </Stack>
       </>
     ) : null}
-    <Button onClick={props.onClickCreateReceipt} marginY="5px">
+    <Button
+      isDisabled={!props.receiptName || !props.useTag}
+      onClick={() => {
+        props.onClickCreateReceipt();
+        props.setCost("");
+        props.setReceiptName("");
+      }}
+      marginY="9px"
+      colorScheme="gray"
+      w="100%"
+      h="50px"
+    >
       create Receipt
     </Button>
     <p></p>
-    {props.party?.receipts === undefined || props.party?.receipts.length === 0
+    {props?.receipts === undefined || props?.receipts.length === 0
       ? "등록된 영수증이 없습니다"
-      : props.party.receipts.map((receipt, index) => (
+      : props.receipts.map((receipt, index) => (
           <Container
             key={index}
+            p={4}
+            alignItems="flex-start"
             onClick={() => {
               props.setReceiptDetail(receipt);
               props.onOpenReceipt();
             }}
           >
-            <Flex justifyContent="space-between">
+            <Flex justify="space-between" align="center">
               <Text fontSize="lg" as="b">
                 {receipt.receiptName}
               </Text>
               <Text fontSize="lg" as="b">
-                {receipt.author}
+                {receipt.useCurrency} {receipt.cost}
               </Text>
             </Flex>
             <Flex justifyContent="space-between">
-              <Text fontSize="lg">
-                {formatTwoDigits(receipt.createdAt?.getHours())}:
-                {formatTwoDigits(receipt.createdAt?.getMinutes())}
-                {receipt.useTag}
-              </Text>
-              <Text fontSize="lg">
-                {receipt.useCurrency}
-                {receipt.cost}
+              {receipt?.createdAt !== undefined ? (
+                <Text fontSize="lg" color="gray.500">
+                  {receipt?.createdAt?.getMonth() + 1}월{" "}
+                  {receipt?.createdAt?.getDate()}일{" "}
+                  {formatTwoDigits(receipt.createdAt?.getHours())}:
+                  {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
+                  {receipt.useTag}
+                </Text>
+              ) : null}
+              <Text fontSize="lg" color="gray.500">
+                {receipt.author}
               </Text>
             </Flex>
           </Container>
@@ -367,22 +388,39 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       <DrawerContent>
         <DrawerCloseButton />
         <DrawerHeader></DrawerHeader>
-
         <DrawerBody>
-          <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
-          <Text fontSize="2xl">{props.receiptDetail?.receiptName}과 함께</Text>
-          <Button>{props.receiptDetail?.useTag}</Button>
-          <Text fontSize="2xl">에</Text>
-          <Button>{props.receiptDetail?.receiptName}</Button>
-          <Button>
-            {props.receiptDetail?.useCurrency}{" "}
-            {props.receiptDetail?.cost.toLocaleString()}{" "}
-          </Button>
-          <Text fontSize="2xl">지출</Text>
+          <VStack spacing={5} alignItems="left">
+            <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
+            <Text fontSize="2xl">{props.receiptDetail?.author}님이</Text>
+            {props?.receiptDetail?.joins !== undefined &&
+            props?.receiptDetail?.joins.length !== 0 ? (
+              <CollapseBox
+                title={`${props.receiptDetail.author} 외 ${props?.receiptDetail?.joins.length}인`}
+                details={props.receiptDetail?.joins}
+              />
+            ) : null}
+            <Flex>
+              <Button>{props.receiptDetail?.useTag}</Button>
+              <Text fontSize="2xl">에</Text>
+              <Button>{props.receiptDetail?.receiptName}</Button>
+            </Flex>
+            <Flex>
+              <Button>
+                {props.receiptDetail?.useCurrency}{" "}
+                {props.receiptDetail?.cost.toLocaleString()}{" "}
+              </Button>
+            </Flex>
+            <Text fontSize="2xl">지출</Text>
+          </VStack>
         </DrawerBody>
-
         <DrawerFooter>
-          <Button colorScheme="orange" variant="solid" w="100%" h="48px">
+          <Button
+            onClick={props.onClickDeleteReceipt}
+            colorScheme="orange"
+            variant="solid"
+            w="100%"
+            h="48px"
+          >
             영수증 삭제하기
           </Button>
         </DrawerFooter>

@@ -11,6 +11,7 @@ import {
   GetPartyResponse,
 } from "../../Interfaces/response";
 import { Party } from "../../Interfaces/interfaces";
+import { createRandomName } from "./randomName";
 
 const HomeContainer = () => {
   const navigate = useNavigate();
@@ -21,9 +22,8 @@ const HomeContainer = () => {
   const appContext = useAppContext();
 
   const onClickCreateParty = async () => {
-    //첫 사용자 이름이 정해지면 api호출해서
     const request: CreatePartyRequest = {
-      userName: nickname !== null ? nickname : randomName,
+      userName: nickname !== null && nickname !== "" ? nickname : randomName,
     };
 
     const response: AxiosResponse<CreatePartyResponse> =
@@ -63,7 +63,6 @@ const HomeContainer = () => {
     //랜덤 이름을 프론트에서 만들던지 아니면 api로 불러오던지
     setNickname(e.target.value);
   };
-
   useEffect(() => {
     if (partyCreated) {
       navigate(`/party/${appContext.party.partyId}`);
@@ -72,14 +71,18 @@ const HomeContainer = () => {
     }
   }, [partyCreated, navigate, appContext?.party?.partyId]);
   useEffect(() => {
-    setRandomName("random name");
-    setNickname(randomName);
-  }, [randomName]);
+    createRandomName().then((result: string) => {
+      setRandomName(result);
+      console.log(result);
+      setNickname(result);
+    });
+  }, []);
 
   return (
     <HomePresentation
       nickname={nickname}
       setNickname={setNickname}
+      randomName={randomName}
       onClickCreateParty={onClickCreateParty}
       handleInputNickName={handleInputNickName}
       isOpen={isOpen}
