@@ -9,7 +9,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi } from "../../Apis/apis";
 import { tagList, currencyList } from "./datafile";
 import { useNavigate } from "react-router-dom";
-import { create } from "domain";
+import LoadingPresentation from "../../Components/LoadingPresentation";
 
 const PartyContainer = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const PartyContainer = () => {
   const [receiptName, setReceiptName] = useState<string>("");
   const [useTag, setUseTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
-    receiptId: "",
+    receiptId: undefined,
     partyId: partyId!!,
     receiptName: "test recieptName",
     author: contexts.currentMember,
@@ -156,7 +156,8 @@ const PartyContainer = () => {
     });
   };
   const onClickDeleteReceipt = () => {
-    if (receiptDetail) deleteReceipt(receiptDetail.receiptId);
+    if (receiptDetail?.receiptId !== undefined)
+      deleteReceipt(receiptDetail.receiptId);
     onCloseReceipt();
   };
   const saveReceipt = () => {
@@ -256,13 +257,20 @@ const PartyContainer = () => {
           //create Receipt
           stomp.subscribe(`/sub/receipt/${partyId}`, function (frame) {
             try {
+              console.log(frame.body);
               const parsedMessage = JSON.parse(frame.body);
-              //새로운 영수증이 들어오면 추가
               console.log(parsedMessage);
-              contexts.setReceipts((prev: Receipt[]) => {
+              //새로운 영수증이 들어오면 추가
+              const parsedJoin = JSON.parse(parsedMessage.joins);
+              const newReceipt: Receipt = {
+                ...parsedMessage,
+                joins: parsedJoin,
+                createdAt: new Date(parsedMessage.createdAt),
+              };
+              contexts.setParty((prev: Party) => {
                 return {
                   ...prev,
-                  parsedMessage,
+                  receipts: [...prev.receipts, newReceipt],
                 };
               });
             } catch (err) {
@@ -374,7 +382,7 @@ const PartyContainer = () => {
   return (
     <>
       {contexts.loading ? (
-        <div>loading...</div>
+        <LoadingPresentation />
       ) : isLocalCurrent === false ? (
         <PartyModal
           party={contexts.party}
