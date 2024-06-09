@@ -1,5 +1,5 @@
 import { Party } from "../../Interfaces/interfaces";
-import { Box, Text, Button } from "@chakra-ui/react";
+import { Box, Text, Button, Input } from "@chakra-ui/react";
 
 interface PartyModalProps {
   party: Party | undefined;
@@ -33,6 +33,21 @@ const PartyModal = (props: PartyModalProps) => (
           {member}
         </Button>
       ))}
+      <Text mb={2}>새로운 파티인가요?</Text>
+      <Input
+        placeholder="고릴라"
+        mb={4}
+        //value={newPartyName}
+        //onChange={handleInputChange}
+      />
+      <Button
+        bg="gray.300"
+        width="100%"
+        //isDisabled={!newPartyName}
+        //onClick={handleNewPartyClick}
+      >
+        새로 참여하기
+      </Button>
     </Box>
   </Box>
 );

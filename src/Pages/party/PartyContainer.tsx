@@ -29,7 +29,7 @@ const PartyContainer = () => {
   const { partyId } = useParams();
   const contexts = useAppContext();
   const [stompClient, setStompClient] = useState<Client | null>(null);
-  const [cost, setCost] = useState<number>(0);
+  const [cost, setCost] = useState<string>("");
   const [receiptName, setReceiptName] = useState<string>("");
   const [useTag, setUseTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
@@ -87,8 +87,13 @@ const PartyContainer = () => {
     setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value)) setCost(value);
+    //const value = Number(e.target.value);
+    // if (!isNaN(value)) setCost(value);
+
+    const value = e.target.value;
+    if (/^(\d+\.?\d*|\.\d+)$/.test(value) || value === "") {
+      setCost(value);
+    }
   };
   const deleteReceipt = () => {
     //파티 아이디와 영수증 아이디를 전달
@@ -105,7 +110,7 @@ const PartyContainer = () => {
         ...receipt,
         joins: join,
         createdAt: createdAt,
-        tag: "testTag",
+        useTag: "testTag",
         useCurrency: useCurrency.currencyId,
       }),
     });
@@ -264,7 +269,10 @@ const PartyContainer = () => {
         .catch((err) => {
           console.log(err);
         });
-    } else contexts.setLoading(false);
+    } else {
+      contexts.setLoading(false);
+    }
+    if (contexts.currentMember !== undefined) setIsLocalCurrent(true);
   }, [contexts?.party, partyId]);
 
   useEffect(() => {
