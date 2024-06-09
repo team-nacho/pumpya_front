@@ -6,7 +6,9 @@ const AppContext = createContext<any | undefined>(undefined);
 export const AppProdiver = ({ children }: any) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [party, setParty] = useState<Party | undefined>(undefined);
-  const [currentMember, setCurrentMember] = useState<string | undefined>(undefined);
+  const [currentMember, setCurrentMember] = useState<string | undefined>(
+    undefined
+  );
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [totalCostsByCurrency, setTotalCostsByCurrency] = useState<{ [key: string]: number }>({});
   

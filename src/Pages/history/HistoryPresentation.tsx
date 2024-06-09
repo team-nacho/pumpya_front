@@ -238,6 +238,7 @@ const HistoryPresentation = ({
         <div>
           <div>
             {filteredReceipts.length === 0 ? (
+
               <Box
                 textAlign="center"
                 p={4}

@@ -16,6 +16,7 @@ import {
 interface HomePresentationProps {
   nickname: string;
   setNickname: (nickname: string) => void;
+  randomName: string;
   onClickCreateParty: () => void;
   handleInputNickName: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isOpen: boolean;
@@ -36,7 +37,10 @@ const HomePresentation = (props: HomePresentationProps) => (
         <ModalBody>
           <Text>you can use your nickname!</Text>
           <Text>but also can use random animal nickname!</Text>
-          <Input placeholder={props.nickname} onChange={props.handleInputNickName} />
+          <Input
+            placeholder={props.randomName}
+            onChange={props.handleInputNickName}
+          />
         </ModalBody>
 
         <ModalFooter>
