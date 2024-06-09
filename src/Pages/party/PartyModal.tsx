@@ -4,6 +4,10 @@ import { Box, Text, Button, Input } from "@chakra-ui/react";
 interface PartyModalProps {
   party: Party | undefined;
   onClickSetCurrentMember: (member: string) => void;
+  newMemberName: string;
+  setNewMemberName: (newMemberName: string) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClickAddNewMember: () => void;
 }
 
 const PartyModal = (props: PartyModalProps) => (
@@ -23,7 +27,7 @@ const PartyModal = (props: PartyModalProps) => (
         누구신가요?
       </Text>
       <Text mb={4}>이름을 선택해주세요!</Text>
-      {props.party?.members.map((member, index) => (
+      {props.party?.members?.map((member, index) => (
         <Button
           mb={2}
           width="100%"
@@ -35,16 +39,16 @@ const PartyModal = (props: PartyModalProps) => (
       ))}
       <Text mb={2}>새로운 파티인가요?</Text>
       <Input
-        placeholder="고릴라"
+        placeholder="이 름"
         mb={4}
-        //value={newPartyName}
-        //onChange={handleInputChange}
+        value={props.newMemberName}
+        onChange={props.handleInputChange}
       />
       <Button
         bg="gray.300"
         width="100%"
-        //isDisabled={!newPartyName}
-        //onClick={handleNewPartyClick}
+        isDisabled={!props.newMemberName}
+        onClick={props.onClickAddNewMember}
       >
         새로 참여하기
       </Button>

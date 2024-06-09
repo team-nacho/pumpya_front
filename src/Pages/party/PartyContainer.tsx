@@ -9,6 +9,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi } from "../../Apis/apis";
 import { tagList, currencyList } from "./datafile";
 import { useNavigate } from "react-router-dom";
+import { create } from "domain";
 
 const PartyContainer = () => {
   const navigate = useNavigate();
@@ -33,8 +34,9 @@ const PartyContainer = () => {
   const [receiptName, setReceiptName] = useState<string>("");
   const [useTag, setUseTag] = useState<Tag | undefined>(undefined);
   const [receipt, setReceipt] = useState<Receipt>({
+    receiptId: "",
     partyId: partyId!!,
-    receiptName: "ttt",
+    receiptName: "test recieptName",
     author: contexts.currentMember,
     joins: [],
     cost: 0,
@@ -48,6 +50,38 @@ const PartyContainer = () => {
     currencyId: "USD",
     country: "미국",
   });
+  const [newMemberName, setNewMemberName] = useState("");
+  const onClickSetCurrentMember = (memberName: string) => {
+    onClickChangeCurrentMember(memberName);
+    setIsLocalCurrent(true);
+  };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMemberName(e.target.value);
+  };
+  const onClickAddNewMember = () => {
+    if (
+      contexts.party.members.find(
+        (member: string) => member === newMemberName
+      ) === undefined
+    ) {
+      const destination = `/pub/party/${partyId}/new-member`;
+      stompClient?.publish({
+        destination,
+        body: JSON.stringify({
+          name: newMemberName,
+        }),
+      });
+      const localCurrentMember = {
+        pumpya_user_name: newMemberName,
+        pumpya_party_id: partyId,
+      };
+      localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
+      contexts.setCurrentMember(newMemberName);
+      setIsLocalCurrent(true);
+    } else {
+      duplicatedName();
+    }
+  };
   const onClickAddMember = () => {
     if (nickname === "") noName();
     else {
@@ -110,12 +144,22 @@ const PartyContainer = () => {
       setCost(value);
     }
   };
-  const deleteReceipt = () => {
+  const deleteReceipt = (receiptId: string) => {
     //파티 아이디와 영수증 아이디를 전달
-    const destination = `/pub/receipt/${partyId}/delete`;
+    const destination = `/pub/party/${partyId}/delete`;
+    console.log(receiptId);
+    stompClient?.publish({
+      destination,
+      body: JSON.stringify({
+        receiptId: receiptId,
+      }),
+    });
+  };
+  const onClickDeleteReceipt = () => {
+    if (receiptDetail) deleteReceipt(receiptDetail.receiptId);
+    onCloseReceipt();
   };
   const saveReceipt = () => {
-    console.log(receipt);
     const destination = `/pub/party/${partyId}/create`;
     //이 부분은 예시임
     const createdAt = new Date();
@@ -123,9 +167,12 @@ const PartyContainer = () => {
       destination,
       body: JSON.stringify({
         ...receipt,
+        receiptName: receiptName,
+        author: contexts.currentMember,
         joins: join,
+        cost: cost,
         createdAt: createdAt,
-        useTag: "testTag",
+        useTag: useTag,
         useCurrency: useCurrency.currencyId,
       }),
     });
@@ -152,14 +199,11 @@ const PartyContainer = () => {
       console.log("Member not found");
     }
   };
-  const onClickSetCurrentMember = (memberName: string) => {
-    onClickChangeCurrentMember(memberName);
-    setIsLocalCurrent(true);
-  };
   const onClickEndParty = () => {
     navigate(`/history/${contexts.party.partyId}`);
   };
   const onClickChangeCurrency = (index: number) => {
+    console.log(contexts);
     setUseCurrency(currencyList[index]);
   };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +220,6 @@ const PartyContainer = () => {
     const newJoin = join.filter((member: string) => member !== deleteMember);
     setJoin(newJoin);
   };
-
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -216,12 +259,27 @@ const PartyContainer = () => {
               const parsedMessage = JSON.parse(frame.body);
               //새로운 영수증이 들어오면 추가
               console.log(parsedMessage);
-              contexts.setParty((prev: Party) => {
+              contexts.setReceipts((prev: Receipt[]) => {
                 return {
                   ...prev,
-                  receipts: [...prev.receipts, parsedMessage],
+                  parsedMessage,
                 };
               });
+            } catch (err) {
+              console.log(err);
+            }
+          });
+          //delete Receipt
+          stomp.subscribe(`/sub/receipt/${partyId}/delete`, function (frame) {
+            try {
+              console.log(frame.body);
+              const receiptId = frame.body;
+              //영수증 ID가 들어오면 해당 영수증을 삭제
+              contexts.setReceipt((prev: Receipt[]) =>
+                prev.filter(
+                  (receipt: Receipt) => receipt.receiptId !== receiptId
+                )
+              );
             } catch (err) {
               console.log(err);
             }
@@ -252,16 +310,33 @@ const PartyContainer = () => {
       //get partyId with partyId
       //useEffect 실행 순서 제어해야함. 로컬 유저 판단 -> 방 활성화 판단 -> 방 정보 할당 -> 소켓연결
 
-      receiptApi.getReceipts(partyId!!).then((response) => {
-        console.log(response.data);
-        contexts.setParty((prev: Party) => {
-          return { ...prev, receipt: response.data };
+      receiptApi
+        .getReceipts(partyId!!)
+        .then((response) => {
+          console.log(response.data);
+          // receipt를 변환하고 새로운 배열을 반환
+          const transformedReceipts = response.data.map((receipt) => ({
+            ...receipt,
+            joins: JSON.parse(receipt.joins),
+            createdAt: new Date(receipt.createdAt),
+          }));
+          // 변환된 배열을 상태에 저장
+          contexts.setReceipts(transformedReceipts);
+        })
+        .catch((err) => {
+          console.log(err);
         });
-      });
 
       const localCurrentMember = JSON.parse(
         localStorage.getItem("pumpya_user")!!
       );
+      if (localCurrentMember !== null) {
+        contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
+        //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
+        setIsLocalCurrent(true);
+      } else {
+        setIsLocalCurrent(false);
+      }
       partyApi
         .getParty(partyId!!)
         .then((response) => {
@@ -275,14 +350,6 @@ const PartyContainer = () => {
               totalCost: 0,
             };
           });
-
-          if (localCurrentMember !== null) {
-            contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
-            //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
-            setIsLocalCurrent(true);
-          } else {
-            setIsLocalCurrent(false);
-          }
           contexts.setLoading(false);
         })
         .catch((err) => {
@@ -312,10 +379,15 @@ const PartyContainer = () => {
         <PartyModal
           party={contexts.party}
           onClickSetCurrentMember={onClickSetCurrentMember}
+          newMemberName={newMemberName}
+          setNewMemberName={setNewMemberName}
+          handleInputChange={handleInputChange}
+          onClickAddNewMember={onClickAddNewMember}
         />
       ) : (
         <PartyPresentation
           party={contexts.party}
+          receipts={contexts.receipts}
           currentMember={contexts.currentMember}
           currencyList={currencyList}
           tagList={tagList}
@@ -357,6 +429,7 @@ const PartyContainer = () => {
           btnReceipt={btnReceipt}
           receiptDetail={receiptDetail}
           setReceiptDetail={setReceiptDetail}
+          onClickDeleteReceipt={onClickDeleteReceipt}
         />
       )}
     </>

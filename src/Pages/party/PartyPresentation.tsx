@@ -31,6 +31,7 @@ import {
 
 interface PartyPresentationProps {
   party: Party | undefined;
+  receipts: Receipt[];
   currentMember: string;
   currencyList: Currency[];
   tagList: Tag[];
@@ -72,6 +73,7 @@ interface PartyPresentationProps {
   btnReceipt: React.RefObject<HTMLButtonElement>;
   receiptDetail: Receipt | undefined;
   setReceiptDetail: (receipt: Receipt) => void;
+  onClickDeleteReceipt: () => void;
 }
 
 const ClickedButton: React.FC<{
@@ -130,7 +132,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         {"\u00B7"}
       </Heading>
       <Text fontSize="2xl" marginY="5px">
-        {props.party?.members.length}명
+        {props.party?.members?.length}명
       </Text>
       <Spacer />
       <Button
@@ -222,7 +224,14 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={props.onClickAddMember}>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={() => {
+              props.onClickAddMember();
+              props.onCloseModal();
+            }}
+          >
             Create!
           </Button>
         </ModalFooter>
@@ -232,13 +241,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       이번 여행에서 소비했어요
     </Text>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party?.totalCost}원
+      {props.party?.totalCost || 0}원
     </Heading>
     <Flex justifyContent="space-between">
       <Input
         value={props.cost}
         onChange={props.onChangeCostInput}
-        placeholder={props.useCurrency.country}
+        placeholder={props.useCurrency.currencyId}
         marginY="5px"
         w="70%"
       />
@@ -310,9 +319,9 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       create Receipt
     </Button>
     <p></p>
-    {props.party?.receipts === undefined || props.party?.receipts.length === 0
+    {props?.receipts === undefined || props?.receipts.length === 0
       ? "등록된 영수증이 없습니다"
-      : props.party.receipts.map((receipt, index) => (
+      : props.receipts.map((receipt, index) => (
           <Container
             key={index}
             onClick={() => {
@@ -364,7 +373,13 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           <Text fontSize="2xl">지출</Text>
         </DrawerBody>
         <DrawerFooter>
-          <Button colorScheme="orange" variant="solid" w="100%" h="48px">
+          <Button
+            onClick={props.onClickDeleteReceipt}
+            colorScheme="orange"
+            variant="solid"
+            w="100%"
+            h="48px"
+          >
             영수증 삭제하기
           </Button>
         </DrawerFooter>
