@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Receipt, Currency, ExchangeRate } from "../../Interfaces/interfaces";
 import { useAppContext } from "../../AppContext";
-import HistoryPresentation from "./HistoryPresentation";
+import ResultPresentation from "./ResultPresentation";
 import { receiptApi, partyApi, currencyApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
+import { useDisclosure, useToast } from "@chakra-ui/react";
 
-const HistoryContainer = () => {
+const ResultContainer = () => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
@@ -17,6 +18,29 @@ const HistoryContainer = () => {
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
+  const toast = useToast();
+
+  const onStart = () => { navigate('/'); }
+
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: `success copy`,
+          status: "success",
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: `error copy`,
+          status: "error",
+          isClosable: true,
+        });
+      });
+  };
 
   const hasSelectedTag =
     context.receipts?.some(
@@ -39,8 +63,6 @@ const HistoryContainer = () => {
     });
     return receiptsByCurrency;
   };
-
-  const onBack = () => navigate(-1);
 
   const memberNames = context.party?.members ?? [];
 
@@ -234,11 +256,12 @@ const HistoryContainer = () => {
   return context.loading ? (
     <LoadingPresentation />
   ) : (
-    <HistoryPresentation
+    <ResultPresentation
+      onstart={onStart}
+      copyToClipboard={copyToClipboard}
       partyName={partyName}
       memberNames={memberNames}
       receipts={context.receipts}
-      onBack={onBack}
       selectedTag={selectedTag}
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
@@ -253,28 +276,6 @@ const HistoryContainer = () => {
       totalCostsByCurrency={context.totalCostsByCurrency}
     />
   );
-
-  // 서버 연결 없을 때를 위한 코드
-  /*return context.loading ? (
-    <HistoryPresentation
-      partyName={partyName}
-      partyTotal={partyTotal}
-      memberNames={memberNames}
-      receipts={context.receipts}
-      onBack={onBack}
-      selectedTag={selectedTag}
-      selectedCurrency={selectedCurrency}
-      filteredReceipts={filteredReceipts}
-      hasSelectedTag={hasSelectedTag}
-      tags={context.tags}
-      getCategoryReceipts={getCategoryReceipts}
-      handleTagClick={handleTagClick}
-      handleCurrencyClick={handleCurrencyClick}
-      getReceiptsByCurrency={getReceiptsByCurrency}
-    />
-  ) : (
-    <LoadingPresentation />
-  );*/
 };
 
-export default HistoryContainer;
+export default ResultContainer;

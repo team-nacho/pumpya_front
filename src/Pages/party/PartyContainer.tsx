@@ -10,6 +10,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
+import ResultContainer from "./ResultContainer"
 import { createRandomName } from "../home/randomName";
 
 const PartyContainer = () => {
@@ -498,7 +499,7 @@ const PartyContainer = () => {
           calculateTotalCost={calculateTotalCost}
         />
       ) : (
-        <div>ss</div>
+        <ResultContainer />
       )}
     </>
   );
