@@ -78,9 +78,9 @@ interface PartyPresentationProps {
   isOpenCollapse: boolean;
   onToggle: () => void;
   randomName: string | undefined;
-  totalCur: Currency | undefined;
-  setTotalCur: (currency: Currency) => void;
-  onClickChangeTotalCurrency: (index: number) => void;
+  totalCost: number;
+  setTotalCost: (totalCost: number) => void;
+  calculateTotalCost: (receipts: Receipt[], currecnyId: string) => number;
 }
 
 const ClickedButton: React.FC<{
@@ -257,13 +257,18 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Text>
     <Menu>
       <MenuButton as={Button} marginY="5px">
-        {props.totalCur?.currencyId}
+        {props.useCurrency.currencyId}
       </MenuButton>
       <MenuList>
         {props.currencyList?.map((currency, index) => (
           <MenuItem
             key={currency.currencyId}
-            onClick={() => props.onClickChangeTotalCurrency(index)}
+            onClick={() => {
+              props.onClickChangeCurrency(index);
+              props.setTotalCost(
+                props.calculateTotalCost(props.receipts, currency.currencyId)
+              );
+            }}
           >
             {currency.country}
           </MenuItem>
@@ -271,8 +276,8 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       </MenuList>
     </Menu>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party?.totalCost || 0}
-      {props.totalCur?.currencyId}
+      {props.totalCost || 0}
+      {props.useCurrency.currencyId}
     </Heading>
     <Flex justifyContent="space-between">
       <Input
@@ -284,14 +289,19 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       />
 
       <Menu>
-        <MenuButton textAlign="center" as={Button} width="25%" marginY="5px">
+        <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
           {props.useCurrency.country}
         </MenuButton>
         <MenuList>
           {props.currencyList?.map((currency, index) => (
             <MenuItem
               key={currency.currencyId}
-              onClick={() => props.onClickChangeCurrency(index)}
+              onClick={() => {
+                props.onClickChangeCurrency(index);
+                props.setTotalCost(
+                  props.calculateTotalCost(props.receipts, currency.currencyId)
+                );
+              }}
             >
               {currency.country}
             </MenuItem>

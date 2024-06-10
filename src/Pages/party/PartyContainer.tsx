@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { unstable_usePrompt, useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import PartyModal from "./PartyModal";
@@ -58,20 +58,18 @@ const PartyContainer = () => {
     currencyId: "USD",
     country: "미국",
   });
-  const [totalCur, setTotalCur] = useState<Currency>({
-    currencyId: "USD",
-    country: "미국",
-  });
   const [newMemberName, setNewMemberName] = useState<string>("");
-  const [totalCost, setTotalCost] = useState<number[]>([]);
+  const [totalCost, setTotalCost] = useState<number>(0);
   const onClickSetCurrentMember = (memberName: string) => {
     onClickChangeCurrentMember(memberName);
     setIsLocalCurrent(true);
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMemberName(e.target.value);
+    if (e.target.value === "") setNewMemberName(randomName!!);
+    else setNewMemberName(e.target.value);
   };
   const onClickAddNewMember = () => {
+    if (newMemberName === "") setNewMemberName(randomName!!);
     if (
       contexts.party.members.find(
         (member: string) => member === newMemberName
@@ -90,7 +88,11 @@ const PartyContainer = () => {
       };
       localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
       contexts.setCurrentMember(newMemberName);
-
+      createRandomName().then((result: string) => {
+        setRandomName(result);
+        setNickname(result);
+        setNewMemberName(result);
+      });
       setIsLocalCurrent(true);
     } else {
       duplicatedName();
@@ -112,6 +114,7 @@ const PartyContainer = () => {
       createRandomName().then((result: string) => {
         setRandomName(result);
         setNickname(result);
+        setNewMemberName(result);
       });
       onClose();
     } else {
@@ -215,10 +218,10 @@ const PartyContainer = () => {
   };
   const onClickChangeCurrency = (index: number) => {
     console.log(contexts);
-    if (currencyList !== undefined) setUseCurrency(currencyList[index]);
-  };
-  const onClickChangeTotalCurrency = (index: number) => {
-    if (currencyList !== undefined) setTotalCur(currencyList[index]);
+    if (currencyList !== undefined) {
+      setUseCurrency(currencyList[index]);
+      console.log(useCurrency);
+    }
   };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceiptName(e.target.value);
@@ -235,10 +238,19 @@ const PartyContainer = () => {
     setJoin(newJoin);
   };
 
-  const calculateTotalCost = (receipts: Receipt[]): number => {
-    return receipts.reduce((total, receipt) => total + receipt.cost, 0);
+  //비용 합산을 계산하는 함수
+  const calculateTotalCost = (receipts: Receipt[], currencyId: string) => {
+    return receipts
+      .filter((receipt) => receipt.useCurrency === currencyId)
+      .reduce((acc, receipt) => acc + receipt.cost, 0);
   };
 
+  const calculateTotalCostInStomp = (receipts: Receipt[]) => {
+    console.log(useCurrency);
+    return receipts
+      .filter((receipt) => receipt.useCurrency === useCurrency.currencyId)
+      .reduce((acc, receipt) => acc + receipt.cost, 0);
+  };
   useEffect(() => {
     tagApi.getTags().then((response) => {
       const newTagList = response.data.tags.map((tag) => ({
@@ -252,6 +264,7 @@ const PartyContainer = () => {
     createRandomName().then((result: string) => {
       setRandomName(result);
       setNickname(result);
+      setNewMemberName(result);
     });
     const initializeChat = async () => {
       try {
@@ -297,7 +310,9 @@ const PartyContainer = () => {
                 joins: parsedJoin,
                 createdAt: new Date(parsedMessage.createdAt),
               };
-              contexts.setReceipts((prev: Receipt[]) => [...prev, newReceipt]);
+              contexts.setReceipts((prev: Receipt[]) => {
+                return [...prev, newReceipt];
+              });
             } catch (err) {
               console.log(err);
             }
@@ -308,6 +323,7 @@ const PartyContainer = () => {
               console.log(frame.body);
               const receiptId = frame.body;
               //영수증 ID가 들어오면 해당 영수증을 삭제
+
               contexts.setReceipts((prev: Receipt[]) =>
                 prev.filter(
                   (receipt: Receipt) => receipt.receiptId !== receiptId
@@ -355,7 +371,12 @@ const PartyContainer = () => {
           }));
           // 변환된 배열을 상태에 저장
           contexts.setReceipts(transformedReceipts);
-          contexts.party.cost = calculateTotalCost(transformedReceipts);
+          console.log(
+            calculateTotalCost(transformedReceipts, useCurrency.currencyId)
+          );
+          setTotalCost(
+            calculateTotalCost(transformedReceipts, useCurrency.currencyId)
+          );
         })
         .catch((err) => {
           console.log(err);
@@ -404,11 +425,10 @@ const PartyContainer = () => {
     });
     setJoin([]);
   }, [contexts.currentMember]);
-
+  // contexts.receipts 변경 감지하여 totalCost 업데이트
   useEffect(() => {
-    if (contexts.receipt !== undefined)
-      contexts.party.cost = calculateTotalCost(contexts.receipt);
-  }, [contexts.receipt]);
+    setTotalCost(calculateTotalCost(contexts.receipts, useCurrency.currencyId));
+  }, [contexts.receipts, useCurrency.currencyId]);
 
   return (
     <>
@@ -422,6 +442,7 @@ const PartyContainer = () => {
           setNewMemberName={setNewMemberName}
           handleInputChange={handleInputChange}
           onClickAddNewMember={onClickAddNewMember}
+          randomName={randomName}
         />
       ) : !historyComponent ? (
         <PartyPresentation
@@ -472,9 +493,9 @@ const PartyContainer = () => {
           isOpenCollapse={isOpenCollapse}
           onToggle={onToggle}
           randomName={randomName}
-          totalCur={totalCur}
-          setTotalCur={setTotalCur}
-          onClickChangeTotalCurrency={onClickChangeTotalCurrency}
+          totalCost={totalCost}
+          setTotalCost={setTotalCost}
+          calculateTotalCost={calculateTotalCost}
         />
       ) : (
         <div>ss</div>
