@@ -1,3 +1,4 @@
+import { randomFill } from "crypto";
 import { Party } from "../../Interfaces/interfaces";
 import { Box, Text, Button, Input } from "@chakra-ui/react";
 
@@ -8,6 +9,7 @@ interface PartyModalProps {
   setNewMemberName: (newMemberName: string) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClickAddNewMember: () => void;
+  randomName: string | undefined;
 }
 
 const PartyModal = (props: PartyModalProps) => (
@@ -39,17 +41,11 @@ const PartyModal = (props: PartyModalProps) => (
       ))}
       <Text mb={2}>새로운 파티인가요?</Text>
       <Input
-        placeholder="이 름"
+        placeholder={props.randomName}
         mb={4}
-        value={props.newMemberName}
         onChange={props.handleInputChange}
       />
-      <Button
-        bg="gray.300"
-        width="100%"
-        isDisabled={!props.newMemberName}
-        onClick={props.onClickAddNewMember}
-      >
+      <Button bg="gray.300" width="100%" onClick={props.onClickAddNewMember}>
         새로 참여하기
       </Button>
     </Box>

@@ -1,0 +1,61 @@
+name: Deploy 
+
+on:
+  push:
+    branches:
+      - master
+env:
+  S3_BUCKET_NAME : ${{ secrets.S3_BUCKET }}
+  CODE_DEPLOY_APPLICATION_NAME: ${{ secrets.CODEDEPLOY_APPLICATION_NAME }}
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}
+
+jobs:
+  build:
+    name: build and upload to s3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_S3_REGION }}
+
+      - name: Install packages
+        run: yarn install
+      
+      - name: build
+        run: yarn build
+
+      - name: compress files for deploy
+        run: zip -r $GITHUB_SHA.zip build/* scripts/* appspec.yml
+
+  upload:
+    name: upload to s3
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: upload to s3
+        run: aws s3 cp $GITHUB_SHA.zip s3://${{ secrets.AWS_S3_BUCKET }}
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+
+  deploy:
+    name: deploy to ec2
+    runs-on: ubuntu-latest
+    needs: upload
+
+    steps:
+      - name: Code Deploy
+        run: |
+          aws deploy create-deployment \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip \
+          --region ${{ secrets.AWS_REGION }} --file-exists-behavior OVERWRITE

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { unstable_usePrompt, useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import PartyModal from "./PartyModal";
@@ -11,6 +11,8 @@ import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
 import ResultContainer from "./ResultContainer"
+import { createRandomName } from "../home/randomName";
+
 const PartyContainer = () => {
   const navigate = useNavigate();
   const [tagList, setTagList] = useState<Tag[]>();
@@ -28,6 +30,7 @@ const PartyContainer = () => {
     onOpen: onOpenModal,
     onClose: onCloseModal,
   } = useDisclosure();
+  const [randomName, setRandomName] = useState<string>();
   const [receiptDetail, setReceiptDetail] = useState<Receipt>();
   const [isLocalCurrent, setIsLocalCurrent] = useState<boolean>(false);
   const btnDrawer = useRef<HTMLButtonElement | null>(null);
@@ -56,15 +59,18 @@ const PartyContainer = () => {
     currencyId: "USD",
     country: "미국",
   });
-  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberName, setNewMemberName] = useState<string>("");
+  const [totalCost, setTotalCost] = useState<number>(0);
   const onClickSetCurrentMember = (memberName: string) => {
     onClickChangeCurrentMember(memberName);
     setIsLocalCurrent(true);
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMemberName(e.target.value);
+    if (e.target.value === "") setNewMemberName(randomName!!);
+    else setNewMemberName(e.target.value);
   };
   const onClickAddNewMember = () => {
+    if (newMemberName === "") setNewMemberName(randomName!!);
     if (
       contexts.party.members.find(
         (member: string) => member === newMemberName
@@ -83,41 +89,42 @@ const PartyContainer = () => {
       };
       localStorage.setItem("pumpya_user", JSON.stringify(localCurrentMember));
       contexts.setCurrentMember(newMemberName);
+      createRandomName().then((result: string) => {
+        setRandomName(result);
+        setNickname(result);
+        setNewMemberName(result);
+      });
       setIsLocalCurrent(true);
     } else {
       duplicatedName();
     }
   };
   const onClickAddMember = () => {
-    if (nickname === "") noName();
-    else {
-      if (
-        contexts.party.members.find((member: string) => member === nickname) ===
-        undefined
-      ) {
-        const destination = `/pub/party/${partyId}/new-member`;
-        stompClient?.publish({
-          destination,
-          body: JSON.stringify({
-            name: nickname,
-          }),
-        });
-        onClose();
-      } else {
-        duplicatedName();
-      }
+    if (nickname === "") setNickname(randomName!!);
+    if (
+      contexts.party.members.find((member: string) => member === nickname) ===
+      undefined
+    ) {
+      const destination = `/pub/party/${partyId}/new-member`;
+      stompClient?.publish({
+        destination,
+        body: JSON.stringify({
+          name: nickname,
+        }),
+      });
+      createRandomName().then((result: string) => {
+        setRandomName(result);
+        setNickname(result);
+        setNewMemberName(result);
+      });
+      onClose();
+    } else {
+      duplicatedName();
     }
   };
   const duplicatedName = () => {
     toast({
       title: `중복된 이름은 사용할 수 없어요`,
-      status: "error",
-      isClosable: true,
-    });
-  };
-  const noName = () => {
-    toast({
-      title: `이름을 입력해주세요`,
       status: "error",
       isClosable: true,
     });
@@ -145,7 +152,8 @@ const PartyContainer = () => {
     setHistoryComponent(true);
   };
   const handleInputNickName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNickname(e.target.value);
+    if (e.target.value === "") setNickname(randomName!!);
+    else setNickname(e.target.value);
   };
   const onChangeCostInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -211,7 +219,10 @@ const PartyContainer = () => {
   };
   const onClickChangeCurrency = (index: number) => {
     console.log(contexts);
-    if (currencyList !== undefined) setUseCurrency(currencyList[index]);
+    if (currencyList !== undefined) {
+      setUseCurrency(currencyList[index]);
+      console.log(useCurrency);
+    }
   };
   const onChangeNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setReceiptName(e.target.value);
@@ -227,6 +238,20 @@ const PartyContainer = () => {
     const newJoin = join.filter((member: string) => member !== deleteMember);
     setJoin(newJoin);
   };
+
+  //비용 합산을 계산하는 함수
+  const calculateTotalCost = (receipts: Receipt[], currencyId: string) => {
+    return receipts
+      .filter((receipt) => receipt.useCurrency === currencyId)
+      .reduce((acc, receipt) => acc + receipt.cost, 0);
+  };
+
+  const calculateTotalCostInStomp = (receipts: Receipt[]) => {
+    console.log(useCurrency);
+    return receipts
+      .filter((receipt) => receipt.useCurrency === useCurrency.currencyId)
+      .reduce((acc, receipt) => acc + receipt.cost, 0);
+  };
   useEffect(() => {
     tagApi.getTags().then((response) => {
       const newTagList = response.data.tags.map((tag) => ({
@@ -237,7 +262,11 @@ const PartyContainer = () => {
     currencyApi.getCurrencies().then((currencyResponse) => {
       setCurrencyList(currencyResponse.data.currencies);
     });
-
+    createRandomName().then((result: string) => {
+      setRandomName(result);
+      setNickname(result);
+      setNewMemberName(result);
+    });
     const initializeChat = async () => {
       try {
         const stomp = new Client({
@@ -282,7 +311,9 @@ const PartyContainer = () => {
                 joins: parsedJoin,
                 createdAt: new Date(parsedMessage.createdAt),
               };
-              contexts.setReceipts((prev: Receipt[]) => [...prev, newReceipt]);
+              contexts.setReceipts((prev: Receipt[]) => {
+                return [...prev, newReceipt];
+              });
             } catch (err) {
               console.log(err);
             }
@@ -293,6 +324,7 @@ const PartyContainer = () => {
               console.log(frame.body);
               const receiptId = frame.body;
               //영수증 ID가 들어오면 해당 영수증을 삭제
+
               contexts.setReceipts((prev: Receipt[]) =>
                 prev.filter(
                   (receipt: Receipt) => receipt.receiptId !== receiptId
@@ -340,6 +372,12 @@ const PartyContainer = () => {
           }));
           // 변환된 배열을 상태에 저장
           contexts.setReceipts(transformedReceipts);
+          console.log(
+            calculateTotalCost(transformedReceipts, useCurrency.currencyId)
+          );
+          setTotalCost(
+            calculateTotalCost(transformedReceipts, useCurrency.currencyId)
+          );
         })
         .catch((err) => {
           console.log(err);
@@ -377,7 +415,7 @@ const PartyContainer = () => {
       contexts.setLoading(false);
     }
     if (contexts.currentMember !== undefined) setIsLocalCurrent(true);
-  }, [contexts?.party, partyId]);
+  }, [partyId]);
 
   useEffect(() => {
     setReceipt((prev: Receipt) => {
@@ -388,6 +426,10 @@ const PartyContainer = () => {
     });
     setJoin([]);
   }, [contexts.currentMember]);
+  // contexts.receipts 변경 감지하여 totalCost 업데이트
+  useEffect(() => {
+    setTotalCost(calculateTotalCost(contexts.receipts, useCurrency.currencyId));
+  }, [contexts.receipts, useCurrency.currencyId]);
 
   return (
     <>
@@ -401,6 +443,7 @@ const PartyContainer = () => {
           setNewMemberName={setNewMemberName}
           handleInputChange={handleInputChange}
           onClickAddNewMember={onClickAddNewMember}
+          randomName={randomName}
         />
       ) : !historyComponent ? (
         <PartyPresentation
@@ -419,7 +462,6 @@ const PartyContainer = () => {
           onClose={onClose}
           btnDrawer={btnDrawer}
           duplicatedName={duplicatedName}
-          noName={noName}
           copyToClipboard={copyToClipboard}
           onClickEndParty={onClickEndParty}
           isOpenModal={isOpenModal}
@@ -451,6 +493,10 @@ const PartyContainer = () => {
           onClickDeleteReceipt={onClickDeleteReceipt}
           isOpenCollapse={isOpenCollapse}
           onToggle={onToggle}
+          randomName={randomName}
+          totalCost={totalCost}
+          setTotalCost={setTotalCost}
+          calculateTotalCost={calculateTotalCost}
         />
       ) : (
         <ResultContainer />

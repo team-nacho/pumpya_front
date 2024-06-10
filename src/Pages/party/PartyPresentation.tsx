@@ -28,8 +28,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Collapse,
-  Box,
 } from "@chakra-ui/react";
 
 interface PartyPresentationProps {
@@ -48,7 +46,6 @@ interface PartyPresentationProps {
   onClose: () => void;
   btnDrawer: React.RefObject<HTMLButtonElement>;
   duplicatedName: () => void;
-  noName: () => void;
   copyToClipboard: () => void;
   onClickEndParty: () => void;
   isOpenModal: boolean;
@@ -80,6 +77,10 @@ interface PartyPresentationProps {
   onClickDeleteReceipt: () => void;
   isOpenCollapse: boolean;
   onToggle: () => void;
+  randomName: string | undefined;
+  totalCost: number;
+  setTotalCost: (totalCost: number) => void;
+  calculateTotalCost: (receipts: Receipt[], currecnyId: string) => number;
 }
 
 const ClickedButton: React.FC<{
@@ -93,6 +94,7 @@ const ClickedButton: React.FC<{
       borderColor="teal"
       colorScheme="teal"
       variant="solid"
+      size="xs"
       marginY="5px"
     >
       {element}
@@ -108,6 +110,7 @@ const UnClickedButton: React.FC<{
       onClick={clickHandler}
       colorScheme="teal"
       variant="outline"
+      size="xs"
       marginY="5px"
     >
       {element}
@@ -230,7 +233,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <ModalBody>
           <Text>you can use your nickname!</Text>
           <Input
-            placeholder={"nickname"}
+            placeholder={props.randomName}
             onChange={props.handleInputNickName}
           />
         </ModalBody>
@@ -252,8 +255,29 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     <Text fontSize="lg" marginY="5px">
       이번 여행에서 소비했어요
     </Text>
+    <Menu>
+      <MenuButton as={Button} marginY="5px">
+        {props.useCurrency.currencyId}
+      </MenuButton>
+      <MenuList>
+        {props.currencyList?.map((currency, index) => (
+          <MenuItem
+            key={currency.currencyId}
+            onClick={() => {
+              props.onClickChangeCurrency(index);
+              props.setTotalCost(
+                props.calculateTotalCost(props.receipts, currency.currencyId)
+              );
+            }}
+          >
+            {currency.country}
+          </MenuItem>
+        ))}
+      </MenuList>
+    </Menu>
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.party?.totalCost || 0}원
+      {props.totalCost || 0}
+      {props.useCurrency.currencyId}
     </Heading>
     <Flex justifyContent="space-between">
       <Input
@@ -265,14 +289,19 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       />
 
       <Menu>
-        <MenuButton textAlign="center" as={Button} width="25%" marginY="5px">
+        <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
           {props.useCurrency.country}
         </MenuButton>
         <MenuList>
           {props.currencyList?.map((currency, index) => (
             <MenuItem
               key={currency.currencyId}
-              onClick={() => props.onClickChangeCurrency(index)}
+              onClick={() => {
+                props.onClickChangeCurrency(index);
+                props.setTotalCost(
+                  props.calculateTotalCost(props.receipts, currency.currencyId)
+                );
+              }}
             >
               {currency.country}
             </MenuItem>
