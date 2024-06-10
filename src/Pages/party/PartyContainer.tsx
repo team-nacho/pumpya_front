@@ -334,6 +334,15 @@ const PartyContainer = () => {
               console.log(err);
             }
           });
+          stomp.subscribe(`/sub/${partyId}/end`, function (frame) {
+            try {
+              console.log(frame.body);
+              //파티가 종료되면 히스토리 페이지로 이동
+              navigate(`/history/${partyId}`);
+            } catch (err) {
+              console.log(err);
+            }
+          });
         };
         stomp.onDisconnect = () => {
           console.log("WebSocket 연결이 끊겼습니다.");
@@ -353,6 +362,7 @@ const PartyContainer = () => {
     };
   }, []);
 
+  //파티 종료된 상태면 접근 불가하게 만들어야함
   //get party data
   useEffect(() => {
     if (contexts.party === undefined) {

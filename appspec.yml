@@ -8,10 +8,10 @@ permissions:
     group: ec2-user
 files:
   - source: /
-    destination: /home/ec2-user/pump
+    destination: /home/ec2-user/front
     overwrite: yes
 
 hooks:
   AfterInstall:
-    - location: scripts/change-script-permissions.sh
+    - location: scripts/change-scripts-permissions.sh
       timeout: 180
