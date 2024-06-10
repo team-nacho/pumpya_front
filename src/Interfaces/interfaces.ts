@@ -1,22 +1,34 @@
-export interface Member {
-  name: string,
-  usedCost: number
-}
 export interface Party {
-  id: string,
-  name: string,
-  member: Member[],
-  reciepts: Reciept[],
-  totalCost: number,
+  partyId: string;
+  partyName: string;
+  members: string[];
+  receipts: Receipt[];
+  totalCost: number;
 }
-export interface Reciept {
-  name: string,
-  author: Member,
-  join: Member[],
-  cost: number,
-  currency: string,
-  createDate: Date,
+export interface Receipt {
+  receiptId: string | undefined;
+  partyId: string;
+  receiptName: string;
+  author: string | undefined;
+  joins: string[];
+  cost: number;
+  useCurrency: string | undefined;
+  createdAt: Date | undefined;
+  useTag: string | undefined;
 }
 export interface Tag {
-  name: string,
+  name: string;
+}
+
+export interface Currency {
+  currencyId: string;
+  country: string;
+}
+
+export interface ExchangeRate {
+  [currency: string]: {
+    [sender: string]: {
+      [receiver: string]: number;
+    };
+  };
 }

@@ -1,3 +1,5 @@
-const HistoryPage = () => <div>history page</div>
+import HistoryContainer from "./HistoryContianer";
 
-export default HistoryPage;
+export {
+  HistoryContainer
+};
