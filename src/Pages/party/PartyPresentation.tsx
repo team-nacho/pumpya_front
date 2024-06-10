@@ -313,7 +313,8 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     >
       등록하기
     </Button>
-    <Flex flexDirection="column" gap="2">
+    {/* 영수증 리스트 */}
+    <Flex flexDirection="column" gap="2" mt="5">
       {
         props?.receipts === undefined || props?.receipts.length === 0 ? 
           <div>영수증이 없습니다.</div>
@@ -366,8 +367,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     >
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader></DrawerHeader>
+        <DrawerHeader/>
         <DrawerBody>
           <VStack spacing={5} alignItems="left">
             <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
@@ -389,19 +389,20 @@ const PartyPresentation = (props: PartyPresentationProps) => (
                 {props.receiptDetail?.useCurrency}{" "}
                 {props.receiptDetail?.cost.toLocaleString()}{" "}
               </Button>
+              <Text fontSize="2xl">지출</Text>
             </Flex>
-            <Text fontSize="2xl">지출</Text>
+            
           </VStack>
         </DrawerBody>
         <DrawerFooter>
           <Button
             onClick={props.onClickDeleteReceipt}
-            colorScheme="orange"
+            colorScheme="red"
             variant="solid"
             w="100%"
             h="48px"
           >
-            영수증 삭제하기
+            삭제하기
           </Button>
         </DrawerFooter>
       </DrawerContent>
@@ -416,11 +417,10 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       >
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerCloseButton />
           <DrawerHeader marginY="3px">
             {props.currentMember}님의
             <Heading as="h2" size="xl" marginY="7px">
-              {props.party?.partyName}
+              {props.party?.partyName}🎉
             </Heading>
             <VStack direction="row" spacing={1} align="flex-start">
               {props.party?.members?.map((member, index) => {
