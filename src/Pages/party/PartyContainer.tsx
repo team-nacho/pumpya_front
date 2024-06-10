@@ -10,7 +10,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
-
+import ResultContainer from "./ResultContainer"
 const PartyContainer = () => {
   const navigate = useNavigate();
   const [tagList, setTagList] = useState<Tag[]>();
@@ -453,7 +453,7 @@ const PartyContainer = () => {
           onToggle={onToggle}
         />
       ) : (
-        <div>ss</div>
+        <ResultContainer />
       )}
     </>
   );

@@ -20,8 +20,9 @@ import {
   Center,
 } from "@chakra-ui/react";
 
-interface HistoryPresentationProps {
-  onBack: () => void;
+interface ResultPresentationProps {
+  onstart: () => void;
+  copyToClipboard: ()=>void;
   memberNames: string[];
   partyName: string;
   receipts: string[] | undefined;
@@ -48,8 +49,9 @@ const neonStyle = {
   WebkitAnimation: "neon 1s ease infinite",
 };
 
-const HistoryPresentation = ({
-  onBack,
+const ResultPresentation = ({
+  onstart,
+  copyToClipboard,
   memberNames = [],
   partyName,
   receipts = [],
@@ -63,16 +65,13 @@ const HistoryPresentation = ({
   handleTagClick,
   handleCurrencyClick,
   totalCostsByCurrency,
-}: HistoryPresentationProps) => (
+}: ResultPresentationProps) => (
   <Box width="100vw" height="100vh" margin="20px">
     <VStack spacing={3} align="stretch">
       <div>
-        <Button onClick={onBack}>뒤로가기</Button>
-      </div>
-      <div>
         <Flex justifyContent="space-between">
           <Heading fontSize="30">{partyName || "기다려주세요..."}🎉</Heading>
-          <Heading style={neonStyle} fontSize="25" color="#A2E9FF">
+          <Heading style={neonStyle} fontSize="25" color="#C0FFFF">
             Pumpppaya!
           </Heading>
         </Flex>
@@ -85,12 +84,12 @@ const HistoryPresentation = ({
             <Heading fontSize="25">전체 통화</Heading>
           ) : (
             <Heading fontSize="25">
-              {(Math.round(totalCostsByCurrency[selectedCurrency] * 10000) /
-                10000).toLocaleString() || 0}{" "}
+              {Math.round(totalCostsByCurrency[selectedCurrency] * 10000) /
+                10000 || 0}{" "}
               ({selectedCurrency})
             </Heading>
           )}
-          <b>{memberNames.length}명이 함께하고 있어요!</b>
+          <b>{memberNames.length}명이 파티에 함께 했어요!</b>
         </Flex>
       </div>
 
@@ -256,11 +255,11 @@ const HistoryPresentation = ({
                                     <p style={{ fontSize: 15 }}>
                                       <b>{receiver}</b>님에게{" "}
                                       <b>
-                                        {(Math.round(
+                                        {Math.round(
                                           exchange[selectedCurrency][sender][
                                             receiver
                                           ] * 10000
-                                        ) / 10000).toLocaleString()}
+                                        ) / 10000}
                                       </b>
                                       ({selectedCurrency}) 주세요
                                     </p>
@@ -303,8 +302,7 @@ const HistoryPresentation = ({
                   borderRadius="lg"
                   mb={2}
                 >
-                  <p>{selectedTag}(으)로 등록된 소비가 없어요.</p>
-                  <b>소비를 등록해보세요</b>
+                  <b>{selectedTag}(으)로 등록된 소비가 없어요.</b>
                 </Box>
               ) : (
                 filteredReceipts
@@ -355,8 +353,32 @@ const HistoryPresentation = ({
           </div>
         </VStack>
       )}
+      <div>
+          <Button
+            as="span"
+            flex="1"
+            textAlign="center"
+            width="100%"
+            height="100%"
+            onClick={()=>(copyToClipboard())}
+          >
+            <b style={{ fontSize: 20, color: "#3C3C8C" }}>링크 복사하기</b>
+          </Button>
+      </div>
+      <div>
+          <Button
+            as="span"
+            flex="1"
+            textAlign="center"
+            width="100%"
+            height="100%"
+            onClick={()=>(onstart())}
+          >
+            <b style={{ fontSize: 20, color: "#3C3C8C" }}>처음으로 가기</b>
+          </Button>
+      </div>
     </VStack>
   </Box>
 );
 
-export default HistoryPresentation;
+export default ResultPresentation;
