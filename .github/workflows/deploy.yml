@@ -8,7 +8,8 @@ env:
   S3_BUCKET_NAME : ${{ secrets.S3_BUCKET }}
   CODE_DEPLOY_APPLICATION_NAME: ${{ secrets.CODEDEPLOY_APPLICATION_NAME }}
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}
-
+  REACT_APP_BASEURL: ${{ secrets.REACT_APP_BASEURL }}
+  REACT_APP_WS_BASE_URL: ${{ secrets.REACT_APP_WS_BASE_URL }}
 jobs:
   build:
     name: build and deploy
@@ -30,6 +31,9 @@ jobs:
       
       - name: build
         run: yarn build
+        env:
+          REACT_APP_BASEURL: ${{ secrets.REACT_APP_BASEURL }}
+          REACT_APP_WS_BASE_URL: ${{ secrets.REACT_APP_WS_BASE_URL }}
 
       - name: compress files for deploy
         run: zip -r $GITHUB_SHA.zip build/* scripts/* appspec.yml
