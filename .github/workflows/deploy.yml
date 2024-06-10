@@ -29,7 +29,7 @@ jobs:
         run: yarn install
       
       - name: build
-        run: yarn build
+        run: CI=true yarn build
 
       - name: compress files for deploy
         run: zip -r $GITHUB_SHA.zip build/* scripts/* appspec.yml
