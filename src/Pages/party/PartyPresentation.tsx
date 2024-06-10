@@ -1,3 +1,4 @@
+import { HamburgerIcon } from "@chakra-ui/icons";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
 import CollapseBox from "./CollapseBox"; // 경로에 맞게 파일 경로 설정
 import {
@@ -134,26 +135,278 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 };
 
 const PartyPresentation = (props: PartyPresentationProps) => (
-  <div style={{ padding: "10px" }}>
-    <Flex verticalAlign="center">
-      <Heading as="h2" size="xl">
-        {props.party?.partyName}
-        {"\u00B7"}
-      </Heading>
-      <Text fontSize="2xl" marginY="5px">
-        {props.party?.members?.length}명
-      </Text>
-      <Spacer />
+  <Flex flexDir="column" flex="1">
+    <Flex justifyContent="space-between" mb="5">
+      <Flex alignItems="center">
+        <Heading as="h2" size="xl">
+          {props.party?.partyName}
+          {"\u00B7"}
+        </Heading>
+
+        <Text fontSize="2xl" marginY="5px">
+          {props.party?.members?.length}명
+        </Text>
+      </Flex>
+    
       <Button
         ref={props.btnDrawer}
-        colorScheme="teal"
+        // colorScheme="teal"
         onClick={props.onOpen}
-        marginY="3px"
-        marginLeft="15px"
       >
-        Open
+        <HamburgerIcon/>
       </Button>
-      <Drawer
+    </Flex>
+
+    
+    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
+      <ModalOverlay />
+      <ModalContent margin="auto" ml="20px" mr="20px">
+        <ModalHeader>이름을 입력해주세요</ModalHeader>
+        <ModalBody>
+          <Input
+            placeholder={props.randomName}
+            onChange={props.handleInputNickName}
+          />
+        </ModalBody>
+
+        <ModalFooter >
+          <Flex justifyContent="space-between" w="100%">
+            <Button 
+              colorScheme="red"
+              onClick={props.onCloseModal}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={() => {
+                props.onClickAddMember();
+                props.onCloseModal();
+              }}
+            >
+              이 이름으로 추가하기
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+
+    <Text fontSize="lg" marginY="5px">
+      이번 여행에서 소비했어요
+    </Text>
+
+    <Menu>
+      <MenuButton as={Button} marginY="5px">
+        {props.useCurrency.currencyId}
+      </MenuButton>
+      <MenuList>
+        {props.currencyList?.map((currency, index) => (
+          <MenuItem
+            key={currency.currencyId}
+            onClick={() => {
+              props.onClickChangeCurrency(index);
+              props.setTotalCost(
+                props.calculateTotalCost(props.receipts, currency.currencyId)
+              );
+            }}
+          >
+            {currency.country}
+          </MenuItem>
+        ))}
+      </MenuList>
+    </Menu>
+
+    <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
+      {props.totalCost || 0}
+      {props.useCurrency.currencyId}
+    </Heading>
+
+    <Flex justifyContent="space-between">
+      <Input
+        value={props.cost}
+        onChange={props.onChangeCostInput}
+        placeholder={props.useCurrency.currencyId}
+        marginY="5px"
+        w="70%"
+      />
+
+      <Menu>
+        <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
+          {props.useCurrency.country}
+        </MenuButton>
+        <MenuList>
+          {props.currencyList?.map((currency, index) => (
+            <MenuItem
+              key={currency.currencyId}
+              onClick={() => {
+                props.onClickChangeCurrency(index);
+                props.setTotalCost(
+                  props.calculateTotalCost(props.receipts, currency.currencyId)
+                );
+              }}
+            >
+              {currency.country}
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
+    </Flex>
+
+    <Input
+      value={props.receiptName}
+      onChange={props.onChangeNameInput}
+      marginY="5px"
+      placeholder="소비를 입력해 주세요"
+    />
+
+    <Stack direction="row" spacing={4} align="center">
+      {props.tagList?.map((choiceTag) =>
+        choiceTag === props.useTag ? (
+          <ClickedButton
+            key={choiceTag.name}
+            element={choiceTag.name}
+            clickHandler={() => props.setUseTag(undefined)}
+          ></ClickedButton>
+        ) : (
+          <UnClickedButton
+            key={choiceTag.name}
+            element={choiceTag.name}
+            clickHandler={() => props.setUseTag(choiceTag)}
+          ></UnClickedButton>
+        )
+      )}
+    </Stack>
+    {props.party?.members?.length !== 1 ? (
+      <>
+        <Text fontSize="2xl">누구와 함께 하셨나요?</Text>
+        <Stack direction="row" spacing={4} align="center">
+          {props.party?.members
+            ?.filter((member: string) => member !== props.currentMember)
+            .map((member, index) =>
+              props.join.find((e: string) => e === member) !== undefined ? (
+                <ClickedButton
+                  key={`${index}-join`}
+                  element={member}
+                  clickHandler={() => props.deleteJoin(member)}
+                ></ClickedButton>
+              ) : (
+                <UnClickedButton
+                  key={`${index}-notjoin`}
+                  element={member}
+                  clickHandler={() => props.addJoin(member)}
+                ></UnClickedButton>
+              )
+            )}
+        </Stack>
+      </>
+    ) : null}
+    <Button
+      isDisabled={!props.receiptName || !props.useTag}
+      onClick={() => {
+        props.onClickCreateReceipt();
+        props.setCost("");
+        props.setReceiptName("");
+      }}
+      marginY="9px"
+      colorScheme="gray"
+      w="100%"
+      h="50px"
+    >
+      등록하기
+    </Button>
+
+    {
+      props?.receipts === undefined || props?.receipts.length === 0 ? 
+        <div>영수증이 없습니다.</div>
+      : 
+        props.receipts.map((receipt, index) => (
+          <Container
+            key={index}
+            p={4}
+            alignItems="flex-start"
+            onClick={() => {
+              props.setReceiptDetail(receipt);
+              props.onOpenReceipt();
+            }}
+          >
+            <Flex justify="space-between" align="center">
+              <Text fontSize="lg" as="b">
+                {receipt.receiptName}
+              </Text>
+              <Text fontSize="lg" as="b">
+                {receipt.useCurrency} {receipt.cost}
+              </Text>
+            </Flex>
+            <Flex justifyContent="space-between">
+              {receipt?.createdAt !== undefined ? (
+                <Text fontSize="lg" color="gray.500">
+                  {receipt?.createdAt?.getMonth() + 1}월{" "}
+                  {receipt?.createdAt?.getDate()}일{" "}
+                  {formatTwoDigits(receipt.createdAt?.getHours())}:
+                  {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
+                  {receipt.useTag}
+                </Text>
+              ) : null}
+              <Text fontSize="lg" color="gray.500">
+                {receipt.author}
+              </Text>
+            </Flex>
+          </Container>
+        ))
+    }
+
+
+    {/* 영수증 상세 정보 */}
+    <Drawer
+      isOpen={props.isOpenReceipt}
+      placement="bottom"
+      onClose={props.onCloseReceipt}
+      finalFocusRef={props.btnReceipt}
+    >
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader></DrawerHeader>
+        <DrawerBody>
+          <VStack spacing={5} alignItems="left">
+            <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
+            <Text fontSize="2xl">{props.receiptDetail?.author}님이</Text>
+            {props?.receiptDetail?.joins !== undefined &&
+            props?.receiptDetail?.joins.length !== 0 ? (
+              <CollapseBox
+                title={`${props.receiptDetail.author} 외 ${props?.receiptDetail?.joins.length}인`}
+                details={props.receiptDetail?.joins}
+              />
+            ) : null}
+            <Flex>
+              <Button>{props.receiptDetail?.useTag}</Button>
+              <Text fontSize="2xl">에</Text>
+              <Button>{props.receiptDetail?.receiptName}</Button>
+            </Flex>
+            <Flex>
+              <Button>
+                {props.receiptDetail?.useCurrency}{" "}
+                {props.receiptDetail?.cost.toLocaleString()}{" "}
+              </Button>
+            </Flex>
+            <Text fontSize="2xl">지출</Text>
+          </VStack>
+        </DrawerBody>
+        <DrawerFooter>
+          <Button
+            onClick={props.onClickDeleteReceipt}
+            colorScheme="orange"
+            variant="solid"
+            w="100%"
+            h="48px"
+          >
+            영수증 삭제하기
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+
+    {/* 사이드 바 */}
+    <Drawer
         isOpen={props.isOpen}
         placement="right"
         onClose={props.onClose}
@@ -224,238 +477,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-    </Flex>
-    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>새로운 맴버를 추가하세요</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text>you can use your nickname!</Text>
-          <Input
-            placeholder={props.randomName}
-            onChange={props.handleInputNickName}
-          />
-        </ModalBody>
-
-        <ModalFooter>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={() => {
-              props.onClickAddMember();
-              props.onCloseModal();
-            }}
-          >
-            Create!
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-    <Text fontSize="lg" marginY="5px">
-      이번 여행에서 소비했어요
-    </Text>
-    <Menu>
-      <MenuButton as={Button} marginY="5px">
-        {props.useCurrency.currencyId}
-      </MenuButton>
-      <MenuList>
-        {props.currencyList?.map((currency, index) => (
-          <MenuItem
-            key={currency.currencyId}
-            onClick={() => {
-              props.onClickChangeCurrency(index);
-              props.setTotalCost(
-                props.calculateTotalCost(props.receipts, currency.currencyId)
-              );
-            }}
-          >
-            {currency.country}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
-    <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.totalCost || 0}
-      {props.useCurrency.currencyId}
-    </Heading>
-    <Flex justifyContent="space-between">
-      <Input
-        value={props.cost}
-        onChange={props.onChangeCostInput}
-        placeholder={props.useCurrency.currencyId}
-        marginY="5px"
-        w="70%"
-      />
-
-      <Menu>
-        <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
-          {props.useCurrency.country}
-        </MenuButton>
-        <MenuList>
-          {props.currencyList?.map((currency, index) => (
-            <MenuItem
-              key={currency.currencyId}
-              onClick={() => {
-                props.onClickChangeCurrency(index);
-                props.setTotalCost(
-                  props.calculateTotalCost(props.receipts, currency.currencyId)
-                );
-              }}
-            >
-              {currency.country}
-            </MenuItem>
-          ))}
-        </MenuList>
-      </Menu>
-    </Flex>
-    <Input
-      value={props.receiptName}
-      onChange={props.onChangeNameInput}
-      marginY="5px"
-      placeholder="소비를 입력해 주세요"
-    />
-    <Stack direction="row" spacing={4} align="center">
-      {props.tagList?.map((choiceTag) =>
-        choiceTag === props.useTag ? (
-          <ClickedButton
-            key={choiceTag.name}
-            element={choiceTag.name}
-            clickHandler={() => props.setUseTag(undefined)}
-          ></ClickedButton>
-        ) : (
-          <UnClickedButton
-            key={choiceTag.name}
-            element={choiceTag.name}
-            clickHandler={() => props.setUseTag(choiceTag)}
-          ></UnClickedButton>
-        )
-      )}
-    </Stack>
-    {props.party?.members?.length !== 1 ? (
-      <>
-        <Text fontSize="2xl">누구와 함께 하셨나요?</Text>
-        <Stack direction="row" spacing={4} align="center">
-          {props.party?.members
-            ?.filter((member: string) => member !== props.currentMember)
-            .map((member, index) =>
-              props.join.find((e: string) => e === member) !== undefined ? (
-                <ClickedButton
-                  key={`${index}-join`}
-                  element={member}
-                  clickHandler={() => props.deleteJoin(member)}
-                ></ClickedButton>
-              ) : (
-                <UnClickedButton
-                  key={`${index}-notjoin`}
-                  element={member}
-                  clickHandler={() => props.addJoin(member)}
-                ></UnClickedButton>
-              )
-            )}
-        </Stack>
-      </>
-    ) : null}
-    <Button
-      isDisabled={!props.receiptName || !props.useTag}
-      onClick={() => {
-        props.onClickCreateReceipt();
-        props.setCost("");
-        props.setReceiptName("");
-      }}
-      marginY="9px"
-      colorScheme="gray"
-      w="100%"
-      h="50px"
-    >
-      create Receipt
-    </Button>
-    <p></p>
-    {props?.receipts === undefined || props?.receipts.length === 0
-      ? "등록된 영수증이 없습니다"
-      : props.receipts.map((receipt, index) => (
-          <Container
-            key={index}
-            p={4}
-            alignItems="flex-start"
-            onClick={() => {
-              props.setReceiptDetail(receipt);
-              props.onOpenReceipt();
-            }}
-          >
-            <Flex justify="space-between" align="center">
-              <Text fontSize="lg" as="b">
-                {receipt.receiptName}
-              </Text>
-              <Text fontSize="lg" as="b">
-                {receipt.useCurrency} {receipt.cost}
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between">
-              {receipt?.createdAt !== undefined ? (
-                <Text fontSize="lg" color="gray.500">
-                  {receipt?.createdAt?.getMonth() + 1}월{" "}
-                  {receipt?.createdAt?.getDate()}일{" "}
-                  {formatTwoDigits(receipt.createdAt?.getHours())}:
-                  {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                  {receipt.useTag}
-                </Text>
-              ) : null}
-              <Text fontSize="lg" color="gray.500">
-                {receipt.author}
-              </Text>
-            </Flex>
-          </Container>
-        ))}
-    <Drawer
-      isOpen={props.isOpenReceipt}
-      placement="bottom"
-      onClose={props.onCloseReceipt}
-      finalFocusRef={props.btnReceipt}
-    >
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader></DrawerHeader>
-        <DrawerBody>
-          <VStack spacing={5} alignItems="left">
-            <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
-            <Text fontSize="2xl">{props.receiptDetail?.author}님이</Text>
-            {props?.receiptDetail?.joins !== undefined &&
-            props?.receiptDetail?.joins.length !== 0 ? (
-              <CollapseBox
-                title={`${props.receiptDetail.author} 외 ${props?.receiptDetail?.joins.length}인`}
-                details={props.receiptDetail?.joins}
-              />
-            ) : null}
-            <Flex>
-              <Button>{props.receiptDetail?.useTag}</Button>
-              <Text fontSize="2xl">에</Text>
-              <Button>{props.receiptDetail?.receiptName}</Button>
-            </Flex>
-            <Flex>
-              <Button>
-                {props.receiptDetail?.useCurrency}{" "}
-                {props.receiptDetail?.cost.toLocaleString()}{" "}
-              </Button>
-            </Flex>
-            <Text fontSize="2xl">지출</Text>
-          </VStack>
-        </DrawerBody>
-        <DrawerFooter>
-          <Button
-            onClick={props.onClickDeleteReceipt}
-            colorScheme="orange"
-            variant="solid"
-            w="100%"
-            h="48px"
-          >
-            영수증 삭제하기
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  </div>
+  </Flex>
 );
 
 export default PartyPresentation;
