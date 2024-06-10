@@ -313,48 +313,50 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     >
       등록하기
     </Button>
-
-    {
-      props?.receipts === undefined || props?.receipts.length === 0 ? 
-        <div>영수증이 없습니다.</div>
-      : 
-        props.receipts.map((receipt, index) => (
-          <Container
-            key={index}
-            p={4}
-            alignItems="flex-start"
-            onClick={() => {
-              props.setReceiptDetail(receipt);
-              props.onOpenReceipt();
-            }}
-          >
-            <Flex justify="space-between" align="center">
-              <Text fontSize="lg" as="b">
-                {receipt.receiptName}
+    <Flex flexDirection="column" gap="2">
+      {
+        props?.receipts === undefined || props?.receipts.length === 0 ? 
+          <div>영수증이 없습니다.</div>
+        : 
+          props.receipts.map((receipt, index) => (
+            <Flex
+              flexDirection="column"
+              key={index}
+              alignItems="flex-start"
+              onClick={() => {
+                props.setReceiptDetail(receipt);
+                props.onOpenReceipt();
+              }}
+            > 
+              <Text mb="2">
+                {receipt?.createdAt !== undefined ? (
+                  <Text fontSize="md" color="gray.500">
+                    {receipt?.createdAt?.getMonth() + 1}월{" "}
+                    {receipt?.createdAt?.getDate()}일{" "}        
+                  </Text>
+                ) : null}
               </Text>
-              <Text fontSize="lg" as="b">
-                {receipt.useCurrency} {receipt.cost}
-              </Text>
-            </Flex>
-            <Flex justifyContent="space-between">
-              {receipt?.createdAt !== undefined ? (
-                <Text fontSize="lg" color="gray.500">
-                  {receipt?.createdAt?.getMonth() + 1}월{" "}
-                  {receipt?.createdAt?.getDate()}일{" "}
-                  {formatTwoDigits(receipt.createdAt?.getHours())}:
-                  {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                  {receipt.useTag}
+              <Flex w="100%" justify="space-between" align="center">
+                <Text fontSize="lg" as="b">
+                  {receipt.receiptName}
                 </Text>
-              ) : null}
-              <Text fontSize="lg" color="gray.500">
-                {receipt.author}
-              </Text>
+                <Text fontSize="lg" as="b">
+                  {receipt.useCurrency} {receipt.cost}
+                </Text>
+              </Flex>
+              <Flex w="100%" justifyContent="space-between">
+                {formatTwoDigits(receipt.createdAt?.getHours())}:
+                {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
+                {receipt.useTag}
+                <Text fontSize="lg" color="gray.500">
+                  {receipt.author}
+                </Text>
+              </Flex>
             </Flex>
-          </Container>
-        ))
-    }
-
-
+          ))
+      }
+    </Flex>
+    
     {/* 영수증 상세 정보 */}
     <Drawer
       isOpen={props.isOpenReceipt}
