@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    name: build and upload to s3
+    name: build
     runs-on: ubuntu-latest
 
     steps:
@@ -40,8 +40,6 @@ jobs:
     needs: build
 
     steps:
-      - name: upload to s3
-        run: aws s3 cp $GITHUB_SHA.zip s3://${{ secrets.AWS_S3_BUCKET }}
       - name: Upload to S3
         run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
 
