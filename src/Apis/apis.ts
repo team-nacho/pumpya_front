@@ -7,6 +7,7 @@ import {
   GetReceiptsResponse,
   GetTagResponse,
   GetCurrencyResponse,
+  GetPartyHistoryResponse,
 } from "../Interfaces/response";
 import { get } from "http";
 
@@ -32,6 +33,12 @@ export const partyApi = {
     partyId: string
   ): Promise<AxiosResponse<GetResultResponse>> => {
     const response = await api.get(`/get-pumppay-result/${partyId}`);
+    return response;
+  },
+  getHistory: async (
+    partyId: string
+  ): Promise<AxiosResponse<GetPartyHistoryResponse>> => {
+    const response = await api.get(`/get-party-history/${partyId}`);
     return response;
   }
 };

@@ -5,8 +5,32 @@ import { useAppContext } from "../../AppContext";
 import HistoryPresentation from "./HistoryPresentation";
 import { receiptApi, partyApi, currencyApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
+import { useToast } from "@chakra-ui/react";
 
 const HistoryContainer = () => {
+  const toast = useToast();
+  const onStart = () => {
+    navigate("/");
+  };
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: `주소가 복사되었습니다`,
+          status: "success",
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: `error copy`,
+          status: "error",
+          isClosable: true,
+        });
+      });
+  };
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
@@ -17,7 +41,35 @@ const HistoryContainer = () => {
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
+  const [partyName, setPartyName] = useState<string>("기다려주세요");
+  const [memberNames, setMemberNames] = useState<string[]>([]);
 
+  const extractUniqueNames = (exchangeRate: ExchangeRate[]): string[] => {
+    const nameSet: Set<string> = new Set();
+  
+    // 데이터를 순회하며 이름 추출
+    for (const currency in exchangeRate) {
+      if (exchangeRate.hasOwnProperty(currency)) {
+        const senders = exchangeRate[currency];
+        for (const sender in senders) {
+          if (senders.hasOwnProperty(sender)) {
+            nameSet.add(sender);
+            const receivers = senders[sender];
+            for (const receiver in receivers) {
+              if (receivers.hasOwnProperty(receiver)) {
+                nameSet.add(receiver);
+              }
+            }
+          }
+        }
+      }
+    }
+  
+    // Set을 배열로 변환하여 반환
+    return Array.from(nameSet);
+  };
+  console.log(memberNames);
+  
   const hasSelectedTag =
     context.receipts?.some(
       (receipt: Receipt) => receipt.useTag === selectedTag
@@ -39,12 +91,6 @@ const HistoryContainer = () => {
     });
     return receiptsByCurrency;
   };
-
-  const onBack = () => navigate(-1);
-
-  const memberNames = context.party?.members ?? [];
-
-  const partyName = context.party?.partyName ?? "";
 
   // 통화별 비용 계산
   const calTotalCost = (receipts: Receipt[], currencies: Currency[]) => {
@@ -148,8 +194,19 @@ const HistoryContainer = () => {
 
   useEffect(() => {
     // 로딩 로직 추가
-    context.setLoading(true); 
-    
+    context.setLoading(true);
+
+    partyApi.getHistory(partyId!!).then((response) => {
+      console.log(response.data);
+      setPartyName(response.data.partyName);
+      setExchange(response.data.partyArch);
+
+      const names = extractUniqueNames(response.data.partyArch);
+      setMemberNames(names);
+    }).catch((err) => {
+      console.log(err);
+    });
+
     receiptApi
       .getReceipts(partyId!!)
       .then((response) => {
@@ -178,23 +235,12 @@ const HistoryContainer = () => {
         console.log(err);
       });
 
-    partyApi.getParty(partyId!!).then((response) => {
-      context.setParty(response.data);
-    });
-
-    partyApi.getResult(partyId!!).then((response) => {
-      setExchange(response.data.result);
-    });
-
     tagApi.getTags().then((response) => {
       setTags(response.data.tags);
     });
+    
     context.setLoading(false);
   }, []);
-
-  useEffect(() => {
-    console.log(exchange);
-}, [exchange]);
 
   useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
@@ -236,9 +282,8 @@ const HistoryContainer = () => {
   ) : (
     <HistoryPresentation
       partyName={partyName}
-      memberNames={memberNames}
+      memberNames={Array.from(memberNames)}
       receipts={context.receipts}
-      onBack={onBack}
       selectedTag={selectedTag}
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
@@ -251,6 +296,8 @@ const HistoryContainer = () => {
       handleCurrencyClick={handleCurrencyClick}
       getReceiptsByCurrency={getReceiptsByCurrency}
       totalCostsByCurrency={context.totalCostsByCurrency}
+      onStart={onStart}
+      copyToClipboard={copyToClipboard}
     />
   );
 
