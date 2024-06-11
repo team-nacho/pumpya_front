@@ -5,9 +5,13 @@ import { useAppContext } from "../../AppContext";
 import ResultPresentation from "./ResultPresentation";
 import { receiptApi, partyApi, currencyApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
-import { useDisclosure, useToast } from "@chakra-ui/react";
 
-const ResultContainer = () => {
+interface ResultContainerProps {
+  historyComponent: boolean;
+  setHistoryComponent: (historyComponent: boolean) => void;
+}
+
+const ResultContainer = (props: ResultContainerProps) => {
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
@@ -18,28 +22,9 @@ const ResultContainer = () => {
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
-  const toast = useToast();
 
-  const onStart = () => { navigate('/'); }
-
-  const copyToClipboard = () => {
-    const url = window.location.href;
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        toast({
-          title: `success copy`,
-          status: "success",
-          isClosable: true,
-        });
-      })
-      .catch((err) => {
-        toast({
-          title: `error copy`,
-          status: "error",
-          isClosable: true,
-        });
-      });
+  const onBack = () => {
+    props.setHistoryComponent(false);
   };
 
   const hasSelectedTag =
@@ -170,8 +155,8 @@ const ResultContainer = () => {
 
   useEffect(() => {
     // 로딩 로직 추가
-    context.setLoading(true); 
-    
+    context.setLoading(true);
+
     receiptApi
       .getReceipts(partyId!!)
       .then((response) => {
@@ -216,7 +201,7 @@ const ResultContainer = () => {
 
   useEffect(() => {
     console.log(exchange);
-}, [exchange]);
+  }, [exchange]);
 
   useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
@@ -257,8 +242,7 @@ const ResultContainer = () => {
     <LoadingPresentation />
   ) : (
     <ResultPresentation
-      onstart={onStart}
-      copyToClipboard={copyToClipboard}
+      onBack={onBack}
       partyName={partyName}
       memberNames={memberNames}
       receipts={context.receipts}

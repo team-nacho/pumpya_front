@@ -5,8 +5,32 @@ import { useAppContext } from "../../AppContext";
 import HistoryPresentation from "./HistoryPresentation";
 import { receiptApi, partyApi, currencyApi, tagApi } from "../../Apis/apis";
 import LoadingPresentation from "../../Components/LoadingPresentation";
+import { useToast } from "@chakra-ui/react";
 
 const HistoryContainer = () => {
+  const toast = useToast();
+  const onStart = () => {
+    navigate("/");
+  };
+  const copyToClipboard = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: `주소가 복사되었습니다`,
+          status: "success",
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: `error copy`,
+          status: "error",
+          isClosable: true,
+        });
+      });
+  };
   const navigate = useNavigate();
   const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("전체");
@@ -148,8 +172,8 @@ const HistoryContainer = () => {
 
   useEffect(() => {
     // 로딩 로직 추가
-    context.setLoading(true); 
-    
+    context.setLoading(true);
+
     receiptApi
       .getReceipts(partyId!!)
       .then((response) => {
@@ -194,7 +218,7 @@ const HistoryContainer = () => {
 
   useEffect(() => {
     console.log(exchange);
-}, [exchange]);
+  }, [exchange]);
 
   useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
@@ -251,6 +275,8 @@ const HistoryContainer = () => {
       handleCurrencyClick={handleCurrencyClick}
       getReceiptsByCurrency={getReceiptsByCurrency}
       totalCostsByCurrency={context.totalCostsByCurrency}
+      onStart={onStart}
+      copyToClipboard={copyToClipboard}
     />
   );
 

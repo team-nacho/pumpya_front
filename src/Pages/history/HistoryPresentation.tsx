@@ -37,6 +37,8 @@ interface HistoryPresentationProps {
   getCategoryReceipts: (category: string) => any[];
   getReceiptsByCurrency: () => { [key: string]: any[] };
   totalCostsByCurrency: { [key: string]: number };
+  onStart: () => void;
+  copyToClipboard: () => void;
 }
 
 const neonStyle = {
@@ -63,6 +65,8 @@ const HistoryPresentation = ({
   handleTagClick,
   handleCurrencyClick,
   totalCostsByCurrency,
+  onStart,
+  copyToClipboard,
 }: HistoryPresentationProps) => (
   <Box width="100vw" height="100vh" margin="20px">
     <VStack spacing={3} align="stretch">
@@ -85,8 +89,10 @@ const HistoryPresentation = ({
             <Heading fontSize="25">전체 통화</Heading>
           ) : (
             <Heading fontSize="25">
-              {(Math.round(totalCostsByCurrency[selectedCurrency] * 10000) /
-                10000).toLocaleString() || 0}{" "}
+              {(
+                Math.round(totalCostsByCurrency[selectedCurrency] * 10000) /
+                10000
+              ).toLocaleString() || 0}{" "}
               ({selectedCurrency})
             </Heading>
           )}
@@ -256,11 +262,13 @@ const HistoryPresentation = ({
                                     <p style={{ fontSize: 15 }}>
                                       <b>{receiver}</b>님에게{" "}
                                       <b>
-                                        {(Math.round(
-                                          exchange[selectedCurrency][sender][
-                                            receiver
-                                          ] * 10000
-                                        ) / 10000).toLocaleString()}
+                                        {(
+                                          Math.round(
+                                            exchange[selectedCurrency][sender][
+                                              receiver
+                                            ] * 10000
+                                          ) / 10000
+                                        ).toLocaleString()}
                                       </b>
                                       ({selectedCurrency}) 주세요
                                     </p>
@@ -355,6 +363,30 @@ const HistoryPresentation = ({
           </div>
         </VStack>
       )}
+      <div>
+        <Button
+          as="span"
+          flex="1"
+          textAlign="center"
+          width="100%"
+          height="100%"
+          onClick={() => copyToClipboard()}
+        >
+          <b style={{ fontSize: 20, color: "#3C3C8C" }}>링크 복사하기</b>
+        </Button>
+      </div>
+      <div>
+        <Button
+          as="span"
+          flex="1"
+          textAlign="center"
+          width="100%"
+          height="100%"
+          onClick={() => onStart()}
+        >
+          <b style={{ fontSize: 20, color: "#3C3C8C" }}>처음으로 가기</b>
+        </Button>
+      </div>
     </VStack>
   </Box>
 );

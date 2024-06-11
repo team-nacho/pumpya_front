@@ -21,8 +21,7 @@ import {
 } from "@chakra-ui/react";
 
 interface ResultPresentationProps {
-  onstart: () => void;
-  copyToClipboard: ()=>void;
+  onBack: () => void;
   memberNames: string[];
   partyName: string;
   receipts: string[] | undefined;
@@ -50,8 +49,7 @@ const neonStyle = {
 };
 
 const ResultPresentation = ({
-  onstart,
-  copyToClipboard,
+  onBack,
   memberNames = [],
   partyName,
   receipts = [],
@@ -68,6 +66,9 @@ const ResultPresentation = ({
 }: ResultPresentationProps) => (
   <Box width="100vw" height="100vh" margin="20px">
     <VStack spacing={3} align="stretch">
+      <div>
+        <Button onClick={onBack}>뒤로가기</Button>
+      </div>
       <div>
         <Flex justifyContent="space-between">
           <Heading fontSize="30">{partyName || "기다려주세요..."}🎉</Heading>
@@ -353,30 +354,6 @@ const ResultPresentation = ({
           </div>
         </VStack>
       )}
-      <div>
-          <Button
-            as="span"
-            flex="1"
-            textAlign="center"
-            width="100%"
-            height="100%"
-            onClick={()=>(copyToClipboard())}
-          >
-            <b style={{ fontSize: 20, color: "#3C3C8C" }}>링크 복사하기</b>
-          </Button>
-      </div>
-      <div>
-          <Button
-            as="span"
-            flex="1"
-            textAlign="center"
-            width="100%"
-            height="100%"
-            onClick={()=>(onstart())}
-          >
-            <b style={{ fontSize: 20, color: "#3C3C8C" }}>처음으로 가기</b>
-          </Button>
-      </div>
     </VStack>
   </Box>
 );

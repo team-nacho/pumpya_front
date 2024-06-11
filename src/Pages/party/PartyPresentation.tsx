@@ -147,17 +147,16 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           {props.party?.members?.length}명
         </Text>
       </Flex>
-    
+
       <Button
         ref={props.btnDrawer}
         // colorScheme="teal"
         onClick={props.onOpen}
       >
-        <HamburgerIcon/>
+        <HamburgerIcon />
       </Button>
     </Flex>
 
-    
     <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
       <ModalOverlay />
       <ModalContent margin="auto" ml="20px" mr="20px">
@@ -169,12 +168,9 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           />
         </ModalBody>
 
-        <ModalFooter >
+        <ModalFooter>
           <Flex justifyContent="space-between" w="100%">
-            <Button 
-              colorScheme="red"
-              onClick={props.onCloseModal}
-            >
+            <Button colorScheme="red" onClick={props.onCloseModal}>
               취소
             </Button>
             <Button
@@ -315,11 +311,16 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Button>
     {/* 영수증 리스트 */}
     <Flex flexDirection="column" gap="2" mt="5">
-      {
-        props?.receipts === undefined || props?.receipts.length === 0 ? 
-          <div>영수증이 없습니다.</div>
-        : 
-          props.receipts.map((receipt, index) => (
+      {props?.receipts === undefined || props?.receipts.length === 0 ? (
+        <div>영수증이 없습니다.</div>
+      ) : (
+        props.receipts
+          .sort((a, b) => {
+            const dateA = a.createdAt as Date;
+            const dateB = b.createdAt as Date;
+            return dateB.getTime() - dateA.getTime(); // 역순 정렬
+          })
+          .map((receipt, index) => (
             <Flex
               flexDirection="column"
               key={index}
@@ -328,12 +329,12 @@ const PartyPresentation = (props: PartyPresentationProps) => (
                 props.setReceiptDetail(receipt);
                 props.onOpenReceipt();
               }}
-            > 
+            >
               <Text mb="2">
                 {receipt?.createdAt !== undefined ? (
                   <Text fontSize="md" color="gray.500">
                     {receipt?.createdAt?.getMonth() + 1}월{" "}
-                    {receipt?.createdAt?.getDate()}일{" "}        
+                    {receipt?.createdAt?.getDate()}일{" "}
                   </Text>
                 ) : null}
               </Text>
@@ -355,9 +356,9 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               </Flex>
             </Flex>
           ))
-      }
+      )}
     </Flex>
-    
+
     {/* 영수증 상세 정보 */}
     <Drawer
       isOpen={props.isOpenReceipt}
@@ -367,7 +368,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     >
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerHeader/>
+        <DrawerHeader />
         <DrawerBody>
           <VStack spacing={5} alignItems="left">
             <Text fontSize="2xl">{receiptTime(props.receiptDetail)}</Text>
@@ -391,7 +392,6 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               </Button>
               <Text fontSize="2xl">지출</Text>
             </Flex>
-            
           </VStack>
         </DrawerBody>
         <DrawerFooter>
@@ -410,75 +410,75 @@ const PartyPresentation = (props: PartyPresentationProps) => (
 
     {/* 사이드 바 */}
     <Drawer
-        isOpen={props.isOpen}
-        placement="right"
-        onClose={props.onClose}
-        finalFocusRef={props.btnDrawer}
-      >
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerHeader marginY="3px">
-            {props.currentMember}님의
-            <Heading as="h2" size="xl" marginY="7px">
-              {props.party?.partyName}🎉
-            </Heading>
-            <VStack direction="row" spacing={1} align="flex-start">
-              {props.party?.members?.map((member, index) => {
-                if (member !== props.currentMember) {
-                  return (
-                    <Button
-                      key={index}
-                      onClick={() => props.onClickChangeCurrentMember(member)}
-                      colorScheme="gray"
-                      variant="ghost"
-                    >
-                      {member}
-                    </Button>
-                  );
-                }
-              })}
-              <Button
-                onClick={props.onOpenModal}
-                colorScheme="gray"
-                variant="ghost"
-              >
-                멤버 추가
-              </Button>
-            </VStack>
-          </DrawerHeader>
-          <DrawerBody>
+      isOpen={props.isOpen}
+      placement="right"
+      onClose={props.onClose}
+      finalFocusRef={props.btnDrawer}
+    >
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerHeader marginY="3px">
+          {props.currentMember}님의
+          <Heading as="h2" size="xl" marginY="7px">
+            {props.party?.partyName}🎉
+          </Heading>
+          <VStack direction="row" spacing={1} align="flex-start">
+            {props.party?.members?.map((member, index) => {
+              if (member !== props.currentMember) {
+                return (
+                  <Button
+                    key={index}
+                    onClick={() => props.onClickChangeCurrentMember(member)}
+                    colorScheme="gray"
+                    variant="ghost"
+                  >
+                    {member}
+                  </Button>
+                );
+              }
+            })}
             <Button
+              onClick={props.onOpenModal}
               colorScheme="gray"
               variant="ghost"
-              w="100%"
-              h="48px"
-              onClick={props.copyToClipboard}
             >
-              URL 복사하기
+              멤버 추가
             </Button>
-            <Button
-              onClick={props.onClickHistory}
-              colorScheme="gray"
-              variant="ghost"
-              w="100%"
-              h="48px"
-            >
-              현재까지 정산 기록보기
-            </Button>
-          </DrawerBody>
-          <DrawerFooter>
-            <Button
-              onClick={props.onClickEndParty}
-              colorScheme="red"
-              variant="solid"
-              w="100%"
-              h="48px"
-            >
-              여행 끝내기
-            </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+          </VStack>
+        </DrawerHeader>
+        <DrawerBody>
+          <Button
+            colorScheme="gray"
+            variant="ghost"
+            w="100%"
+            h="48px"
+            onClick={props.copyToClipboard}
+          >
+            URL 복사하기
+          </Button>
+          <Button
+            onClick={props.onClickHistory}
+            colorScheme="gray"
+            variant="ghost"
+            w="100%"
+            h="48px"
+          >
+            현재까지 정산 기록보기
+          </Button>
+        </DrawerBody>
+        <DrawerFooter>
+          <Button
+            onClick={props.onClickEndParty}
+            colorScheme="red"
+            variant="solid"
+            w="100%"
+            h="48px"
+          >
+            여행 끝내기
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   </Flex>
 );
 
