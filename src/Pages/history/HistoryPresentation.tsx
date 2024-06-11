@@ -43,7 +43,7 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
   <div>
     {props?.receipts!.length === 0 ? (
       <div>
-        <Box width="100vw" height="100vh">
+        <Box width="100%" height="100vh">
           <Flex
             direction="column"
             align="center"

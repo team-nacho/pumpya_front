@@ -43,7 +43,7 @@ interface ResultPresentationProps {
 }
 
 const ResultPresentation = (props: ResultPresentationProps) => (
-  <Box width="100vw" height="100vh" margin="20px">
+  <Box width="100%" height="100vh" margin="20px">
     <VStack spacing={3} align="stretch">
       <div>
         <Button onClick={props.onBack}>뒤로가기</Button>
@@ -90,6 +90,7 @@ const ResultPresentation = (props: ResultPresentationProps) => (
               {" "}
               {/* 여기에 minWidth를 추가 */}
               <Tab
+              
                 _selected={{ color: "white", bg: "blue.500" }}
                 onClick={() => {
                   if (props.selectedCurrency !== "전체") {

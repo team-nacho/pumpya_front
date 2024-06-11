@@ -17,36 +17,37 @@ const ReceiptList = (props: ReceiptListProps) => (
         <Text mb="2" >
           {moment(m[0]).format('M월 D일')}
         </Text>
-      {
-        m[1].map((receipt: Receipt, index: number) => (
-          <Flex
-            flexDirection="column"
-            key={index}
-            alignItems="flex-start"
-            
-            onClick={() => {
-              props.setReceiptDetail(receipt);
-              props.onOpenReceipt();
-            }}
-          > 
-            <Flex w="100%" justify="space-between" align="center">
-              <Text fontSize="lg" as="b">
-                {receipt.receiptName}
-              </Text>
-              <Text fontSize="lg" as="b">
-                {receipt.useCurrency} {receipt.cost.toLocaleString()}
-              </Text>
-            </Flex>
-            <Flex w="100%" justifyContent="space-between">
-              <Flex gap="2">
-                <Text size='sm' color="gray.500">{moment(receipt.createdAt).format('HH:mm')}</Text>
-                {receipt.useTag}
+        <Flex flexDirection="column" gap={4}>
+          {
+            m[1].map((receipt: Receipt, index: number) => (
+              <Flex
+                flexDirection="column"
+                key={index}
+                alignItems="flex-start"
+                onClick={() => {
+                  props.setReceiptDetail(receipt);
+                  props.onOpenReceipt();
+                }}
+              > 
+                <Flex w="100%" justify="space-between" align="center">
+                  <Text fontSize="lg" as="b">
+                    {receipt.receiptName}
+                  </Text>
+                  <Text fontSize="lg" as="b">
+                    {receipt.useCurrency} {receipt.cost.toLocaleString()}
+                  </Text>
+                </Flex>
+                <Flex w="100%" justifyContent="space-between">
+                  <Flex gap="2">
+                    <Text size='sm' color="gray.500">{moment(receipt.createdAt).format('HH:mm')}</Text>
+                    {receipt.useTag}
+                  </Flex>
+                  <Text size='sm' color="gray.500">{receipt.author}</Text>
+                </Flex>
               </Flex>
-              <Text size='sm' color="gray.500">{receipt.author}</Text>
-            </Flex>
-          </Flex>
-        ))
-      }
+            ))
+          }
+        </Flex>
       </Flex>
     ))
   }
