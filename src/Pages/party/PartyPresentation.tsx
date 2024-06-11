@@ -28,7 +28,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import { sortReceiptInDate } from "../../Utils/utils";
-import moment from "moment";
+import ReceiptList from "../../Components/ReceiptList";
 
 interface PartyPresentationProps {
   party: Party | undefined;
@@ -323,44 +323,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
             </Flex>
           </Center>
         : 
-          Array.from(sortReceiptInDate(props.receipts))
-          .map((m: [string, Receipt[]], index: number) => (
-            <>
-              <Text mb="2">
-                {moment(m[0]).format('M월 D일')}
-              </Text>
-            {
-              m[1].map((receipt: Receipt, index: number) => (
-                <Flex
-                  flexDirection="column"
-                  key={index}
-                  alignItems="flex-start"
-                  onClick={() => {
-                    props.setReceiptDetail(receipt);
-                    props.onOpenReceipt();
-                  }}
-                > 
-                  <Flex w="100%" justify="space-between" align="center">
-                    <Text fontSize="lg" as="b">
-                      {receipt.receiptName}
-                    </Text>
-                    <Text fontSize="lg" as="b">
-                      {receipt.useCurrency} {receipt.cost}
-                    </Text>
-                  </Flex>
-                  <Flex w="100%" justifyContent="space-between">
-                    {formatTwoDigits(receipt.createdAt?.getHours())}:
-                    {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                    {receipt.useTag}
-                    <Text fontSize="lg" color="gray.500">
-                      {receipt.author}
-                    </Text>
-                  </Flex>
-                </Flex>
-              ))
-            }
-            </>
-          ))
+          <ReceiptList
+            receipts={sortReceiptInDate(props.receipts)}
+            setReceiptDetail={props.setReceiptDetail}
+            onOpenReceipt={props.onOpenReceipt}
+          />
       }
     </Flex>
     
