@@ -29,6 +29,7 @@ import {
 } from "@chakra-ui/react";
 import { sortReceiptInDate } from "../../Utils/utils";
 import ReceiptList from "../../Components/ReceiptList";
+import CardSwiper from "../../Components/CardSwiper";
 
 interface PartyPresentationProps {
   party: Party | undefined;
@@ -80,7 +81,7 @@ interface PartyPresentationProps {
   randomName: string | undefined;
   totalCost: number;
   setTotalCost: (totalCost: number) => void;
-  calculateTotalCost: (receipts: Receipt[], currecnyId: string) => number;
+  calculateTotalCost: (currecnyId: string) => number;
 }
 
 const ClickedButton: React.FC<{
@@ -132,6 +133,11 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 
   return `${year}년 ${month}월 ${date}일`;
 };
+//currecyList 중 party.usedCurrencies에 있는 currency만 남기기  
+const filterCurrencyList = (currencyList: Currency[], usedCurrencies: string[]) => {
+  return currencyList.filter((currency) => usedCurrencies.includes(currency.currencyId));
+}
+
 
 const PartyPresentation = (props: PartyPresentationProps) => (
   <Flex flexDir="column" flex="1">
@@ -159,33 +165,16 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       이번 여행에서 소비했어요
     </Text>
 
-    <Menu>
-      <MenuButton as={Button} marginY="5px">
-        {props.useCurrency.currencyId}
-      </MenuButton>
-      <MenuList>
-        {props.currencyList?.map((currency, index) => (
-          <MenuItem
-            key={currency.currencyId}
-            onClick={() => {
-              props.onClickChangeCurrency(index);
-              props.setTotalCost(
-                props.calculateTotalCost(props.receipts, currency.currencyId)
-              );
-            }}
-          >
-            {currency.country}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+    <CardSwiper
+      useCurrency={props.useCurrency}
+      currencyList={filterCurrencyList(props.currencyList!, props.party?.usedCurrencies!)}
+      totalCost={props.totalCost}
+      onClickChangeCurrency={props.onClickChangeCurrency}
+      setTotalCost={props.setTotalCost}
+      calculateTotalCost={props.calculateTotalCost}
+    />
 
-    <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.totalCost.toLocaleString() || 0}
-      {props.useCurrency.currencyId}
-    </Heading>
-
-    <Flex justifyContent="space-between">
+    <Flex justifyContent="space-between" marginTop={4}>
       <Input
         value={props.cost}
         onChange={props.onChangeCostInput}
@@ -193,7 +182,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         marginY="5px"
         w="70%"
       />
-
+      
       <Menu>
         <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
           {props.useCurrency.country}
@@ -204,9 +193,6 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               key={currency.currencyId}
               onClick={() => {
                 props.onClickChangeCurrency(index);
-                props.setTotalCost(
-                  props.calculateTotalCost(props.receipts, currency.currencyId)
-                );
               }}
             >
               {currency.country}

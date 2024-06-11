@@ -4,6 +4,7 @@ export interface Party {
   members: string[];
   receipts: Receipt[];
   totalCost: number;
+  usedCurrencies: string[];
 }
 export interface Receipt {
   receiptId: string | undefined;

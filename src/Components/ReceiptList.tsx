@@ -14,7 +14,7 @@ const ReceiptList = (props: ReceiptListProps) => (
     Array.from(props.receipts)
     .map((m: [string, Receipt[]], index: number) => (
       <>
-        <Text mb="2">
+        <Text mb="2" key={index}>
           {moment(m[0]).format('M월 D일')}
         </Text>
       {
