@@ -6,14 +6,12 @@ import {
   Text,
   Input,
   Flex,
-  Spacer,
   Button,
   Stack,
   VStack,
   Drawer,
   DrawerOverlay,
   DrawerContent,
-  DrawerCloseButton,
   DrawerHeader,
   DrawerBody,
   DrawerFooter,
@@ -21,15 +19,16 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Container,
+  Center,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
+import { sortReceiptInDate } from "../../Utils/utils";
+import moment from "moment";
 
 interface PartyPresentationProps {
   party: Party | undefined;
@@ -317,43 +316,50 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     <Flex flexDirection="column" gap="2" mt="5">
       {
         props?.receipts === undefined || props?.receipts.length === 0 ? 
-          <div>영수증이 없습니다.</div>
-        : 
-          props.receipts.map((receipt, index) => (
-            <Flex
-              flexDirection="column"
-              key={index}
-              alignItems="flex-start"
-              onClick={() => {
-                props.setReceiptDetail(receipt);
-                props.onOpenReceipt();
-              }}
-            > 
-              <Text mb="2">
-                {receipt?.createdAt !== undefined ? (
-                  <Text fontSize="md" color="gray.500">
-                    {receipt?.createdAt?.getMonth() + 1}월{" "}
-                    {receipt?.createdAt?.getDate()}일{" "}        
-                  </Text>
-                ) : null}
-              </Text>
-              <Flex w="100%" justify="space-between" align="center">
-                <Text fontSize="lg" as="b">
-                  {receipt.receiptName}
-                </Text>
-                <Text fontSize="lg" as="b">
-                  {receipt.useCurrency} {receipt.cost}
-                </Text>
-              </Flex>
-              <Flex w="100%" justifyContent="space-between">
-                {formatTwoDigits(receipt.createdAt?.getHours())}:
-                {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                {receipt.useTag}
-                <Text fontSize="lg" color="gray.500">
-                  {receipt.author}
-                </Text>
-              </Flex>
+          <Center>
+            <Flex flexDir="column" alignItems="center"> 
+              <Text>아직 등록된 소비가 없어요</Text>
+              <Text fontWeight='bold'>첫 소비를 등록해보세요!</Text>
             </Flex>
+          </Center>
+        : 
+          Array.from(sortReceiptInDate(props.receipts))
+          .map((m: [string, Receipt[]], index: number) => (
+            <>
+              <Text mb="2">
+                {moment(m[0]).format('M월 D일')}
+              </Text>
+            {
+              m[1].map((receipt: Receipt, index: number) => (
+                <Flex
+                  flexDirection="column"
+                  key={index}
+                  alignItems="flex-start"
+                  onClick={() => {
+                    props.setReceiptDetail(receipt);
+                    props.onOpenReceipt();
+                  }}
+                > 
+                  <Flex w="100%" justify="space-between" align="center">
+                    <Text fontSize="lg" as="b">
+                      {receipt.receiptName}
+                    </Text>
+                    <Text fontSize="lg" as="b">
+                      {receipt.useCurrency} {receipt.cost}
+                    </Text>
+                  </Flex>
+                  <Flex w="100%" justifyContent="space-between">
+                    {formatTwoDigits(receipt.createdAt?.getHours())}:
+                    {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
+                    {receipt.useTag}
+                    <Text fontSize="lg" color="gray.500">
+                      {receipt.author}
+                    </Text>
+                  </Flex>
+                </Flex>
+              ))
+            }
+            </>
           ))
       }
     </Flex>
