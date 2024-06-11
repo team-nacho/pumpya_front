@@ -46,5 +46,5 @@ export interface GetResultResponse{
 }
 export interface GetPartyHistoryResponse{
   partyName: string;
-  partyArch: Map<string, Map<string, Map<string, number>>>;
+  partyArch: ExchangeRate[];
 }
