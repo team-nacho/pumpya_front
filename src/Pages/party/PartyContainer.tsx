@@ -247,10 +247,11 @@ const PartyContainer = () => {
   };
 
   //비용 합산을 계산하는 함수
-  const calculateTotalCost = (receipts: Receipt[], currencyId: string) => {
+  const calculateTotalCost = (currencyId: string) => {
+    const receipts = contexts.receipts;
     return receipts
-      .filter((receipt) => receipt.useCurrency === currencyId)
-      .reduce((acc, receipt) => acc + receipt.cost, 0);
+      .filter((receipt: Receipt) => receipt.useCurrency === currencyId)
+      .reduce((acc: number, receipt: Receipt) => acc + receipt.cost, 0);
   };
   useEffect(() => {
     tagApi.getTags().then((response) => {
@@ -261,6 +262,7 @@ const PartyContainer = () => {
     });
     currencyApi.getCurrencies().then((currencyResponse) => {
       setCurrencyList(currencyResponse.data.currencies);
+      console.log(currencyResponse.data.currencies);
     });
     createRandomName().then((result: string) => {
       setRandomName(result);
@@ -383,7 +385,7 @@ const PartyContainer = () => {
           // 변환된 배열을 상태에 저장
           contexts.setReceipts(transformedReceipts);
           setTotalCost(
-            calculateTotalCost(transformedReceipts, useCurrency.currencyId)
+            calculateTotalCost(useCurrency.currencyId)
           );
         })
         .catch((err) => {
@@ -411,6 +413,7 @@ const PartyContainer = () => {
               partyName: response.data.partyName,
               members: response.data.members,
               totalCost: 0,
+              usedCurrencies: response.data.usedCurrencies,
             };
           });
           contexts.setLoading(false);
@@ -435,7 +438,7 @@ const PartyContainer = () => {
   }, [contexts.currentMember]);
   // contexts.receipts 변경 감지하여 totalCost 업데이트
   useEffect(() => {
-    setTotalCost(calculateTotalCost(contexts.receipts, useCurrency.currencyId));
+    setTotalCost(calculateTotalCost(useCurrency.currencyId));
   }, [contexts.receipts, useCurrency.currencyId]);
 
   return (

@@ -6,14 +6,12 @@ import {
   Text,
   Input,
   Flex,
-  Spacer,
   Button,
   Stack,
   VStack,
   Drawer,
   DrawerOverlay,
   DrawerContent,
-  DrawerCloseButton,
   DrawerHeader,
   DrawerBody,
   DrawerFooter,
@@ -21,15 +19,17 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Container,
+  Center,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
+import { sortReceiptInDate } from "../../Utils/utils";
+import ReceiptList from "../../Components/ReceiptList";
+import CardSwiper from "../../Components/CardSwiper";
 
 interface PartyPresentationProps {
   party: Party | undefined;
@@ -81,7 +81,7 @@ interface PartyPresentationProps {
   randomName: string | undefined;
   totalCost: number;
   setTotalCost: (totalCost: number) => void;
-  calculateTotalCost: (receipts: Receipt[], currecnyId: string) => number;
+  calculateTotalCost: (currecnyId: string) => number;
 }
 
 const ClickedButton: React.FC<{
@@ -133,6 +133,11 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 
   return `${year}년 ${month}월 ${date}일`;
 };
+//currecyList 중 party.usedCurrencies에 있는 currency만 남기기  
+const filterCurrencyList = (currencyList: Currency[], usedCurrencies: string[]) => {
+  return currencyList.filter((currency) => usedCurrencies.includes(currency.currencyId));
+}
+
 
 const PartyPresentation = (props: PartyPresentationProps) => (
   <Flex flexDir="column" flex="1">
@@ -150,73 +155,25 @@ const PartyPresentation = (props: PartyPresentationProps) => (
 
       <Button
         ref={props.btnDrawer}
-        // colorScheme="teal"
         onClick={props.onOpen}
       >
         <HamburgerIcon />
       </Button>
     </Flex>
-
-    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
-      <ModalOverlay />
-      <ModalContent margin="auto" ml="20px" mr="20px">
-        <ModalHeader>이름을 입력해주세요</ModalHeader>
-        <ModalBody>
-          <Input
-            placeholder={props.randomName}
-            onChange={props.handleInputNickName}
-          />
-        </ModalBody>
-
-        <ModalFooter>
-          <Flex justifyContent="space-between" w="100%">
-            <Button colorScheme="red" onClick={props.onCloseModal}>
-              취소
-            </Button>
-            <Button
-              onClick={() => {
-                props.onClickAddMember();
-                props.onCloseModal();
-              }}
-            >
-              이 이름으로 추가하기
-            </Button>
-          </Flex>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-
     <Text fontSize="lg" marginY="5px">
       이번 여행에서 소비했어요
     </Text>
 
-    <Menu>
-      <MenuButton as={Button} marginY="5px">
-        {props.useCurrency.currencyId}
-      </MenuButton>
-      <MenuList>
-        {props.currencyList?.map((currency, index) => (
-          <MenuItem
-            key={currency.currencyId}
-            onClick={() => {
-              props.onClickChangeCurrency(index);
-              props.setTotalCost(
-                props.calculateTotalCost(props.receipts, currency.currencyId)
-              );
-            }}
-          >
-            {currency.country}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+    <CardSwiper
+      useCurrency={props.useCurrency}
+      currencyList={filterCurrencyList(props.currencyList!, props.party?.usedCurrencies!)}
+      totalCost={props.totalCost}
+      onClickChangeCurrency={props.onClickChangeCurrency}
+      setTotalCost={props.setTotalCost}
+      calculateTotalCost={props.calculateTotalCost}
+    />
 
-    <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.totalCost || 0}
-      {props.useCurrency.currencyId}
-    </Heading>
-
-    <Flex justifyContent="space-between">
+    <Flex justifyContent="space-between" marginTop={4}>
       <Input
         value={props.cost}
         onChange={props.onChangeCostInput}
@@ -224,7 +181,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         marginY="5px"
         w="70%"
       />
-
+      
       <Menu>
         <MenuButton textAlign="center" as={Button} width="27%" marginY="5px">
           {props.useCurrency.country}
@@ -235,9 +192,6 @@ const PartyPresentation = (props: PartyPresentationProps) => (
               key={currency.currencyId}
               onClick={() => {
                 props.onClickChangeCurrency(index);
-                props.setTotalCost(
-                  props.calculateTotalCost(props.receipts, currency.currencyId)
-                );
               }}
             >
               {currency.country}
@@ -311,52 +265,21 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Button>
     {/* 영수증 리스트 */}
     <Flex flexDirection="column" gap="2" mt="5">
-      {props?.receipts === undefined || props?.receipts.length === 0 ? (
-        <div>영수증이 없습니다.</div>
-      ) : (
-        props.receipts
-          .sort((a, b) => {
-            const dateA = a.createdAt as Date;
-            const dateB = b.createdAt as Date;
-            return dateB.getTime() - dateA.getTime(); // 역순 정렬
-          })
-          .map((receipt, index) => (
-            <Flex
-              flexDirection="column"
-              key={index}
-              alignItems="flex-start"
-              onClick={() => {
-                props.setReceiptDetail(receipt);
-                props.onOpenReceipt();
-              }}
-            >
-              <Text mb="2">
-                {receipt?.createdAt !== undefined ? (
-                  <Text fontSize="md" color="gray.500">
-                    {receipt?.createdAt?.getMonth() + 1}월{" "}
-                    {receipt?.createdAt?.getDate()}일{" "}
-                  </Text>
-                ) : null}
-              </Text>
-              <Flex w="100%" justify="space-between" align="center">
-                <Text fontSize="lg" as="b">
-                  {receipt.receiptName}
-                </Text>
-                <Text fontSize="lg" as="b">
-                  {receipt.useCurrency} {receipt.cost}
-                </Text>
-              </Flex>
-              <Flex w="100%" justifyContent="space-between">
-                {formatTwoDigits(receipt.createdAt?.getHours())}:
-                {formatTwoDigits(receipt.createdAt?.getMinutes())}{" "}
-                {receipt.useTag}
-                <Text fontSize="lg" color="gray.500">
-                  {receipt.author}
-                </Text>
-              </Flex>
+      {
+        props?.receipts === undefined || props?.receipts.length === 0 ? 
+          <Center>
+            <Flex flexDir="column" alignItems="center"> 
+              <Text>아직 등록된 소비가 없어요</Text>
+              <Text fontWeight='bold'>첫 소비를 등록해보세요!</Text>
             </Flex>
-          ))
-      )}
+          </Center>
+        : 
+          <ReceiptList
+            receipts={sortReceiptInDate(props.receipts)}
+            setReceiptDetail={props.setReceiptDetail}
+            onOpenReceipt={props.onOpenReceipt}
+          />
+      }
     </Flex>
 
     {/* 영수증 상세 정보 */}
@@ -479,7 +402,41 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
+    
+    {/* 모달 */}
+    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
+      <ModalOverlay />
+      <ModalContent margin="auto" ml="20px" mr="20px">
+        <ModalHeader>이름을 입력해주세요</ModalHeader>
+        <ModalBody>
+          <Input
+            placeholder={props.randomName}
+            onChange={props.handleInputNickName}
+          />
+        </ModalBody>
+
+        <ModalFooter >
+          <Flex justifyContent="space-between" w="100%">
+            <Button 
+              colorScheme="red"
+              onClick={props.onCloseModal}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={() => {
+                props.onClickAddMember();
+                props.onCloseModal();
+              }}
+            >
+              이 이름으로 추가하기
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   </Flex>
+  
 );
 
 export default PartyPresentation;
