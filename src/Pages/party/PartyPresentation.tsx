@@ -149,45 +149,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     
       <Button
         ref={props.btnDrawer}
-        // colorScheme="teal"
         onClick={props.onOpen}
       >
         <HamburgerIcon/>
       </Button>
     </Flex>
-
-    
-    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
-      <ModalOverlay />
-      <ModalContent margin="auto" ml="20px" mr="20px">
-        <ModalHeader>이름을 입력해주세요</ModalHeader>
-        <ModalBody>
-          <Input
-            placeholder={props.randomName}
-            onChange={props.handleInputNickName}
-          />
-        </ModalBody>
-
-        <ModalFooter >
-          <Flex justifyContent="space-between" w="100%">
-            <Button 
-              colorScheme="red"
-              onClick={props.onCloseModal}
-            >
-              취소
-            </Button>
-            <Button
-              onClick={() => {
-                props.onClickAddMember();
-                props.onCloseModal();
-              }}
-            >
-              이 이름으로 추가하기
-            </Button>
-          </Flex>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
 
     <Text fontSize="lg" marginY="5px">
       이번 여행에서 소비했어요
@@ -215,7 +181,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
     </Menu>
 
     <Heading as="h2" size="2xl" marginTop="5px" marginBottom="20px">
-      {props.totalCost || 0}
+      {props.totalCost.toLocaleString() || 0}
       {props.useCurrency.currencyId}
     </Heading>
 
@@ -452,7 +418,41 @@ const PartyPresentation = (props: PartyPresentationProps) => (
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
+
+    {/* 모달 */}
+    <Modal isOpen={props.isOpenModal} onClose={props.onCloseModal}>
+      <ModalOverlay />
+      <ModalContent margin="auto" ml="20px" mr="20px">
+        <ModalHeader>이름을 입력해주세요</ModalHeader>
+        <ModalBody>
+          <Input
+            placeholder={props.randomName}
+            onChange={props.handleInputNickName}
+          />
+        </ModalBody>
+
+        <ModalFooter >
+          <Flex justifyContent="space-between" w="100%">
+            <Button 
+              colorScheme="red"
+              onClick={props.onCloseModal}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={() => {
+                props.onClickAddMember();
+                props.onCloseModal();
+              }}
+            >
+              이 이름으로 추가하기
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   </Flex>
+  
 );
 
 export default PartyPresentation;
