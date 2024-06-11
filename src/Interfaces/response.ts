@@ -44,3 +44,7 @@ export type GetReceiptsResponse = ReceiptResponse[];
 export interface GetResultResponse{
   result: ExchangeRate[];
 }
+export interface GetPartyHistoryResponse{
+  partyName: string;
+  partyArch: Map<string, Map<string, Map<string, number>>>;
+}

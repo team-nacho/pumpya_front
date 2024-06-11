@@ -79,9 +79,7 @@ interface PartyPresentationProps {
   isOpenCollapse: boolean;
   onToggle: () => void;
   randomName: string | undefined;
-  totalCost: number;
-  setTotalCost: (totalCost: number) => void;
-  calculateTotalCost: (currecnyId: string) => number;
+  totalCost: Map<string, number>;
 }
 
 const ClickedButton: React.FC<{
@@ -119,11 +117,6 @@ const UnClickedButton: React.FC<{
   );
 };
 
-function formatTwoDigits(value: number | undefined): string {
-  if (value !== undefined) return value.toString().padStart(2, "0");
-  else return "00";
-}
-
 const receiptTime = (receiptDetail: Receipt | undefined) => {
   if (!receiptDetail?.createdAt) return null;
 
@@ -133,13 +126,6 @@ const receiptTime = (receiptDetail: Receipt | undefined) => {
 
   return `${year}년 ${month}월 ${date}일`;
 };
-//currecyList 중 party.usedCurrencies에 있는 currency만 남기기  
-const filterCurrencyList = (currencyList: Currency[], usedCurrencies: string[]) => {
-  return currencyList.filter((currency) => usedCurrencies.includes(currency.currencyId));
-}
-
-
-
 const PartyPresentation = (props: PartyPresentationProps) => (
   <Flex flexDir="column" flex="1">
     <Flex justifyContent="space-between" mb="5">
@@ -162,7 +148,7 @@ const PartyPresentation = (props: PartyPresentationProps) => (
       </Button>
     </Flex>
     {
-      props.party?.usedCurrencies?.length === 0 ? 
+      props.receipts.length === 0 ? 
         <Center>
           <Text fontSize="xl" fontWeight="bold">아직 소비내역이 등록되지 않았어요</Text>
         </Center>
@@ -172,17 +158,11 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         </Text>
     
         <CardSwiper
-          useCurrency={props.useCurrency}
-          currencyList={filterCurrencyList(props.currencyList!, props.party?.usedCurrencies!)}
           totalCost={props.totalCost}
-          onClickChangeCurrency={props.onClickChangeCurrency}
-          setTotalCost={props.setTotalCost}
-          calculateTotalCost={props.calculateTotalCost}
         />
       </>
     }
-    
-
+  
     <Flex justifyContent="space-between" marginTop={4}>
       <Input
         value={props.cost}

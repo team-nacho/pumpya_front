@@ -1,4 +1,4 @@
-import { unstable_usePrompt, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import PartyModal from "./PartyModal";
@@ -59,9 +59,11 @@ const PartyContainer = () => {
     country: "미국",
   });
   const [newMemberName, setNewMemberName] = useState<string>("");
-  const [totalCost, setTotalCost] = useState<number>(0);
+  const [totalCostsByCurrency, setTotalCostsByCurrency] = useState< Map<string, number> >(new Map());
   const [checkSTOMP, setCheckSTOMP] = useState<boolean>(false);
   const [checkRequest, setCheckRequest] = useState<boolean>(false);
+
+
   const onClickSetCurrentMember = (memberName: string) => {
     onClickChangeCurrentMember(memberName);
     setIsLocalCurrent(true);
@@ -248,13 +250,35 @@ const PartyContainer = () => {
     setJoin(newJoin);
   };
 
-  //비용 합산을 계산하는 함수
-  const calculateTotalCost = (currencyId: string) => {
-    const receipts = contexts.receipts;
-    return receipts
-      .filter((receipt: Receipt) => receipt.useCurrency === currencyId)
-      .reduce((acc: number, receipt: Receipt) => acc + receipt.cost, 0);
-  };
+  //영수증이 새로 생성되면 해당 통화 총 비용을 계산하는 함수
+  const addReceipt = (receipt: Receipt) => {
+    //영수증 추가
+    contexts.setReceipts((prev: Receipt[]) => [...prev, receipt]); 
+    const oldMap = totalCostsByCurrency;
+    if(!totalCostsByCurrency.has(receipt.useCurrency!)) oldMap.set(receipt.useCurrency!, 0); 
+
+    const newCost = oldMap.get(receipt.useCurrency!)! + receipt.cost;
+    const newMap = totalCostsByCurrency.set(receipt.useCurrency!, newCost);
+
+    setTotalCostsByCurrency(newMap);
+  }
+  const removeReceipt = (receiptId: string) => {
+    const oldMap = totalCostsByCurrency;
+
+    contexts.setReceipts((prev: Receipt[]) => { 
+      const foundReceipt = prev.find(receipt => receipt.receiptId === receiptId);
+      if (foundReceipt) {
+        // 해당 영수증의 통화별 비용을 빼줌
+        const newCost = oldMap.get(foundReceipt.useCurrency!)! - foundReceipt.cost;
+        const newMap = oldMap.set(foundReceipt.useCurrency!, newCost);
+        //만약 통화별 비용이 0이라면 해당 통화를 삭제
+        if(newCost === 0) newMap.delete(foundReceipt.useCurrency!);
+
+        setTotalCostsByCurrency(newMap);
+      }
+      return prev.filter(receipt => receipt.receiptId !== receiptId);
+    });
+  }
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -299,24 +323,7 @@ const PartyContainer = () => {
                 joins: parsedJoin,
                 createdAt: new Date(parsedMessage.createdAt),
               };
-              contexts.setReceipts((prev: Receipt[]) => {
-                return [...prev, newReceipt];
-              });
-              partyApi
-                .getParty(partyId!!)
-                .then((response) => {
-                  console.log(response.data);
-                  contexts.setParty((prev: Party) => {
-                    return {
-                      ...prev,
-                      partyId: response.data.partyId,
-                      partyName: response.data.partyName,
-                      members: response.data.members,
-                      totalCost: 0,
-                      usedCurrencies: response.data.usedCurrencies,
-                    };
-                  });
-                })
+              addReceipt(newReceipt);
             } catch (err) {
               console.log(err);
             }
@@ -326,28 +333,7 @@ const PartyContainer = () => {
             try {
               console.log(frame.body);
               const receiptId = frame.body;
-              //영수증 ID가 들어오면 해당 영수증을 삭제
-
-              contexts.setReceipts((prev: Receipt[]) =>
-                prev.filter(
-                  (receipt: Receipt) => receipt.receiptId !== receiptId
-                )
-              );
-              partyApi
-                .getParty(partyId!!)
-                .then((response) => {
-                  console.log(response.data);
-                  contexts.setParty((prev: Party) => {
-                    return {
-                      ...prev,
-                      partyId: response.data.partyId,
-                      partyName: response.data.partyName,
-                      members: response.data.members,
-                      totalCost: 0,
-                      usedCurrencies: response.data.usedCurrencies,
-                    };
-                  });
-                })
+              removeReceipt(receiptId); 
             } catch (err) {
               console.log(err);
             }
@@ -356,6 +342,7 @@ const PartyContainer = () => {
             try {
               console.log(frame.body);
               //파티가 종료되면 히스토리 페이지로 이동
+              stomp.deactivate();
               navigate(`/history/${partyId}`);
             } catch (err) {
               console.log(err);
@@ -382,6 +369,7 @@ const PartyContainer = () => {
   }, []);
 
   // 앱 로직 
+  // 밑에 해당하는 값 중 하나라도 없다면 로딩
   useEffect(() => {
     if(contexts.party !== undefined 
       && contexts.receipts !== undefined 
@@ -393,7 +381,6 @@ const PartyContainer = () => {
       return ;
     }
     if(!checkRequest && contexts.loading) {
-
       //일단 해당 파티 정보를 미리 불러옴. 유효하지 않은 방 또는 방이 없을 경우 홈으로 이동
       // 유효하지 않은 방을 어떻게 판단할 것인가?
       // 핸덤 이름 생성
@@ -405,7 +392,6 @@ const PartyContainer = () => {
       partyApi
         .getParty(partyId!!)
         .then((response) => {
-          console.log(response.data);
           contexts.setParty((prev: Party) => {
             return {
               ...prev,
@@ -425,19 +411,17 @@ const PartyContainer = () => {
       receiptApi
         .getReceipts(partyId!!)
         .then((response) => {
-          console.log(response.data);
           // receipt를 변환하고 새로운 배열을 반환
           const transformedReceipts = response.data.map((receipt) => ({
             ...receipt,
             joins: JSON.parse(receipt.joins),
             createdAt: new Date(receipt.createdAt),
           }));
-          // 변환된 배열을 상태에 저장
-          contexts.setReceipts(transformedReceipts);
-
-          setTotalCost(
-            calculateTotalCost(useCurrency.currencyId)
-          );
+          // 통화별 총 비용을 계산
+          console.log(transformedReceipts);
+          transformedReceipts.map((receipt) => {  
+            addReceipt(receipt);
+          });
         })
         .catch((err) => {
           console.log(err);
@@ -446,7 +430,6 @@ const PartyContainer = () => {
 
       // 태그와 화폐 정보를 불러옴
       tagApi.getTags().then((response) => {
-        console.log(response.data);
         const newTagList = response.data.tags.map((tag) => ({
           name: tag,
         }));
@@ -455,7 +438,6 @@ const PartyContainer = () => {
 
       currencyApi.getCurrencies().then((currencyResponse) => {
         setCurrencyList(currencyResponse.data.currencies);
-        console.log(currencyResponse.data.currencies);
       });
 
       // 현재 유저가 로컬에 저장되어 있는지 확인
@@ -558,9 +540,7 @@ const PartyContainer = () => {
           isOpenCollapse={isOpenCollapse}
           onToggle={onToggle}
           randomName={randomName}
-          totalCost={totalCost}
-          setTotalCost={setTotalCost}
-          calculateTotalCost={calculateTotalCost}
+          totalCost={totalCostsByCurrency}
         />
       ) : (
         <ResultContainer

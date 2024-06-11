@@ -173,7 +173,11 @@ const HistoryContainer = () => {
   useEffect(() => {
     // 로딩 로직 추가
     context.setLoading(true);
-
+    partyApi.getHistory(partyId!!).then((response) => {
+      console.log(response.data);
+    }).catch((err) => {
+      console.log(err);
+    });
     receiptApi
       .getReceipts(partyId!!)
       .then((response) => {
@@ -201,10 +205,6 @@ const HistoryContainer = () => {
       .catch((err) => {
         console.log(err);
       });
-
-    partyApi.getParty(partyId!!).then((response) => {
-      context.setParty(response.data);
-    });
 
     partyApi.getResult(partyId!!).then((response) => {
       setExchange(response.data.result);

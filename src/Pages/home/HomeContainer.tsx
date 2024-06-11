@@ -52,7 +52,7 @@ const HomeContainer = () => {
         partyId: response.data.partyId,
         partyName: response.data.partyName,
         members: responseMembers.data.members,
-        totalCost: response.data.totalCost,
+        usedCurrencies: response.data.usedCurrencies,
       }));
 
       // 상태 업데이트 후 navigate를 호출하기 위한 플래그 설정
