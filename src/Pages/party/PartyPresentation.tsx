@@ -139,6 +139,7 @@ const filterCurrencyList = (currencyList: Currency[], usedCurrencies: string[]) 
 }
 
 
+
 const PartyPresentation = (props: PartyPresentationProps) => (
   <Flex flexDir="column" flex="1">
     <Flex justifyContent="space-between" mb="5">
@@ -160,18 +161,27 @@ const PartyPresentation = (props: PartyPresentationProps) => (
         <HamburgerIcon />
       </Button>
     </Flex>
-    <Text fontSize="lg" marginY="5px">
-      이번 여행에서 소비했어요
-    </Text>
-
-    <CardSwiper
-      useCurrency={props.useCurrency}
-      currencyList={filterCurrencyList(props.currencyList!, props.party?.usedCurrencies!)}
-      totalCost={props.totalCost}
-      onClickChangeCurrency={props.onClickChangeCurrency}
-      setTotalCost={props.setTotalCost}
-      calculateTotalCost={props.calculateTotalCost}
-    />
+    {
+      props.party?.usedCurrencies?.length === 0 ? 
+        <Center>
+          <Text fontSize="xl" fontWeight="bold">아직 소비내역이 등록되지 않았어요</Text>
+        </Center>
+      :
+        <><Text fontSize="lg" marginY="5px">
+          이번 여행에서 소비했어요
+        </Text>
+    
+        <CardSwiper
+          useCurrency={props.useCurrency}
+          currencyList={filterCurrencyList(props.currencyList!, props.party?.usedCurrencies!)}
+          totalCost={props.totalCost}
+          onClickChangeCurrency={props.onClickChangeCurrency}
+          setTotalCost={props.setTotalCost}
+          calculateTotalCost={props.calculateTotalCost}
+        />
+      </>
+    }
+    
 
     <Flex justifyContent="space-between" marginTop={4}>
       <Input

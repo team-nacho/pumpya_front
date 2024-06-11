@@ -40,7 +40,7 @@ const CardSwiper = (props: CardSwiperProps) => {
           <Card w="full" variant='filled'>
             <Flex p='2' fontSize="md" fontWeight='bold'>{currency.country}</Flex>
             <Text p='2' fontSize="2xl" marginBottom='4' fontWeight='bold' align='left'>
-              {props.totalCost.toLocaleString() || 0}
+              {props.totalCost.toLocaleString() || 0} {currency.currencyId}
             </Text>
           </Card>
         </SwiperSlide>

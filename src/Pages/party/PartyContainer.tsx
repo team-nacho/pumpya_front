@@ -60,6 +60,8 @@ const PartyContainer = () => {
   });
   const [newMemberName, setNewMemberName] = useState<string>("");
   const [totalCost, setTotalCost] = useState<number>(0);
+  const [checkSTOMP, setCheckSTOMP] = useState<boolean>(false);
+  const [checkRequest, setCheckRequest] = useState<boolean>(false);
   const onClickSetCurrentMember = (memberName: string) => {
     onClickChangeCurrentMember(memberName);
     setIsLocalCurrent(true);
@@ -254,21 +256,6 @@ const PartyContainer = () => {
       .reduce((acc: number, receipt: Receipt) => acc + receipt.cost, 0);
   };
   useEffect(() => {
-    tagApi.getTags().then((response) => {
-      const newTagList = response.data.tags.map((tag) => ({
-        name: tag,
-      }));
-      setTagList(newTagList);
-    });
-    currencyApi.getCurrencies().then((currencyResponse) => {
-      setCurrencyList(currencyResponse.data.currencies);
-      console.log(currencyResponse.data.currencies);
-    });
-    createRandomName().then((result: string) => {
-      setRandomName(result);
-      setNickname(result);
-      setNewMemberName(result);
-    });
     const initializeChat = async () => {
       try {
         const stomp = new Client({
@@ -283,11 +270,10 @@ const PartyContainer = () => {
         stomp.activate();
 
         stomp.onConnect = () => {
+          // 웹소켓에 연결된건 로딩 해제 조건이 아님
+          // 대신 소켓이 연결이 되었다면 연결 성공 시그널 전달
           console.log("WebSocket 연결이 열렸습니다.");
-          contexts.setLoading(false);
-          //영수증 삭제
 
-          //create new member
           stomp.subscribe(`/sub/party/${partyId}/member`, function (frame) {
             try {
               const parsedMessage = JSON.parse(frame.body);
@@ -316,6 +302,21 @@ const PartyContainer = () => {
               contexts.setReceipts((prev: Receipt[]) => {
                 return [...prev, newReceipt];
               });
+              partyApi
+                .getParty(partyId!!)
+                .then((response) => {
+                  console.log(response.data);
+                  contexts.setParty((prev: Party) => {
+                    return {
+                      ...prev,
+                      partyId: response.data.partyId,
+                      partyName: response.data.partyName,
+                      members: response.data.members,
+                      totalCost: 0,
+                      usedCurrencies: response.data.usedCurrencies,
+                    };
+                  });
+                })
             } catch (err) {
               console.log(err);
             }
@@ -332,6 +333,21 @@ const PartyContainer = () => {
                   (receipt: Receipt) => receipt.receiptId !== receiptId
                 )
               );
+              partyApi
+                .getParty(partyId!!)
+                .then((response) => {
+                  console.log(response.data);
+                  contexts.setParty((prev: Party) => {
+                    return {
+                      ...prev,
+                      partyId: response.data.partyId,
+                      partyName: response.data.partyName,
+                      members: response.data.members,
+                      totalCost: 0,
+                      usedCurrencies: response.data.usedCurrencies,
+                    };
+                  });
+                })
             } catch (err) {
               console.log(err);
             }
@@ -345,6 +361,7 @@ const PartyContainer = () => {
               console.log(err);
             }
           });
+          setCheckSTOMP(true);
         };
         stomp.onDisconnect = () => {
           console.log("WebSocket 연결이 끊겼습니다.");
@@ -364,48 +381,31 @@ const PartyContainer = () => {
     };
   }, []);
 
-  //파티 종료된 상태면 접근 불가하게 만들어야함
-  //get party data
+  // 앱 로직 
   useEffect(() => {
-    if (contexts.party === undefined) {
-      contexts.setLoading(true);
-      //get partyId with partyId
-      //useEffect 실행 순서 제어해야함. 로컬 유저 판단 -> 방 활성화 판단 -> 방 정보 할당 -> 소켓연결
+    if(contexts.party !== undefined 
+      && contexts.receipts !== undefined 
+      && tagList !== undefined 
+      && currencyList !== undefined
+      && checkSTOMP)
+    {
+      contexts.setLoading(false);
+      return ;
+    }
+    if(!checkRequest && contexts.loading) {
 
-      receiptApi
-        .getReceipts(partyId!!)
-        .then((response) => {
-          //console.log(response.data);
-          // receipt를 변환하고 새로운 배열을 반환
-          const transformedReceipts = response.data.map((receipt) => ({
-            ...receipt,
-            joins: JSON.parse(receipt.joins),
-            createdAt: new Date(receipt.createdAt),
-          }));
-          // 변환된 배열을 상태에 저장
-          contexts.setReceipts(transformedReceipts);
-          setTotalCost(
-            calculateTotalCost(useCurrency.currencyId)
-          );
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      const localCurrentMember = JSON.parse(
-        localStorage.getItem("pumpya_user")!!
-      );
-      if (localCurrentMember !== null) {
-        contexts.setCurrentMember(localCurrentMember.pumpya_user_name);
-        //현재 서버와 연결되어 있지 않으므로 임시로 테스트 데이터를 넣어줌
-        setIsLocalCurrent(true);
-      } else {
-        setIsLocalCurrent(false);
-      }
+      //일단 해당 파티 정보를 미리 불러옴. 유효하지 않은 방 또는 방이 없을 경우 홈으로 이동
+      // 유효하지 않은 방을 어떻게 판단할 것인가?
+      // 핸덤 이름 생성
+      createRandomName().then((result: string) => {
+        setRandomName(result);
+        setNickname(result);
+        setNewMemberName(result);
+      });
       partyApi
         .getParty(partyId!!)
         .then((response) => {
-          // console.log(response.data);
+          console.log(response.data);
           contexts.setParty((prev: Party) => {
             return {
               ...prev,
@@ -416,16 +416,73 @@ const PartyContainer = () => {
               usedCurrencies: response.data.usedCurrencies,
             };
           });
-          contexts.setLoading(false);
         })
         .catch((err) => {
           console.log(err);
+          navigate("/");
         });
-    } else {
-      contexts.setLoading(false);
+      //receipt 정보를 불러옴
+      receiptApi
+        .getReceipts(partyId!!)
+        .then((response) => {
+          console.log(response.data);
+          // receipt를 변환하고 새로운 배열을 반환
+          const transformedReceipts = response.data.map((receipt) => ({
+            ...receipt,
+            joins: JSON.parse(receipt.joins),
+            createdAt: new Date(receipt.createdAt),
+          }));
+          // 변환된 배열을 상태에 저장
+          contexts.setReceipts(transformedReceipts);
+
+          setTotalCost(
+            calculateTotalCost(useCurrency.currencyId)
+          );
+        })
+        .catch((err) => {
+          console.log(err);
+          navigate("/");
+        });
+
+      // 태그와 화폐 정보를 불러옴
+      tagApi.getTags().then((response) => {
+        console.log(response.data);
+        const newTagList = response.data.tags.map((tag) => ({
+          name: tag,
+        }));
+        setTagList(newTagList);
+      });
+
+      currencyApi.getCurrencies().then((currencyResponse) => {
+        setCurrencyList(currencyResponse.data.currencies);
+        console.log(currencyResponse.data.currencies);
+      });
+
+      // 현재 유저가 로컬에 저장되어 있는지 확인
+      const localCurrentMember = localStorage.getItem("pumpya_user");
+
+      // 현재 유저가 사용한 적이 있음
+      if(localCurrentMember !== null) {
+        const parsedLocalCurrentMember = JSON.parse(localCurrentMember);
+        // 이 방은 아님
+        if(parsedLocalCurrentMember.pumpya_party_id !== partyId) {
+          //사용했던 방이 아니면 새로운 유저 또는 다른 방에 다녀온 유저로 인식
+          // 사용자 선택 또는 새로운 유저 생성
+          setIsLocalCurrent(false);
+          contexts.setLoading(false);
+        } else {
+          // 사용자가 방에 들어온적이 있음 -> 현재 사용자로 설정
+          contexts.setCurrentMember(parsedLocalCurrentMember.pumpya_user_name);
+          // 모달은 띄우지 않음
+          setIsLocalCurrent(true);
+        }
+
+      }
+      setCheckRequest(true);
     }
-    if (contexts.currentMember !== undefined) setIsLocalCurrent(true);
-  }, [partyId]);
+    //파티, 영수증, 태그, 화폐 정보가 모두 있다면 로딩 해제
+    
+  }, [checkSTOMP, contexts.party, contexts.receipts, tagList, currencyList]);
 
   useEffect(() => {
     setReceipt((prev: Receipt) => {
@@ -436,16 +493,13 @@ const PartyContainer = () => {
     });
     setJoin([]);
   }, [contexts.currentMember]);
-  // contexts.receipts 변경 감지하여 totalCost 업데이트
-  useEffect(() => {
-    setTotalCost(calculateTotalCost(useCurrency.currencyId));
-  }, [contexts.receipts, useCurrency.currencyId]);
+
 
   return (
     <>
       {contexts.loading ? (
         <LoadingPresentation />
-      ) : isLocalCurrent === false ? (
+      ) : !isLocalCurrent ? (
         <PartyModal
           party={contexts.party}
           onClickSetCurrentMember={onClickSetCurrentMember}

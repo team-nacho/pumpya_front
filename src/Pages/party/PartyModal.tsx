@@ -24,7 +24,7 @@ const PartyModal = (props: PartyModalProps) => (
     justifyContent="center"
     alignItems="center"
   >
-    <Box bg="white" p={6} rounded="md" boxShadow="md" width="400px">
+    <Box bg="white" p={6} rounded="md" boxShadow="md" width="400px" margin={4}>
       <Text fontSize="xl" fontWeight="bold" mb={2}>
         누구신가요?
       </Text>

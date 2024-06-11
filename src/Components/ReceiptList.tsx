@@ -13,8 +13,8 @@ const ReceiptList = (props: ReceiptListProps) => (
   {
     Array.from(props.receipts)
     .map((m: [string, Receipt[]], index: number) => (
-      <>
-        <Text mb="2" key={index}>
+      <Flex key={index} flexDirection="column">
+        <Text mb="2" >
           {moment(m[0]).format('M월 D일')}
         </Text>
       {
@@ -23,6 +23,7 @@ const ReceiptList = (props: ReceiptListProps) => (
             flexDirection="column"
             key={index}
             alignItems="flex-start"
+            
             onClick={() => {
               props.setReceiptDetail(receipt);
               props.onOpenReceipt();
@@ -46,7 +47,7 @@ const ReceiptList = (props: ReceiptListProps) => (
           </Flex>
         ))
       }
-      </>
+      </Flex>
     ))
   }
   </>
