@@ -2,7 +2,6 @@ import { unstable_usePrompt, useParams } from "react-router-dom";
 import { useAppContext } from "../../AppContext";
 import PartyPresentation from "./PartyPresentation";
 import PartyModal from "./PartyModal";
-import HistoryPresentation from "./HistoryPresentation";
 import { useEffect, useState, useRef } from "react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
 import { Currency, Party, Receipt, Tag } from "../../Interfaces/interfaces";
@@ -10,7 +9,7 @@ import { Client } from "@stomp/stompjs";
 import { partyApi, receiptApi, tagApi, currencyApi } from "../../Apis/apis";
 import { useNavigate } from "react-router-dom";
 import LoadingPresentation from "../../Components/LoadingPresentation";
-import ResultContainer from "./ResultContainer"
+import ResultContainer from "./ResultContainer";
 import { createRandomName } from "../home/randomName";
 
 const PartyContainer = () => {
@@ -135,7 +134,7 @@ const PartyContainer = () => {
       .writeText(url)
       .then(() => {
         toast({
-          title: `success copy`,
+          title: `주소가 복사되었습니다`,
           status: "success",
           isClosable: true,
         });
@@ -215,10 +214,18 @@ const PartyContainer = () => {
     }
   };
   const onClickEndParty = () => {
-    navigate(`/history/${contexts.party.partyId}`);
+    console.log("종료");
+    const destination = `/pub/party/${partyId}/end`;
+    //이 부분은 예시임
+    stompClient?.publish({
+      destination,
+      body: JSON.stringify({
+        partyId: partyId,
+      }),
+    });
+    navigate(`/history/${partyId}`);
   };
   const onClickChangeCurrency = (index: number) => {
-    console.log(contexts);
     if (currencyList !== undefined) {
       setUseCurrency(currencyList[index]);
       console.log(useCurrency);
@@ -245,13 +252,6 @@ const PartyContainer = () => {
     return receipts
       .filter((receipt: Receipt) => receipt.useCurrency === currencyId)
       .reduce((acc: number, receipt: Receipt) => acc + receipt.cost, 0);
-  };
-
-  const calculateTotalCostInStomp = (receipts: Receipt[]) => {
-    console.log(useCurrency);
-    return receipts
-      .filter((receipt) => receipt.useCurrency === useCurrency.currencyId)
-      .reduce((acc, receipt) => acc + receipt.cost, 0);
   };
   useEffect(() => {
     tagApi.getTags().then((response) => {
@@ -375,7 +375,7 @@ const PartyContainer = () => {
       receiptApi
         .getReceipts(partyId!!)
         .then((response) => {
-          console.log(response.data);
+          //console.log(response.data);
           // receipt를 변환하고 새로운 배열을 반환
           const transformedReceipts = response.data.map((receipt) => ({
             ...receipt,
@@ -384,7 +384,6 @@ const PartyContainer = () => {
           }));
           // 변환된 배열을 상태에 저장
           contexts.setReceipts(transformedReceipts);
-
           setTotalCost(
             calculateTotalCost(useCurrency.currencyId)
           );
@@ -406,7 +405,7 @@ const PartyContainer = () => {
       partyApi
         .getParty(partyId!!)
         .then((response) => {
-          console.log(response.data);
+          // console.log(response.data);
           contexts.setParty((prev: Party) => {
             return {
               ...prev,
@@ -510,7 +509,10 @@ const PartyContainer = () => {
           calculateTotalCost={calculateTotalCost}
         />
       ) : (
-        <ResultContainer />
+        <ResultContainer
+          historyComponent={historyComponent}
+          setHistoryComponent={setHistoryComponent}
+        />
       )}
     </>
   );
