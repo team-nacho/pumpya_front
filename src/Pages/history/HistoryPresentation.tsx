@@ -43,31 +43,31 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
   <div>
     {props?.receipts!.length === 0 ? (
       <div>
-          <Box width="100vw" height="100vh">
-            <Flex
-              direction="column"
-              align="center"
-              justify="center"
-              height="100%"
-              width="100%"
-              bg="gray.100"
+        <Box width="100vw" height="100vh">
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            height="100%"
+            width="100%"
+            bg="gray.100"
+          >
+            <Box mb="4">
+              <Heading fontSize="25">등록된 영수증이 없습니다.</Heading>
+            </Box>
+            <Button
+              as="span"
+              textAlign="center"
+              width="auto"
+              height="auto"
+              padding="10px 20px"
+              colorScheme="blue"
+              onClick={() => props.onStart()}
             >
-              <Box mb="4">
-                <Heading fontSize="25">등록된 영수증이 없습니다.</Heading>
-              </Box>
-              <Button
-                as="span"
-                textAlign="center"
-                width="auto"
-                height="auto"
-                padding="10px 20px"
-                colorScheme="blue"
-                onClick={() => props.onStart()}
-              >
-                <b style={{ fontSize: 20 }}>처음으로 가기</b>
-              </Button>
-            </Flex>
-          </Box>
+              <b style={{ fontSize: 20 }}>처음으로 가기</b>
+            </Button>
+          </Flex>
+        </Box>
       </div>
     ) : (
       <Box width="100vw" height="100vh" margin="10px" padding="20px">
@@ -105,6 +105,8 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
               borderWidth={1}
               borderRadius="lg"
               mb={0.5}
+              overflowX="auto"
+              whiteSpace="nowrap" // 이 속성을 추가하여 탭이 한 줄로 유지되도록 합니다.
             >
               <Tabs position="relative" variant="unstyled">
                 <TabList>
@@ -385,31 +387,31 @@ const HistoryPresentation = (props: HistoryPresentationProps) => (
           )}
           <div>
             <Flex>
-            <Button
-              as="span"
-              flex="1"
-              textAlign="center"
-              width="20vh"
-              height="8vh"
-              onClick={() => props.copyToClipboard()}
-            >
-              <b style={{ fontSize: 20, color: "#3C3C8C" }}>링크 복사하기</b>
-            </Button>
+              <Button
+                as="span"
+                flex="1"
+                textAlign="center"
+                width="20vh"
+                height="8vh"
+                onClick={() => props.copyToClipboard()}
+              >
+                <b style={{ fontSize: 20, color: "#3C3C8C" }}>링크 복사하기</b>
+              </Button>
             </Flex>
           </div>
           <div>
             <Flex>
-            <Button
-              as="span"
-              flex="1"
-              textAlign="center"
-              width="20vh"
-              height="8vh"
-              onClick={() => props.onStart()}
-            >
-              <b style={{ fontSize: 20, color: "#3C3C8C" }}>처음으로 가기</b>
-            </Button>
-            </Flex>            
+              <Button
+                as="span"
+                flex="1"
+                textAlign="center"
+                width="20vh"
+                height="8vh"
+                onClick={() => props.onStart()}
+              >
+                <b style={{ fontSize: 20, color: "#3C3C8C" }}>처음으로 가기</b>
+              </Button>
+            </Flex>
           </div>
         </VStack>
       </Box>
