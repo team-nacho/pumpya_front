@@ -41,7 +41,35 @@ const HistoryContainer = () => {
   const { partyId } = useParams();
   const { receipts } = useParams();
   const context = useAppContext();
+  const [partyName, setPartyName] = useState<string>("기다려주세요");
+  const [memberNames, setMemberNames] = useState<string[]>([]);
 
+  const extractUniqueNames = (exchangeRate: ExchangeRate[]): string[] => {
+    const nameSet: Set<string> = new Set();
+  
+    // 데이터를 순회하며 이름 추출
+    for (const currency in exchangeRate) {
+      if (exchangeRate.hasOwnProperty(currency)) {
+        const senders = exchangeRate[currency];
+        for (const sender in senders) {
+          if (senders.hasOwnProperty(sender)) {
+            nameSet.add(sender);
+            const receivers = senders[sender];
+            for (const receiver in receivers) {
+              if (receivers.hasOwnProperty(receiver)) {
+                nameSet.add(receiver);
+              }
+            }
+          }
+        }
+      }
+    }
+  
+    // Set을 배열로 변환하여 반환
+    return Array.from(nameSet);
+  };
+  console.log(memberNames);
+  
   const hasSelectedTag =
     context.receipts?.some(
       (receipt: Receipt) => receipt.useTag === selectedTag
@@ -63,12 +91,6 @@ const HistoryContainer = () => {
     });
     return receiptsByCurrency;
   };
-
-  const onBack = () => navigate(-1);
-
-  const memberNames = context.party?.members ?? [];
-
-  const partyName = context.party?.partyName ?? "";
 
   // 통화별 비용 계산
   const calTotalCost = (receipts: Receipt[], currencies: Currency[]) => {
@@ -176,6 +198,11 @@ const HistoryContainer = () => {
 
     partyApi.getHistory(partyId!!).then((response) => {
       console.log(response.data);
+      setPartyName(response.data.partyName);
+      setExchange(response.data.partyArch);
+
+      const names = extractUniqueNames(response.data.partyArch);
+      setMemberNames(names);
     }).catch((err) => {
       console.log(err);
     });
@@ -214,10 +241,6 @@ const HistoryContainer = () => {
     
     context.setLoading(false);
   }, []);
-
-  useEffect(() => {
-    console.log(exchange);
-  }, [exchange]);
 
   useEffect(() => {
     // "전체" 태그가 선택되었을 때 모든 영수증을 표시
@@ -259,9 +282,8 @@ const HistoryContainer = () => {
   ) : (
     <HistoryPresentation
       partyName={partyName}
-      memberNames={memberNames}
+      memberNames={Array.from(memberNames)}
       receipts={context.receipts}
-      onBack={onBack}
       selectedTag={selectedTag}
       selectedCurrency={selectedCurrency}
       filteredReceipts={filteredReceipts}
