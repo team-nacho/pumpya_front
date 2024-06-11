@@ -50,7 +50,9 @@ const ResultPresentation = (props: ResultPresentationProps) => (
       </div>
       <div>
         <Flex justifyContent="space-between">
-          <Heading fontSize="30">{props.partyName || "기다려주세요..."}🎉</Heading>
+          <Heading fontSize="30">
+            {props.partyName || "기다려주세요..."}🎉
+          </Heading>
         </Flex>
       </div>
       <div>
@@ -62,8 +64,11 @@ const ResultPresentation = (props: ResultPresentationProps) => (
           ) : (
             <Flex gap={2} justifyContent="center" alignItems="center">
               <Heading>
-                {(Math.round(props.totalCostsByCurrency[props.selectedCurrency] * 10000) /
-                  10000 || 0).toLocaleString()}{" "}
+                {(
+                  Math.round(
+                    props.totalCostsByCurrency[props.selectedCurrency] * 10000
+                  ) / 10000 || 0
+                ).toLocaleString()}{" "}
               </Heading>
               <Heading>{props.selectedCurrency}</Heading>
             </Flex>
@@ -78,9 +83,12 @@ const ResultPresentation = (props: ResultPresentationProps) => (
           borderWidth={1}
           borderRadius="lg"
           mb={0.5}
+          overflowX="auto" // 여기에 overflowX를 추가
         >
           <Tabs position="relative" variant="unstyled">
-            <TabList>
+            <TabList minWidth="max-content">
+              {" "}
+              {/* 여기에 minWidth를 추가 */}
               <Tab
                 _selected={{ color: "white", bg: "blue.500" }}
                 onClick={() => {
@@ -140,114 +148,119 @@ const ResultPresentation = (props: ResultPresentationProps) => (
               <Accordion allowMultiple>
                 {Object.keys(props.exchange).length > 0 &&
                   (props.selectedCurrency === "전체"
-                    ? props.memberNames.map((memberName: string, index: number) =>
-                        Object.keys(props.exchange).some(
-                          (currency: string) =>
-                            props.exchange[currency] && props.exchange[currency][memberName]
-                        ) ? (
-                          <AccordionItem
-                            key={`${memberName}-${index}`}
-                            style={{ margin: "10px 0" }}
-                          >
-                            <h2>
-                              <AccordionButton
-                                as="span"
-                                flex="1"
-                                textAlign="left"
-                                style={{ backgroundColor: "#EDF2F7" }}
-                              >
-                                <Button as="span" flex="1" textAlign="left">
-                                  <p style={{ fontSize: 20 }}>
-                                    <b>{memberName}</b>님의 뿜빠이 결과
-                                  </p>
-                                </Button>
-                              </AccordionButton>
-                            </h2>
-                            <AccordionPanel bg="#EDF2F7">
-                              {Object.keys(props.exchange).map(
-                                (currencyInner: string) =>
-                                  props.exchange[currencyInner][memberName] &&
-                                  Object.keys(
-                                    props.exchange[currencyInner][memberName]
-                                  ).map(
-                                    (
-                                      receiver: string,
-                                      receiverIndex: number
-                                    ) => (
-                                      <Container
-                                        key={`${currencyInner}-${memberName}-${receiverIndex}`}
-                                        as="span"
-                                        flex="1"
-                                        textAlign="center"
-                                      >
-                                        <p style={{ fontSize: 15 }}>
-                                          <b>{receiver}</b>님에게{" "}
-                                          <b>
-                                            {Math.round(
-                                              props.exchange[currencyInner][
-                                                memberName
-                                              ][receiver] * 10000
-                                            ) / 10000}
-                                          </b>
-                                          ({currencyInner}) 주세요
-                                        </p>
-                                      </Container>
-                                    )
-                                  )
-                              )}
-                            </AccordionPanel>
-                          </AccordionItem>
-                        ) : null
-                      )
-                    : Object.keys(props.exchange[props.selectedCurrency] || {}).map(
-                        (sender: string, senderIndex: number) => (
-                          <AccordionItem
-                            key={`${props.selectedCurrency}-${senderIndex}`}
-                            style={{ margin: "10px 0" }}
-                          >
-                            <h2>
-                              <AccordionButton
-                                as="span"
-                                flex="1"
-                                textAlign="left"
-                                style={{ backgroundColor: "#EDF2F7" }}
-                              >
-                                <Button as="span" flex="1" textAlign="left">
-                                  <p style={{ fontSize: 20 }}>
-                                    <b>{sender}</b>님의 뿜빠이 결과
-                                  </p>
-                                </Button>
-                              </AccordionButton>
-                            </h2>
-                            <AccordionPanel bg="#EDF2F7">
-                              {Object.keys(
-                                props.exchange[props.selectedCurrency][sender] || {}
-                              ).map(
-                                (receiver: string, receiverIndex: number) => (
-                                  <Container
-                                    key={`${props.selectedCurrency}-${sender}-${receiverIndex}`}
-                                    as="span"
-                                    flex="1"
-                                    textAlign="center"
-                                  >
-                                    <p style={{ fontSize: 15 }}>
-                                      <b>{receiver}</b>님에게{" "}
-                                      <b>
-                                        {(Math.round(
-                                          props.exchange[props.selectedCurrency][sender][
-                                            receiver
-                                          ] * 10000
-                                        ) / 10000).toLocaleString()}
-                                      </b>
-                                      ({props.selectedCurrency}) 주세요
+                    ? props.memberNames.map(
+                        (memberName: string, index: number) =>
+                          Object.keys(props.exchange).some(
+                            (currency: string) =>
+                              props.exchange[currency] &&
+                              props.exchange[currency][memberName]
+                          ) ? (
+                            <AccordionItem
+                              key={`${memberName}-${index}`}
+                              style={{ margin: "10px 0" }}
+                            >
+                              <h2>
+                                <AccordionButton
+                                  as="span"
+                                  flex="1"
+                                  textAlign="left"
+                                  style={{ backgroundColor: "#EDF2F7" }}
+                                >
+                                  <Button as="span" flex="1" textAlign="left">
+                                    <p style={{ fontSize: 20 }}>
+                                      <b>{memberName}</b>님의 뿜빠이 결과
                                     </p>
-                                  </Container>
-                                )
-                              )}
-                            </AccordionPanel>
-                          </AccordionItem>
-                        )
-                      ))}
+                                  </Button>
+                                </AccordionButton>
+                              </h2>
+                              <AccordionPanel bg="#EDF2F7">
+                                {Object.keys(props.exchange).map(
+                                  (currencyInner: string) =>
+                                    props.exchange[currencyInner][memberName] &&
+                                    Object.keys(
+                                      props.exchange[currencyInner][memberName]
+                                    ).map(
+                                      (
+                                        receiver: string,
+                                        receiverIndex: number
+                                      ) => (
+                                        <Container
+                                          key={`${currencyInner}-${memberName}-${receiverIndex}`}
+                                          as="span"
+                                          flex="1"
+                                          textAlign="center"
+                                        >
+                                          <p style={{ fontSize: 15 }}>
+                                            <b>{receiver}</b>님에게{" "}
+                                            <b>
+                                              {(
+                                                Math.round(
+                                                  props.exchange[currencyInner][
+                                                    memberName
+                                                  ][receiver] * 10000
+                                                ) / 10000
+                                              ).toLocaleString()}
+                                            </b>
+                                            ({currencyInner}) 주세요
+                                          </p>
+                                        </Container>
+                                      )
+                                    )
+                                )}
+                              </AccordionPanel>
+                            </AccordionItem>
+                          ) : null
+                      )
+                    : Object.keys(
+                        props.exchange[props.selectedCurrency] || {}
+                      ).map((sender: string, senderIndex: number) => (
+                        <AccordionItem
+                          key={`${props.selectedCurrency}-${senderIndex}`}
+                          style={{ margin: "10px 0" }}
+                        >
+                          <h2>
+                            <AccordionButton
+                              as="span"
+                              flex="1"
+                              textAlign="left"
+                              style={{ backgroundColor: "#EDF2F7" }}
+                            >
+                              <Button as="span" flex="1" textAlign="left">
+                                <p style={{ fontSize: 20 }}>
+                                  <b>{sender}</b>님의 뿜빠이 결과
+                                </p>
+                              </Button>
+                            </AccordionButton>
+                          </h2>
+                          <AccordionPanel bg="#EDF2F7">
+                            {Object.keys(
+                              props.exchange[props.selectedCurrency][sender] ||
+                                {}
+                            ).map((receiver: string, receiverIndex: number) => (
+                              <Container
+                                key={`${props.selectedCurrency}-${sender}-${receiverIndex}`}
+                                as="span"
+                                flex="1"
+                                textAlign="center"
+                              >
+                                <p style={{ fontSize: 15 }}>
+                                  <b>{receiver}</b>님에게{" "}
+                                  <b>
+                                    {(
+                                      Math.round(
+                                        props.exchange[props.selectedCurrency][
+                                          sender
+                                        ][receiver] * 10000
+                                      ) / 10000
+                                    ).toLocaleString()}
+                                  </b>
+                                  ({props.selectedCurrency}) 주세요
+                                </p>
+                              </Container>
+                            ))}
+                          </AccordionPanel>
+                        </AccordionItem>
+                      )))}
               </Accordion>
             </Box>
           </div>
