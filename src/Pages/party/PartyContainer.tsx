@@ -227,7 +227,7 @@ const PartyContainer = () => {
         partyId: partyId,
       }),
     });
-    navigate(`/history/${partyId}`);
+    setTimeout(() =>  navigate(`/history/${partyId}`), 1000);
   };
   const onClickChangeCurrency = (index: number) => {
     if (currencyList !== undefined) {
@@ -343,7 +343,8 @@ const PartyContainer = () => {
               console.log(frame.body);
               //파티가 종료되면 히스토리 페이지로 이동
               stomp.deactivate();
-              navigate(`/history/${partyId}`);
+              setTimeout(() =>  navigate(`/history/${partyId}`), 3000);
+             
             } catch (err) {
               console.log(err);
             }
@@ -352,7 +353,6 @@ const PartyContainer = () => {
         };
         stomp.onDisconnect = () => {
           console.log("WebSocket 연결이 끊겼습니다.");
-          contexts.setLoading(true);
         };
       } catch (err) {
         console.log(err);
@@ -363,7 +363,6 @@ const PartyContainer = () => {
     return () => {
       if (stompClient && stompClient.connected) {
         stompClient.deactivate();
-        contexts.setLoading(true);
       }
     };
   }, []);
