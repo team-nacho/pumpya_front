@@ -71,6 +71,7 @@ const HomeContainer = () => {
     }
   }, [partyCreated, navigate, appContext?.party?.partyId]);
   useEffect(() => {
+    appContext.setLoading(true);
     createRandomName().then((result: string) => {
       setRandomName(result);
       setNickname(result);
